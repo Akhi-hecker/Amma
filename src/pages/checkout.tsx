@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronDown, Check, ShieldCheck, CreditCard, Wallet, Building2 } from 'lucide-react';
 
 // --- Types (Mirrored from Shopping Bag) ---
@@ -47,8 +50,10 @@ const PAYMENT_METHODS = [
 
 export default function CheckoutPage() {
     const router = useRouter();
+    const { user, isAuthenticated } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [bagItems, setBagItems] = useState<BagItem[]>([]);
+    const [loading, setLoading] = useState(true);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -69,14 +74,68 @@ export default function CheckoutPage() {
     // Load Data
     useEffect(() => {
         setMounted(true);
-        const savedBag = localStorage.getItem('amma_bag');
-        if (savedBag) {
-            try {
-                setBagItems(JSON.parse(savedBag));
-            } catch (e) {
-                console.error("Failed to parse bag items", e);
+        if (!user) return;
+
+        const fetchBagItems = async () => {
+            const draftsRef = collection(db, 'users', user.id, 'drafts');
+            const q = query(draftsRef, where('status', '==', 'draft'));
+            const snapshot = await getDocs(q);
+
+            const items: BagItem[] = [];
+
+            // Similar mapping logic as shopping-bag.tsx
+            for (const draftDoc of snapshot.docs) {
+                const data = draftDoc.data();
+                let designName = 'Unknown Design';
+                let designImage = 'bg-gray-100';
+                let fabricName = 'Unknown Fabric';
+                let colorName = 'Unknown Color';
+                let colorHex = '#ccc';
+
+                if (data.design_id) {
+                    const dSnap = await getDoc(doc(db, 'designs', data.design_id));
+                    if (dSnap.exists()) {
+                        const d = dSnap.data();
+                        designName = d.name || d.title;
+                        if (d.image) designImage = d.image;
+                        // Simplified image logic for checkout
+                    }
+                }
+                if (data.fabric_id) {
+                    const fSnap = await getDoc(doc(db, 'fabrics', data.fabric_id));
+                    if (fSnap.exists()) fabricName = fSnap.data().name;
+                }
+                if (data.color_id) {
+                    const cSnap = await getDoc(doc(db, 'fabric_colors', data.color_id));
+                    if (cSnap.exists()) {
+                        colorName = cSnap.data().name;
+                        colorHex = cSnap.data().hex_code || '#ccc';
+                    }
+                }
+
+                items.push({
+                    id: draftDoc.id,
+                    designName,
+                    designImage,
+                    serviceType: 'Embroidery', // Simplified
+                    selections: {
+                        fabric: fabricName,
+                        fabricId: data.fabric_id,
+                        color: colorName,
+                        colorId: data.color_id,
+                        colorHex: colorHex,
+                        length: data.custom_measurements?.length || 1,
+                    },
+                    designId: data.design_id,
+                    price: data.estimated_price || 0,
+                    quantity: data.quantity || 1
+                } as BagItem);
             }
-        }
+            setBagItems(items);
+            setLoading(false);
+        };
+
+        fetchBagItems();
 
         // Simulating "Save address automatically if user is logged in"
         // In a real app, this would come from a user context or API
@@ -111,26 +170,54 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
-        if (!canPlaceOrder || isSubmitting) return;
+        if (!canPlaceOrder || isSubmitting || !user) return;
 
         setIsSubmitting(true);
 
         // Save address for future
         localStorage.setItem('amma_saved_address', JSON.stringify(formData));
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // 1. Create Order in 'orders' collection
+            const orderRef = await addDoc(collection(db, 'orders'), {
+                user_id: user.id,
+                items: bagItems, // Store snapshot of items
+                total_amount: total,
+                status: 'placed',
+                shipping_address: formData,
+                payment_method: paymentMethod,
+                created_at: serverTimestamp()
+            });
 
-        // Clear Bag (Optional, depends on flow, usually clear after success)
-        // localStorage.removeItem('amma_bag'); 
-        // window.dispatchEvent(new Event('bagUpdated'));
+            // 2. Mark drafts as ordered (or delete them)
+            const batch = writeBatch(db);
+            bagItems.forEach(item => {
+                const draftRef = doc(db, 'users', user.id, 'drafts', item.id);
+                // Option A: Delete from drafts
+                batch.delete(draftRef);
+                // Option B: Update status to 'ordered' (better for history?)
+                // batch.update(draftRef, { status: 'ordered', order_id: orderRef.id });
+            });
+            await batch.commit();
 
-        // Navigate to Success (Mock)
-        // Navigate to Success
-        router.push('/order-confirmation');
+            // Navigate to Success
+            router.push(`/order-confirmation?orderId=${orderRef.id}`);
+
+        } catch (error) {
+            console.error("Order placement failed", error);
+            setIsSubmitting(false);
+        }
     };
 
     if (!mounted) return null;
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F9F7F3] flex items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-2 border-[#C9A14A]/30 border-t-[#C9A14A] rounded-full"></div>
+            </div>
+        );
+    }
 
     if (bagItems.length === 0) {
         // Redirect if empty

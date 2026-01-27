@@ -3,22 +3,21 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Eye, EyeOff, Lock, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { auth } from '@/lib/firebase';
+import { confirmPasswordReset, updatePassword, verifyPasswordResetCode } from 'firebase/auth';
+
+// ...
 
 export default function UpdatePasswordPage() {
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        // Ensure we have a session (hash fragment from email link works automatically with Supabase client to set session)
-        // However, we should double check session or hash if needed. 
-        // Typically Supabase handles the session exchange from the URL fragment before this component mounts fully or right after.
-        // We'll trust the global auth listener state which updates automatically.
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -27,18 +26,32 @@ export default function UpdatePasswordPage() {
 
         setIsSubmitting(true);
         try {
-            const { error } = await supabase.auth.updateUser({ password: password });
+            // Check for oobCode (Password Reset flow)
+            const { oobCode } = router.query;
 
-            if (error) {
-                alert(error.message);
-                setIsSubmitting(false);
-            } else {
+            if (oobCode && typeof oobCode === 'string') {
+                await confirmPasswordReset(auth, oobCode, password);
+                alert("Password has been reset successfully! You can now login.");
+                router.push('/login');
+            } else if (auth.currentUser) {
+                // Authenticated User flow (Change Password)
+                await updatePassword(auth.currentUser, password);
                 alert("Password updated successfully!");
-                router.push('/'); // Go to home or profile
+                router.push('/');
+            } else {
+                throw new Error("No authentication session or reset code found.");
             }
-        } catch (err) {
+
+        } catch (err: any) {
             console.error("Password update failed", err);
-            alert("An error occurred. Please try again.");
+            let msg = "An error occurred. Please try again.";
+            if (err.code === 'auth/expired-action-code') msg = 'The reset link has expired.';
+            if (err.code === 'auth/invalid-action-code') msg = 'The reset link is invalid.';
+            if (err.code === 'auth/weak-password') msg = 'Password is too weak.';
+            if (err.code === 'auth/requires-recent-login') msg = 'Please log in again to update your password.';
+
+            alert(msg);
+        } finally {
             setIsSubmitting(false);
         }
     };

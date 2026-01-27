@@ -3,7 +3,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowLeft, Mail, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { auth } from '@/lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
@@ -22,20 +23,23 @@ export default function ForgotPasswordPage() {
 
         setIsSubmitting(true);
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/update-password`,
+            await sendPasswordResetEmail(auth, email, {
+                url: `${window.location.origin}/login`, // Redirect to login after reset (Firebase handles the reset page usually, or we can build a custom handler)
+                // Note: Firebase sends a link to a handler. If we want a custom handler in app, we need to handle the action URL.
+                // Standard Firebase behavior is a hosted action page, or deep link.
+                // For web, it usually goes to a firebase-hosted page unless we customize handleCodeInApp.
+                // Let's assume standard behavior for now.
             });
 
-            if (error) {
-                alert(error.message);
-                setIsSubmitting(false);
-            } else {
-                setIsSuccess(true);
-                setIsSubmitting(false);
-            }
-        } catch (err) {
+            setIsSuccess(true);
+            setIsSubmitting(false);
+
+        } catch (err: any) {
             console.error("Reset request failed", err);
-            alert("An error occurred. Please try again.");
+            let msg = "An error occurred. Please try again.";
+            if (err.code === 'auth/user-not-found') msg = "User not found.";
+            if (err.code === 'auth/invalid-email') msg = "Invalid email address.";
+            alert(msg);
             setIsSubmitting(false);
         }
     };

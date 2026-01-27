@@ -4,7 +4,8 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Check, MessageSquare, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { auth } from '@/lib/firebase'; // Firebase Auth
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -43,21 +44,11 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: formData.identifier,
-                password: formData.password,
-            });
+            // Firebase Login
+            await signInWithEmailAndPassword(auth, formData.identifier, formData.password);
 
-            if (error) {
-                alert(error.message); // Simple error feedback for now
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Success is handled by AuthContext Listener
-            // Just handle redirect priority here if needed, or let Context do it?
-            // Context listener does NOT handle redirect (it just updates state). 
-            // So we redirect here after success.
+            // AuthContext listener handles state update.
+            // We just handle redirect here.
 
             const returnPath = sessionStorage.getItem('auth_return_path');
             if (returnPath) {
@@ -67,22 +58,36 @@ export default function LoginPage() {
                 router.push('/profile');
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Login failed", err);
-            alert("An unknown error occurred");
+            let msg = "An unknown error occurred";
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                msg = "Invalid email or password.";
+            } else if (err.code === 'auth/invalid-email') {
+                msg = "Invalid email address.";
+            } else if (err.code === 'auth/too-many-requests') {
+                msg = "Access to this account has been temporarily disabled due to many failed login attempts.";
+            }
+            alert(msg);
             setIsSubmitting(false);
         }
     };
 
     const handleGoogleLogin = async () => {
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: 'https://amma-indol.vercel.app',
-                }
-            });
-            if (error) throw error;
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+
+            // AuthContext listener handles state update.
+            // We just handle redirect here to be safe/explicit.
+            const returnPath = sessionStorage.getItem('auth_return_path');
+            if (returnPath) {
+                sessionStorage.removeItem('auth_return_path');
+                router.push(returnPath);
+            } else {
+                router.push('/profile');
+            }
+
         } catch (error: any) {
             console.error("Google login error:", error);
             alert(error.message || "Failed to login with Google");

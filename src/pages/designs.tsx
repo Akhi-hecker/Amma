@@ -8,7 +8,9 @@ import DesignCard from '../components/DesignCard';
 import { useAuth } from '@/context/AuthContext';
 
 // --- Mock Data ---
-import { Design } from '@/data/designs';
+import { Design, EXAMPLE_DESIGNS } from '@/data/designs';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, where, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // Updated Style Shortcuts - Primary Filter
 const STYLE_SHORTCUTS = [
@@ -23,7 +25,7 @@ const STYLE_SHORTCUTS = [
 
 export default function DesignsGallery() {
     const router = useRouter();
-    const { protectAction, isAuthenticated } = useAuth();
+    const { protectAction, isAuthenticated, user } = useAuth();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [mounted, setMounted] = useState(false);
     const [wishlist, setWishlist] = useState<string[]>([]);
@@ -42,52 +44,48 @@ export default function DesignsGallery() {
     useEffect(() => {
         async function fetchDesigns() {
             try {
-                // Dynamic import to avoid SSR issues if env not set, though client side fetch is fine
-                const { supabase } = await import('../lib/supabaseClient');
+                const designsRef = collection(db, 'designs');
+                const q = query(designsRef, where('is_active', '==', true));
+                const querySnapshot = await getDocs(q);
 
-                const { data, error } = await supabase
-                    .from('designs')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('created_at', { ascending: false });
+                const mappedDesigns: Design[] = [];
+                querySnapshot.forEach((doc) => {
+                    const item = doc.data();
+                    let imageColor = 'bg-gray-50';
+                    switch (item.category) {
+                        case 'Floral': imageColor = 'bg-rose-100'; break;
+                        case 'Traditional': imageColor = 'bg-amber-100'; break;
+                        case 'Modern': imageColor = 'bg-slate-100'; break;
+                        case 'Bridal': imageColor = 'bg-red-50'; break;
+                        case 'Minimal': imageColor = 'bg-green-50'; break;
+                        case 'Festive': imageColor = 'bg-yellow-50'; break;
+                        case 'Border': imageColor = 'bg-orange-50'; break;
+                        case 'Heavy': imageColor = 'bg-purple-100'; break;
+                        default: imageColor = 'bg-gray-50';
+                    }
 
-                if (error) {
-                    console.error('Error fetching designs:', error);
-                    return;
-                }
-
-                if (data) {
-                    const mappedDesigns: Design[] = data.map((item: any) => {
-                        // Helper to assign color based on category (preserving existing visual style)
-                        let imageColor = 'bg-gray-50';
-                        switch (item.category) {
-                            case 'Floral': imageColor = 'bg-rose-100'; break;
-                            case 'Traditional': imageColor = 'bg-amber-100'; break;
-                            case 'Modern': imageColor = 'bg-slate-100'; break;
-                            case 'Bridal': imageColor = 'bg-red-50'; break;
-                            case 'Minimal': imageColor = 'bg-green-50'; break;
-                            case 'Festive': imageColor = 'bg-yellow-50'; break;
-                            case 'Border': imageColor = 'bg-orange-50'; break;
-                            case 'Heavy': imageColor = 'bg-purple-100'; break;
-                            default: imageColor = 'bg-gray-50';
-                        }
-
-                        return {
-                            id: item.id,
-                            name: item.title,
-                            category: item.category,
-                            image: imageColor, // Keeping the color block logic for now as requested
-                            descriptor: item.short_description || '',
-                            long_description: item.long_description,
-                            fabric_suitability: item.fabric_suitability,
-                            complexity: item.complexity,
-                            // Optional: Map other fields if needed or derive 'badge'
-                        };
+                    mappedDesigns.push({
+                        id: item.id || doc.id,
+                        name: item.name,
+                        category: item.category,
+                        image: imageColor,
+                        descriptor: item.descriptor || '',
+                        long_description: item.long_description,
+                        fabric_suitability: item.fabric_suitability,
+                        complexity: item.complexity,
+                        base_price: item.base_price,
+                        is_active: item.is_active
                     });
+                });
+
+                if (mappedDesigns.length > 0) {
                     setDesigns(mappedDesigns);
+                } else {
+                    setDesigns(EXAMPLE_DESIGNS);
                 }
             } catch (err) {
-                console.error('Unexpected error:', err);
+                console.error('Error fetching designs:', err);
+                setDesigns(EXAMPLE_DESIGNS);
             } finally {
                 setLoading(false);
             }
@@ -118,35 +116,31 @@ export default function DesignsGallery() {
         }
     };
 
-    // Fetch Wishlist from Supabase
+    // Fetch Wishlist from Firestore
     useEffect(() => {
         const fetchWishlist = async () => {
-            if (!isAuthenticated) return;
+            if (!isAuthenticated || !user) return;
 
-            // Dynamic import to avoid SSR issues if used broadly, though context handles auth
-            const { supabase } = await import('../lib/supabaseClient');
-
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data, error } = await supabase
-                .from('saved_designs')
-                .select('design_id')
-                .eq('user_id', user.id);
-
-            if (data) {
-                setWishlist(data.map((item: any) => item.design_id));
+            try {
+                const wishlistRef = collection(db, 'users', user.id, 'wishlist');
+                const snapshot = await getDocs(wishlistRef);
+                const wishlistIds = snapshot.docs.map(doc => doc.id);
+                setWishlist(wishlistIds);
+            } catch (err) {
+                console.error("Error fetching wishlist", err);
             }
         };
 
         fetchWishlist();
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user]);
 
     const toggleWishlist = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
 
         protectAction(async () => {
+            if (!user) return;
+
             // Optimistic Update
             const isLiked = wishlist.includes(id);
             const prevWishlist = [...wishlist];
@@ -157,27 +151,24 @@ export default function DesignsGallery() {
             setWishlist(newWishlist);
 
             try {
-                const { supabase } = await import('../lib/supabaseClient');
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error("User not found");
+                const wishlistDocRef = doc(db, 'users', user.id, 'wishlist', id);
 
                 if (isLiked) {
-                    // Unlike
-                    const { error } = await supabase
-                        .from('saved_designs')
-                        .delete()
-                        .match({ user_id: user.id, design_id: id });
-
-                    if (error) throw error;
-                    // alert("Removed from saved designs"); // Optional feedback
+                    // Unlike -> Delete doc
+                    await deleteDoc(wishlistDocRef);
                 } else {
-                    // Like
-                    const { error } = await supabase
-                        .from('saved_designs')
-                        .insert({ user_id: user.id, design_id: id });
-
-                    if (error) throw error;
-                    alert("Saved to your designs");
+                    // Like -> Set doc (save design details for easier fetching in saved-designs page if we want, or just ID)
+                    // For now, let's just save a timestamp or minimal info.
+                    // Actually, saving design details makes 'Saved Designs' page listing much cheaper/faster (no N+1 reads).
+                    // So let's store the design snapshot.
+                    const design = designs.find(d => d.id === id);
+                    if (design) {
+                        await setDoc(wishlistDocRef, {
+                            ...design,
+                            saved_at: new Date().toISOString()
+                        });
+                        alert("Saved to your designs");
+                    }
                 }
             } catch (err) {
                 console.error("Wishlist sync failed", err);

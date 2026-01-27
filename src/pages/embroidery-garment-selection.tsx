@@ -12,10 +12,11 @@ import {
     ShoppingBag,
     Loader2,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { db, auth } from '@/lib/firebase';
+import { collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, writeBatch } from 'firebase/firestore';
 import { Design } from '@/data/designs';
 
-// --- Interfaces ---
+// Interfaces
 interface GarmentType {
     id: string;
     name: string;
@@ -54,9 +55,35 @@ const GARMENT_ICONS: Record<string, any> = {
     'Blouse': Shirt,
     'Dress': Scissors,
     'Saree': Layers,
+    'Saree Blouse': Shirt,
     'Kurta': Shirt,
     'Lehenga': Umbrella,
+    'Gown': Scissors,
+    'Salwar Kameez': Layers,
     'Other': MoreHorizontal,
+};
+
+// Data to populate Firestore if collection is empty
+const INITIAL_SEEDED_GARMENTS: GarmentType[] = [
+    { id: 'g_blouse', name: 'Blouse', description: 'Standard saree blouse stitching', base_stitching_price: 850, default_fabric_consumption: 1 },
+    { id: 'g_kurta', name: 'Kurta', description: 'Basic kurta with lining', base_stitching_price: 650, default_fabric_consumption: 2.5 },
+    { id: 'g_lehenga', name: 'Lehenga', description: 'Lehenga skirt with lining', base_stitching_price: 1500, default_fabric_consumption: 4 },
+    { id: 'g_gown', name: 'Gown', description: 'Full length gown', base_stitching_price: 1800, default_fabric_consumption: 3.5 },
+    { id: 'g_salwar', name: 'Salwar Kameez', description: 'Full set stitching', base_stitching_price: 1200, default_fabric_consumption: 4.5 },
+];
+
+const INITIAL_SEEDED_SIZES: StandardSize[] = [
+    { id: 'sz_xs', label: 'XS', extra_price: 0 },
+    { id: 'sz_s', label: 'S', extra_price: 0 },
+    { id: 'sz_m', label: 'M', extra_price: 0 },
+    { id: 'sz_l', label: 'L', extra_price: 0 },
+    { id: 'sz_xl', label: 'XL', extra_price: 50 },
+    { id: 'sz_xxl', label: 'XXL', extra_price: 100 },
+    { id: 'sz_xxxl', label: 'XXXL', extra_price: 150 },
+];
+
+const SIZE_ORDER: Record<string, number> = {
+    'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, 'XXXL': 7
 };
 
 export default function EmbroideryCustomizationPage() {
@@ -85,6 +112,12 @@ export default function EmbroideryCustomizationPage() {
         waist: '',
         hips: '',
         length: '',
+        shoulder: '',
+        sleeveLength: '',
+        armHole: '',
+        frontNeckDepth: '',
+        backNeckDepth: '',
+        inseam: '',
         notes: ''
     });
 
@@ -160,92 +193,178 @@ export default function EmbroideryCustomizationPage() {
 
                 // 1. Fetch Design
                 if (designId) {
-                    const { data: designData } = await supabase
-                        .from('designs')
-                        .select('*')
-                        .eq('id', designId)
-                        .single();
+                    const docRef = doc(db, 'designs', designId as string);
+                    const docSnap = await getDoc(docRef);
 
-                    if (designData) {
+                    if (docSnap.exists()) {
+                        const designData = docSnap.data();
                         let imageColor = 'bg-gray-50';
-                        switch (designData.category) {
-                            case 'Floral': imageColor = 'bg-rose-100'; break;
-                            case 'Traditional': imageColor = 'bg-amber-100'; break;
-                            case 'Modern': imageColor = 'bg-slate-100'; break;
-                            default: imageColor = 'bg-gray-50';
-                        }
+                        if (designData.category === 'Floral') imageColor = 'bg-rose-100';
+                        else if (designData.category === 'Traditional') imageColor = 'bg-amber-100';
+                        else if (designData.category === 'Modern') imageColor = 'bg-slate-100';
+                        else imageColor = 'bg-gray-50';
 
                         setSelectedDesign({
-                            id: designData.id,
-                            name: designData.title,
+                            id: docSnap.id,
+                            name: designData.name || designData.title,
                             category: designData.category,
-                            image: imageColor,
+                            image: designData.image || imageColor,
                             descriptor: designData.short_description,
-                            // base_price might be used as fallback
                             base_price: Number(designData.base_price) || 1200,
                             complexity: designData.complexity
-                        });
+                        } as any);
                     }
                 }
 
                 // 2. Fetch Garment Types
-                const { data: garments } = await supabase
-                    .from('garment_types')
-                    .select('*')
-                    .eq('is_active', true);
-                if (garments) {
-                    setGarmentTypes(garments.map(g => ({
-                        ...g,
-                        base_stitching_price: Number(g.base_stitching_price),
-                        default_fabric_consumption: Number(g.default_fabric_consumption)
-                    })));
+                // Assuming collection 'garment_types' exists
+                const garmentsRef = collection(db, 'garment_types');
+                // const qGarments = query(garmentsRef, where('is_active', '==', true)); // optional filter
+                const garmentSnap = await getDocs(garmentsRef);
+                const fetchedGarments: GarmentType[] = [];
+                garmentSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.is_active !== false) {
+                        fetchedGarments.push({
+                            id: d.id,
+                            name: data.name,
+                            description: data.description,
+                            base_stitching_price: Number(data.base_stitching_price) || 0,
+                            default_fabric_consumption: Number(data.default_fabric_consumption) || 0
+                        });
+                    }
+                });
+                if (fetchedGarments.length === 0) {
+                    // Seed Firestore with Fallback Data
+                    try {
+                        const batch = writeBatch(db);
+                        const newGarments: GarmentType[] = [];
+
+                        INITIAL_SEEDED_GARMENTS.forEach((g) => {
+                            const newDocRef = doc(collection(db, 'garment_types'));
+                            // Remove id from data, use doc id or keep consistent?
+                            // Let's keep the ID consistent if possible or let Firestore gen it.
+                            // Here we let Firestore gen ID, but map it back.
+                            const garmentData = {
+                                name: g.name,
+                                description: g.description,
+                                base_stitching_price: g.base_stitching_price,
+                                default_fabric_consumption: g.default_fabric_consumption,
+                                is_active: true
+                            };
+                            batch.set(newDocRef, garmentData);
+                            newGarments.push({ ...g, id: newDocRef.id });
+                        });
+
+                        await batch.commit();
+                        console.log("Seeded garment_types to Firestore");
+                        setGarmentTypes(newGarments);
+                    } catch (seedErr) {
+                        console.error("Error seeding garments:", seedErr);
+                        setGarmentTypes(INITIAL_SEEDED_GARMENTS); // Fallback to local if seeding fails
+                    }
+                } else {
+                    setGarmentTypes(fetchedGarments);
                 }
+
 
                 // 3. Fetch Fabrics
-                const { data: fabricData } = await supabase
-                    .from('fabrics')
-                    .select('*')
-                    .eq('is_active', true);
-                if (fabricData) {
-                    setFabrics(fabricData.map(f => ({
-                        id: f.id,
-                        name: f.name,
-                        description: f.description,
-                        price_per_meter: Number(f.price_per_meter) || 0,
-                        color: f.name.toLowerCase().includes('silk') ? '#D8C8B0' : '#F0EAD6'
-                    })));
-                }
+                const fabricsRef = collection(db, 'fabrics');
+                const fabricSnap = await getDocs(fabricsRef);
+                const fetchedFabrics: Fabric[] = [];
+                fabricSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.is_active !== false) {
+                        fetchedFabrics.push({
+                            id: d.id,
+                            name: data.name,
+                            description: data.description,
+                            price_per_meter: Number(data.price_per_meter) || 0,
+                            color: data.name.toLowerCase().includes('silk') ? '#D8C8B0' : '#F0EAD6'
+                        });
+                    }
+                });
+                setFabrics(fetchedFabrics);
 
                 // 4. Fetch Colors
-                const { data: colorData } = await supabase
-                    .from('fabric_colors')
-                    .select('*')
-                    .eq('is_active', true);
-                if (colorData) setColors(colorData);
+                const colorsRef = collection(db, 'fabric_colors');
+                const colorSnap = await getDocs(colorsRef);
+                const fetchedColors: FabricColor[] = [];
+                colorSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.is_active !== false) {
+                        fetchedColors.push({
+                            id: d.id,
+                            name: data.name,
+                            hex_code: data.hex_code
+                        });
+                    }
+                });
+                setColors(fetchedColors);
 
                 // 5. Fetch Standard Sizes
-                const { data: sizeData } = await supabase
-                    .from('standard_sizes')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('label');
-                if (sizeData) {
-                    setStandardSizes(sizeData.map(s => ({
-                        ...s,
-                        extra_price: Number(s.extra_price)
-                    })));
+                const sizesRef = collection(db, 'standard_sizes');
+                // Sorting might be needed manually if 'orderBy' requires index
+                const sizeSnap = await getDocs(sizesRef);
+                const fetchedSizes: StandardSize[] = [];
+                sizeSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.is_active !== false) {
+                        fetchedSizes.push({
+                            id: d.id,
+                            label: data.label,
+                            extra_price: Number(data.extra_price) || 0
+                        });
+                    }
+                });
+                // Sort by label logic S, M, L, XL etc? or just ASCII
+                // Simple sort for now or use field 'order' if exists
+                if (fetchedSizes.length === 0) {
+                    // Seed Sizes
+                    try {
+                        const batch = writeBatch(db);
+                        const newSizes: StandardSize[] = [];
+
+                        INITIAL_SEEDED_SIZES.forEach((s) => {
+                            const newDocRef = doc(collection(db, 'standard_sizes'));
+                            const sizeData = {
+                                label: s.label,
+                                extra_price: s.extra_price,
+                                is_active: true
+                            };
+                            batch.set(newDocRef, sizeData);
+                            newSizes.push({ ...s, id: newDocRef.id });
+                        });
+
+                        await batch.commit();
+                        console.log("Database initialized: Uploaded sizes to Firestore");
+                        setStandardSizes(newSizes);
+                    } catch (err) {
+                        console.error("Error seeding sizes", err);
+                        setStandardSizes(INITIAL_SEEDED_SIZES);
+                    }
+                } else {
+                    // Sort logic
+                    fetchedSizes.sort((a, b) => {
+                        const orderA = SIZE_ORDER[a.label] || 99;
+                        const orderB = SIZE_ORDER[b.label] || 99;
+                        return orderA - orderB;
+                    });
+                    setStandardSizes(fetchedSizes);
                 }
 
                 // 6. Fetch Embroidery Pricing
-                const { data: pricingData } = await supabase
-                    .from('embroidery_pricing')
-                    .select('*');
-                if (pricingData) {
-                    setEmbroideryPricing(pricingData.map(p => ({
-                        complexity: p.complexity,
-                        price: Number(p.price)
-                    })));
-                }
+                const pricingRef = collection(db, 'embroidery_pricing');
+                const pricingSnap = await getDocs(pricingRef);
+                const fetchedPricing: EmbroideryPricing[] = [];
+                pricingSnap.forEach(d => {
+                    const data = d.data();
+                    fetchedPricing.push({
+                        complexity: data.complexity,
+                        price: Number(data.price)
+                    });
+                });
+                setEmbroideryPricing(fetchedPricing);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -257,6 +376,8 @@ export default function EmbroideryCustomizationPage() {
         fetchData();
     }, [router.isReady, router.query]);
 
+
+    // ...
 
     // --- Handlers ---
     const handleGarmentSelect = (id: string) => setSelectedGarment(id);
@@ -279,13 +400,15 @@ export default function EmbroideryCustomizationPage() {
         setIsLoading(true);
 
         try {
-            // Get User
-            const storedUser = localStorage.getItem('amma_user');
-            const user = storedUser ? JSON.parse(storedUser) : null;
+            // Get User from Auth
+            if (!auth.currentUser) {
+                // Redirect or handle guest
+                router.push('/login?returnUrl=' + encodeURIComponent(router.asPath));
+                return;
+            }
 
             // Prepare Data for order_drafts
             const draftData: any = {
-                user_id: user?.id || null,
                 service_type: 'embroidery_stitching',
                 design_id: selectedDesign.id,
                 garment_type_id: selectedGarment,
@@ -296,14 +419,12 @@ export default function EmbroideryCustomizationPage() {
                 estimated_price: priceBreakdown.total,
                 quantity: 1,
                 status: 'draft',
+                created_at: new Date().toISOString()
             };
 
-            // Insert into Supabase
-            const { error } = await supabase
-                .from('order_drafts')
-                .insert(draftData);
-
-            if (error) throw error;
+            // Insert into Firestore
+            const draftsRef = collection(db, 'users', auth.currentUser.uid, 'drafts');
+            await addDoc(draftsRef, draftData);
 
             window.dispatchEvent(new Event('bagUpdated')); // Optional: keep for legacy listeners
             alert("Added to Bag!");
@@ -535,28 +656,58 @@ export default function EmbroideryCustomizationPage() {
                     )}
 
                     {sizeMode === 'custom' && (
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4 shadow-sm">
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-5 shadow-sm">
+                            <h3 className="font-medium text-[#1C1C1C] text-sm">Body Measurements</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs text-[#777] mb-1 block">Chest (in)</label>
-                                    <input type="number" value={customMeasurements.chest} onChange={(e) => handleCustomChange('chest', e.target.value)} className="w-full p-2 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm" placeholder="32" />
+                                    <input type="number" value={customMeasurements.chest} onChange={(e) => handleCustomChange('chest', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="32" />
                                 </div>
                                 <div>
                                     <label className="text-xs text-[#777] mb-1 block">Waist (in)</label>
-                                    <input type="number" value={customMeasurements.waist} onChange={(e) => handleCustomChange('waist', e.target.value)} className="w-full p-2 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm" placeholder="28" />
+                                    <input type="number" value={customMeasurements.waist} onChange={(e) => handleCustomChange('waist', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="28" />
                                 </div>
                                 <div>
                                     <label className="text-xs text-[#777] mb-1 block">Hips (in)</label>
-                                    <input type="number" value={customMeasurements.hips} onChange={(e) => handleCustomChange('hips', e.target.value)} className="w-full p-2 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm" placeholder="36" />
+                                    <input type="number" value={customMeasurements.hips} onChange={(e) => handleCustomChange('hips', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="36" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Length (in)</label>
-                                    <input type="number" value={customMeasurements.length} onChange={(e) => handleCustomChange('length', e.target.value)} className="w-full p-2 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm" placeholder="40" />
+                                    <label className="text-xs text-[#777] mb-1 block">Shoulder (in)</label>
+                                    <input type="number" value={customMeasurements.shoulder} onChange={(e) => handleCustomChange('shoulder', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="14" />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Sleeve Length (in)</label>
+                                    <input type="number" value={customMeasurements.sleeveLength} onChange={(e) => handleCustomChange('sleeveLength', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="5" />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Arm Hole (in)</label>
+                                    <input type="number" value={customMeasurements.armHole} onChange={(e) => handleCustomChange('armHole', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="16" />
                                 </div>
                             </div>
+
+                            <h3 className="font-medium text-[#1C1C1C] text-sm pt-2 border-t border-gray-100">Neck & Fit</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Front Neck Depth (in)</label>
+                                    <input type="number" value={customMeasurements.frontNeckDepth} onChange={(e) => handleCustomChange('frontNeckDepth', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="7" />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Back Neck Depth (in)</label>
+                                    <input type="number" value={customMeasurements.backNeckDepth} onChange={(e) => handleCustomChange('backNeckDepth', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="8" />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Full Length (in)</label>
+                                    <input type="number" value={customMeasurements.length} onChange={(e) => handleCustomChange('length', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="40" />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#777] mb-1 block">Inseam (Bottoms) (in)</label>
+                                    <input type="number" value={customMeasurements.inseam} onChange={(e) => handleCustomChange('inseam', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="30" />
+                                </div>
+                            </div>
+
                             <div>
-                                <label className="text-xs text-[#777] mb-1 block">Notes</label>
-                                <textarea value={customMeasurements.notes} onChange={(e) => handleCustomChange('notes', e.target.value)} rows={3} className="w-full p-2 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm" placeholder="Any specific requirements..." />
+                                <label className="text-xs text-[#777] mb-1 block">Notes / Special Instructions</label>
+                                <textarea value={customMeasurements.notes} onChange={(e) => handleCustomChange('notes', e.target.value)} rows={3} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="Any specific requirements regarding fit, buttons, lining etc..." />
                             </div>
                         </div>
                     )}

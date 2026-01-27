@@ -63,12 +63,28 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                 {/* --- MOBILE LAYOUT (Vertical Scroll) --- */}
                 <div className="flex-1 overflow-y-auto sm:hidden flex flex-col bg-white">
                     {/* Image Stack - Horizontal Snap Carousel */}
-                    <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar bg-white">
-                        {views.map((view) => (
-                            <div key={view.id} className="min-w-full snap-center">
-                                <ZoomableImage view={view} designCategory={design.category} />
-                            </div>
-                        ))}
+                    {/* Image Stack - Horizontal Snap Carousel */}
+                    {/* Wrapper for Carousel + Dots to ensure positioning context */}
+                    <div className="relative w-full">
+                        {/* Image Stack - Horizontal Snap Carousel */}
+                        <div
+                            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar bg-white relative"
+                            onScroll={(e) => {
+                                const scrollLeft = e.currentTarget.scrollLeft;
+                                const width = e.currentTarget.offsetWidth;
+                                const index = Math.round(scrollLeft / width);
+                                if (index !== activeView) {
+                                    setActiveView(index);
+                                }
+                            }}
+                        >
+                            {views.map((view) => (
+                                <div key={view.id} className="min-w-full snap-center relative">
+                                    <ZoomableImage view={view} designCategory={design.category} />
+                                </div>
+                            ))}
+                        </div>
+
                     </div>
                 </div>
 
@@ -110,6 +126,18 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
 
                 {/* Mobile Info Section */}
                 <div className="sm:hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg p-6 pb-24 z-20">
+                    {/* Mobile Pagination Dots (Floating above card) */}
+                    <div className="absolute -top-10 left-0 right-0 flex justify-center gap-2 z-30 pointer-events-none">
+                        {views.map((view) => (
+                            <div
+                                key={view.id}
+                                className={`h-2 rounded-full transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.3)] ${activeView === view.id
+                                    ? 'bg-[#C9A14A] w-6'
+                                    : 'bg-white/90 backdrop-blur-md w-2'
+                                    }`}
+                            />
+                        ))}
+                    </div>
                     <div className="mb-4">
                         <div className="flex justify-between items-start">
                             <div>

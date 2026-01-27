@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, MapPin, Edit2, Trash2, Check, ArrowLeft, Loader2, Home, Briefcase } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 
 // --- Types ---
 interface Address {
@@ -27,7 +29,7 @@ const validatePincode = (pincode: string) => /^\d{6}$/.test(pincode);
 
 export default function SavedAddresses() {
     const router = useRouter();
-    const { isAuthenticated, protectAction } = useAuth();
+    const { isAuthenticated, protectAction, user } = useAuth();
 
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
@@ -70,21 +72,28 @@ export default function SavedAddresses() {
 
     // --- Fetch Addresses ---
     const fetchAddresses = async () => {
-        if (!isAuthenticated) return;
+        if (!isAuthenticated || !user) return;
         try {
-            const { supabase } = await import('../lib/supabaseClient');
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            const addressesRef = collection(db, 'users', user.id, 'addresses');
+            // Basic query, sort in memory for simplicity or add index later
+            const snapshot = await getDocs(addressesRef);
 
-            const { data, error } = await supabase
-                .from('addresses')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('is_default', { ascending: false })
-                .order('created_at', { ascending: false });
+            const fetchedAddresses: Address[] = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                fetchedAddresses.push({
+                    id: doc.id,
+                    ...data
+                } as Address);
+            });
 
-            if (error) throw error;
-            setAddresses(data || []);
+            // Sort: default first, then created_at desc (if we had created_at), or just by name/id
+            fetchedAddresses.sort((a, b) => {
+                if (a.is_default === b.is_default) return 0;
+                return a.is_default ? -1 : 1;
+            });
+
+            setAddresses(fetchedAddresses);
         } catch (err) {
             console.error("Error fetching addresses", err);
         } finally {
@@ -95,11 +104,10 @@ export default function SavedAddresses() {
     useEffect(() => {
         if (isAuthenticated) {
             fetchAddresses();
-        } else if (!loading) { // If finished initial load check and still not auth
-            // redirect handled by protectAction usually or just show empty/login prompt
+        } else if (!loading) {
             setLoading(false);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user]);
 
 
     // --- Handlers ---
@@ -117,11 +125,10 @@ export default function SavedAddresses() {
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this address?")) return;
+        if (!user) return;
 
         try {
-            const { supabase } = await import('../lib/supabaseClient');
-            const { error } = await supabase.from('addresses').delete().eq('id', id);
-            if (error) throw error;
+            await deleteDoc(doc(db, 'users', user.id, 'addresses', id));
             setAddresses(prev => prev.filter(a => a.id !== id));
         } catch (err) {
             console.error("Delete failed", err);
@@ -145,39 +152,36 @@ export default function SavedAddresses() {
         setSubmitting(true);
         protectAction(async () => {
             try {
-                const { supabase } = await import('../lib/supabaseClient');
-                const { data: { user } } = await supabase.auth.getUser();
                 if (!user) throw new Error("No user");
 
-                // If setting as default, unset others first (handled by DB trigger usually, but manual here for safety)
+                const addressesRef = collection(db, 'users', user.id, 'addresses');
+
+                // If setting as default, unset others first
                 if (formData.is_default) {
-                    await supabase
-                        .from('addresses')
-                        .update({ is_default: false })
-                        .eq('user_id', user.id);
+                    const batch = writeBatch(db);
+                    const snapshot = await getDocs(addressesRef);
+                    snapshot.forEach((docSnap) => {
+                        if (docSnap.data().is_default && docSnap.id !== editingAddress?.id) {
+                            batch.update(docSnap.ref, { is_default: false });
+                        }
+                    });
+                    await batch.commit();
                 }
 
                 const payload = {
                     ...formData,
-                    user_id: user.id,
-                    address_type: formData.address_type // Ensure type matches constraint
+                    address_type: formData.address_type,
+                    updated_at: new Date().toISOString()
                 };
 
-                let error;
                 if (editingAddress) {
-                    const { error: updateError } = await supabase
-                        .from('addresses')
-                        .update(payload)
-                        .eq('id', editingAddress.id);
-                    error = updateError;
+                    await updateDoc(doc(db, 'users', user.id, 'addresses', editingAddress.id), payload);
                 } else {
-                    const { error: insertError } = await supabase
-                        .from('addresses')
-                        .insert(payload);
-                    error = insertError;
+                    await addDoc(addressesRef, {
+                        ...payload,
+                        created_at: new Date().toISOString()
+                    });
                 }
-
-                if (error) throw error;
 
                 await fetchAddresses();
                 resetForm();

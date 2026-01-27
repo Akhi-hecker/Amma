@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { ArrowLeft, User, Smartphone, Camera, Save } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { db, auth } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
 
 export default function EditProfilePage() {
     const router = useRouter();
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated, isLoading } = useAuth(); // We might want a refreshUser function in AuthContext
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,44 +33,29 @@ export default function EditProfilePage() {
 
         setIsSubmitting(true);
         try {
-            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            const currentUser = auth.currentUser;
             if (!currentUser) throw new Error('No authenticated user found');
 
-            const updates = {
-                id: currentUser.id,
-                full_name: name,
-                phone: phone,
-                updated_at: new Date().toISOString(),
-            };
-
-            const { error } = await supabase
-                .from('user_profiles')
-                .upsert(updates);
-
-            if (error) throw error;
-
-            // VERIFICATION: Read back the data to ensure it was saved (guards against silent RLS failures)
-            const { data: verifyData } = await supabase
-                .from('user_profiles')
-                .select('full_name, phone')
-                .eq('id', currentUser.id)
-                .single();
-
-            if (verifyData?.full_name !== name || verifyData?.phone !== phone) {
-                console.warn("Verification failed - RLS might be blocking updates", verifyData);
-                // We could throw here, but let's try to proceed to see if it was just eventual consistency?
-                // Actually, if RLS blocks update, error usually occurs. 
-                // If RLS allows update but policies are weird, this read might show old data.
+            // 1. Update Firebase Auth Profile (Display Name)
+            if (name !== currentUser.displayName) {
+                await updateProfile(currentUser, {
+                    displayName: name
+                });
             }
 
-            // Optional: Sync auth metadata (REMOVED per strict data rules)
-            // await supabase.auth.updateUser({
-            //     data: { full_name: name, phone: phone }
-            // });
+            // 2. Update Firestore User Document
+            const userRef = doc(db, 'users', currentUser.uid);
+            await setDoc(userRef, {
+                full_name: name,
+                phone: phone,
+                updated_at: new Date().toISOString()
+            }, { merge: true });
 
             alert("Profile updated successfully.");
 
-            // Redirect back to profile and force sync
+            // Force reload to sync Context (which fetches from Firestore on init)
+            // Ideally we'd have a setUser/updateUser in context exposed to avoid reload
+            // But this is safe for now.
             window.location.href = '/profile';
 
         } catch (error: any) {

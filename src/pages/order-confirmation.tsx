@@ -85,11 +85,13 @@ export default function OrderConfirmationPage() {
                     <div className="p-5 border-b border-[#E8E6E0] grid grid-cols-2 gap-y-4">
                         <div>
                             <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Order ID</p>
-                            <p className="text-sm font-medium text-[#1C1C1C]">{MOCK_ORDER.id}</p>
+                            <p className="text-sm font-medium text-[#1C1C1C]">{router.query.orderId || MOCK_ORDER.id}</p>
                         </div>
                         <div className="text-right">
                             <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Date</p>
-                            <p className="text-sm font-medium text-[#1C1C1C]">{MOCK_ORDER.date}</p>
+                            <p className="text-sm font-medium text-[#1C1C1C]">
+                                {router.query.orderId ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : MOCK_ORDER.date}
+                            </p>
                         </div>
                         <div>
                             <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Total Amount</p>

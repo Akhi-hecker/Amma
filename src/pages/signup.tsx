@@ -4,7 +4,9 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Check, MessageSquare, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { auth, db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function SignupPage() {
     const router = useRouter();
@@ -44,26 +46,21 @@ export default function SignupPage() {
         setIsSubmitting(true);
 
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.fullName,
-                        phone: formData.mobile,
-                    }
-                }
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const user = userCredential.user;
+
+            // Update Auth Profile
+            await updateProfile(user, {
+                displayName: formData.fullName
             });
 
-            if (error) {
-                alert(error.message);
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Note: AuthContext will pick up the new user session if auto-confirmed (dev),
-            // or we might need to tell user to check email.
-            // For now assuming direct login or session creation.
+            // Create User Document in Firestore
+            await setDoc(doc(db, 'users', user.uid), {
+                full_name: formData.fullName,
+                phone: formData.mobile,
+                email: formData.email,
+                created_at: new Date().toISOString()
+            });
 
             // Redirect check
             const returnPath = sessionStorage.getItem('auth_return_path');
@@ -74,22 +71,31 @@ export default function SignupPage() {
                 router.push('/profile');
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Signup failed", err);
-            alert("An unexpected error occurred");
+            let msg = "An unexpected error occurred";
+            if (err.code === 'auth/email-already-in-use') msg = "Email already in use.";
+            if (err.code === 'auth/weak-password') msg = "Password is too weak.";
+            alert(msg);
             setIsSubmitting(false);
         }
     };
 
     const handleGoogleSignup = async () => {
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: 'https://amma-indol.vercel.app',
-                }
-            });
-            if (error) throw error;
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            // AuthContext listener will handle the rest (creating profile if missing)
+            // But good to manually ensure redirects here if needed
+
+            const returnPath = sessionStorage.getItem('auth_return_path');
+            if (returnPath) {
+                sessionStorage.removeItem('auth_return_path');
+                router.push(returnPath);
+            } else {
+                router.push('/profile');
+            }
+
         } catch (error: any) {
             console.error("Google signup error:", error);
             alert(error.message || "Failed to sign up with Google");

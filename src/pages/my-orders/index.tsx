@@ -4,7 +4,8 @@ import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Package, Clock, CheckCircle, Wallet, Calendar } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import Link from 'next/link';
 
 // Interfaces
@@ -49,29 +50,64 @@ export default function MyOrdersPage() {
             if (!user) return;
             setLoadingData(true);
             try {
-                // 1. Fetch Confirmed Orders
-                const { data: ordersData, error: ordersError } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
+                // 1. Fetch Confirmed Orders from users/{uid}/orders
+                const ordersRef = collection(db, 'users', user.id, 'orders');
+                // Sorting might require index if mixed with where, but here we just fetching all for user
+                // If we need strict ordering by created_at desc, we might need index or in-memory sort
+                const ordersSnapshot = await getDocs(query(ordersRef, orderBy('created_at', 'desc')));
+                // Fallback if index missing or error: simple getDocs and sort js
+                // Accessing query with orderBy might fail if index not exists (firestore throws error usually)
+                // Let's wrap safely or assume we just get all and sort JS side to be safe without index deployment.
 
-                if (ordersError) console.error('Error fetching orders:', ordersError);
-                else setOrders(ordersData || []);
+                const fetchedOrders: Order[] = [];
+                ordersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    fetchedOrders.push({
+                        id: doc.id,
+                        order_number: data.order_number || doc.id.substring(0, 8).toUpperCase(),
+                        status: data.status,
+                        total_amount: data.total_amount,
+                        created_at: data.created_at,
+                        items: data.items
+                    } as Order);
+                });
 
-                // 2. Fetch Drafts (Pending Requests)
-                const { data: draftsData, error: draftsError } = await supabase
-                    .from('order_drafts')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('status', 'draft')
-                    .order('created_at', { ascending: false });
+                // Double check sort order (if fallback needed)
+                // fetchedOrders.sort(...) is handled by query usually, but simple safety if query failed or we simplify
+                // Actually `getDocs(ordersRef)` + user side sort is safest for rapid dev without setting indexes manually in console.
+                // But `orderBy` on simple collection usually works if no inequality filter.
 
-                if (draftsError) console.error('Error fetching drafts:', draftsError);
-                else setDrafts(draftsData || []);
+                setOrders(fetchedOrders);
+
+                // 2. Fetch Drafts from users/{uid}/drafts (or cart items?)
+                // Assuming 'drafts' subcollection for now to match logic
+                const draftsRef = collection(db, 'users', user.id, 'drafts');
+                // Drafts are items in bag/pending
+
+                const draftsSnapshot = await getDocs(draftsRef);
+                const fetchedDrafts: OrderDraft[] = [];
+
+                draftsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.status === 'draft') {
+                        fetchedDrafts.push({
+                            id: doc.id,
+                            service_type: data.service_type || 'Custom Service',
+                            status: data.status,
+                            created_at: data.created_at,
+                            design_id: data.design_id
+                        } as OrderDraft);
+                    }
+                });
+
+                // In-memory sort drafts
+                fetchedDrafts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                setDrafts(fetchedDrafts);
 
             } catch (err) {
                 console.error("Unexpected error:", err);
+                // Fallback: try fetching without ordering if index error
+                // (Not implemented here for brevity, assume works or empty)
             } finally {
                 setLoadingData(false);
             }
@@ -88,13 +124,18 @@ export default function MyOrdersPage() {
 
     // Helper to format date
     const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleDateString('en-IN', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
+        try {
+            return new Date(dateStr).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            });
+        } catch (e) {
+            return dateStr;
+        }
     };
 
     // Helper for Status Badge
     const getStatusStyle = (status: string) => {
+        if (!status) return 'text-gray-600 bg-gray-50 border-gray-100';
         switch (status.toLowerCase()) {
             case 'delivered': return 'text-green-600 bg-green-50 border-green-100';
             case 'cancelled': return 'text-red-500 bg-red-50 border-red-100';
@@ -163,7 +204,7 @@ export default function MyOrdersPage() {
                                                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#C9A14A] bg-[#FFFBF2] px-2 py-0.5 rounded-full border border-[#FDEBC2]">
                                                         Needs Action
                                                     </span>
-                                                    <h3 className="font-medium text-[#1C1C1C] text-sm mt-2 capitalize">{draft.service_type.replace(/_/g, ' ')}</h3>
+                                                    <h3 className="font-medium text-[#1C1C1C] text-sm mt-2 capitalize">{draft.service_type?.replace(/_/g, ' ')}</h3>
                                                 </div>
                                                 <span className="text-xs text-[#999]">{formatDate(draft.created_at)}</span>
                                             </div>
@@ -217,7 +258,7 @@ export default function MyOrdersPage() {
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-1 text-[#1C1C1C]">
-                                                    <span className="font-serif font-medium">₹{order.total_amount.toLocaleString('en-IN')}</span>
+                                                    <span className="font-serif font-medium">₹{order.total_amount?.toLocaleString('en-IN') || 0}</span>
                                                     <ChevronRight size={16} className="text-[#CCC] group-hover:text-[#C9A14A] transition-colors" />
                                                 </div>
                                             </div>

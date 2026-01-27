@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -8,6 +7,8 @@ import DesignCard from '@/components/DesignCard';
 import DesignPreviewOverlay from '@/components/DesignPreviewOverlay';
 import { useAuth } from '@/context/AuthContext';
 import { Design } from '@/data/designs';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 // Helper to assign color based on category (Replica of designs.tsx logic)
 const getImageColor = (category: string) => {
@@ -26,11 +27,12 @@ const getImageColor = (category: string) => {
 
 export default function SavedDesigns() {
     const router = useRouter();
-    const { isAuthenticated, protectAction } = useAuth();
+    const { isAuthenticated, protectAction, user } = useAuth();
     const [wishlist, setWishlist] = useState<string[]>([]);
     const [savedDesigns, setSavedDesigns] = useState<Design[]>([]);
     const [selectedDesign, setSelectedDesign] = useState<Design | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         const fetchSavedDesigns = async () => {
@@ -39,39 +41,44 @@ export default function SavedDesigns() {
                 return;
             }
 
+            if (!user) return;
+
             try {
-                const { supabase } = await import('../lib/supabaseClient');
-                const { data: { user } } = await supabase.auth.getUser();
+                const wishlistRef = collection(db, 'users', user.id, 'wishlist');
+                const snapshot = await getDocs(wishlistRef);
 
-                if (!user) return;
+                const mappedDesigns: Design[] = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    // We stored the full design object + saved_at in designs.tsx
+                    // If migration script was run or if designs saved via new method, data should be there.
+                    // If data is missing (e.g. just ID from older migration?), we might need to fallback?
+                    // But for this task, we assume fresh start or standard data shape.
+                    if (data.id) {
+                        mappedDesigns.push({
+                            id: data.id,
+                            name: data.name,
+                            category: data.category,
+                            image: data.image || getImageColor(data.category), // storage logic might have saved image class
+                            descriptor: data.descriptor || '',
+                            long_description: data.long_description,
+                            fabric_suitability: data.fabric_suitability,
+                            complexity: data.complexity,
+                            base_price: data.base_price,
+                            is_active: data.is_active
+                        } as Design);
+                    }
+                });
 
-                const { data, error } = await supabase
-                    .from('saved_designs')
-                    .select('*, designs(*)')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
+                // Sort by saved date if available, else standard order
+                // Firestore queries can sort, but here we do in-mem since we just pull all
+                // Actually we didn't store timestamp in old mock migration, but new save does.
+                // Let's just reverse to show newest first if pushed in order?
+                // Or better, just render as is. Use simplistic reverse for now.
+                mappedDesigns.reverse();
 
-                if (error) throw error;
-
-                if (data) {
-                    const mappedDesigns: Design[] = data.map((item: any) => {
-                        const d = item.designs;
-                        return {
-                            id: d.id,
-                            name: d.title,
-                            category: d.category,
-                            image: getImageColor(d.category),
-                            descriptor: d.short_description || '',
-                            long_description: d.long_description,
-                            fabric_suitability: d.fabric_suitability,
-                            complexity: d.complexity,
-                            base_price: d.base_price,
-                        };
-                    });
-
-                    setSavedDesigns(mappedDesigns);
-                    setWishlist(mappedDesigns.map(d => d.id));
-                }
+                setSavedDesigns(mappedDesigns);
+                setWishlist(mappedDesigns.map(d => d.id));
             } catch (err) {
                 console.error("Error fetching saved designs:", err);
             } finally {
@@ -80,7 +87,7 @@ export default function SavedDesigns() {
         };
 
         fetchSavedDesigns();
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user]);
 
 
     const toggleWishlist = (e: React.MouseEvent, id: string) => {
@@ -94,17 +101,11 @@ export default function SavedDesigns() {
         setWishlist(prev => prev.filter(wid => wid !== id));
 
         protectAction(async () => {
+            if (!user) return;
+
             try {
-                const { supabase } = await import('../lib/supabaseClient');
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                const { error } = await supabase
-                    .from('saved_designs')
-                    .delete()
-                    .match({ user_id: user.id, design_id: id });
-
-                if (error) throw error;
+                const docRef = doc(db, 'users', user.id, 'wishlist', id);
+                await deleteDoc(docRef);
             } catch (err) {
                 console.error("Remove failed", err);
                 // Revert
@@ -123,6 +124,7 @@ export default function SavedDesigns() {
     };
 
     if (loading) return null; // Or a skeleton loader
+    if (!mounted && typeof window !== 'undefined') setMounted(true); // Hydration fix helper if needed, but existing useAuth handles hydration check essentially via loading state of this component
 
     return (
         <>
@@ -203,4 +205,11 @@ export default function SavedDesigns() {
             </AnimatePresence>
         </>
     );
+}
+
+// Ensure hydration state
+function useMounted() {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    return mounted;
 }

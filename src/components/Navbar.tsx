@@ -1,48 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ShoppingBag, Search, User, Heart } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Menu, X, ShoppingBag, User, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [bagCount, setBagCount] = useState(0);
+    const router = useRouter();
+    const isHomePage = router.pathname === '/';
 
-    // Update bag count from local storage
-    const updateBagCount = () => {
-        const bag = localStorage.getItem('amma_bag');
-        if (bag) {
-            try {
-                const items = JSON.parse(bag);
-                // Count total quantity, not just unique items
-                const count = items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
-                setBagCount(count);
-            } catch (e) {
-                console.error("Failed to parse bag", e);
-                setBagCount(0);
-            }
-        } else {
-            setBagCount(0);
-        }
-    };
-
-    // Listen for storage/bag updates
+    // Listen for Firestore updates
     useEffect(() => {
-        updateBagCount();
+        if (!user) {
+            setBagCount(0);
+            return;
+        }
 
-        const handleBagUpdate = () => updateBagCount();
+        const draftsRef = collection(db, 'users', user.id, 'drafts');
+        const q = query(draftsRef, where('status', '==', 'draft'));
 
-        window.addEventListener('bagUpdated', handleBagUpdate);
-        window.addEventListener('storage', handleBagUpdate); // For cross-tab sync
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setBagCount(snapshot.size);
+        });
 
-        return () => {
-            window.removeEventListener('bagUpdated', handleBagUpdate);
-            window.removeEventListener('storage', handleBagUpdate);
-        };
-    }, []);
+        return () => unsubscribe();
+    }, [user]);
 
     // Handle scroll effect
     useEffect(() => {
@@ -64,8 +53,8 @@ const Navbar = () => {
 
     const navLinks = [
         { href: '/designs', label: 'Designs' },
-        { href: '/service-selection', label: 'Custom Embroidery' },
-        { href: '/designs', label: 'Ready-Made' },
+        { href: '/contact', label: 'Custom Embroidery' },
+        { href: '/ready-made', label: 'Ready-Made' },
         { href: '/about', label: 'Our Story' },
         { href: '/contact', label: 'Contact' },
     ];
@@ -95,7 +84,10 @@ const Navbar = () => {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="text-sm font-medium text-primary hover:text-white transition-colors uppercase tracking-wider"
+                                className={cn(
+                                    "text-sm font-bold text-[#C9A14A] transition-colors uppercase tracking-[0.1em]",
+                                    (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                                )}
                             >
                                 {link.label}
                             </Link>
@@ -104,22 +96,28 @@ const Navbar = () => {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4 md:space-x-6 relative z-50">
-                        <button className="text-primary hover:text-white transition-colors hidden md:block">
-                            <Search size={20} strokeWidth={1.5} />
-                        </button>
                         {isAuthenticated && (
-                            <Link href="/saved-designs" className="text-primary hover:text-white transition-colors hidden md:block" title="Saved Designs">
+                            <Link href="/saved-designs" className={cn(
+                                "text-[#C9A14A] transition-colors hidden md:block",
+                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                            )} title="Saved Designs">
                                 <Heart size={20} strokeWidth={1.5} />
                             </Link>
                         )}
                         <Link
                             href={isAuthenticated ? "/profile" : "/login"}
-                            className="text-primary hover:text-white transition-colors hidden md:block"
+                            className={cn(
+                                "text-[#C9A14A] transition-colors hidden md:block",
+                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                            )}
                             title={isAuthenticated ? "My Account" : "Login"}
                         >
                             <User size={20} strokeWidth={1.5} />
                         </Link>
-                        <Link href="/shopping-bag" className="text-primary hover:text-white transition-colors relative group">
+                        <Link href="/shopping-bag" className={cn(
+                            "text-[#C9A14A] transition-colors relative group",
+                            (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                        )}>
                             <ShoppingBag size={20} strokeWidth={1.5} />
                             <AnimatePresence>
                                 {bagCount > 0 && (
@@ -195,10 +193,6 @@ const Navbar = () => {
                                         <span>Saved Designs</span>
                                     </Link>
                                 )}
-                                <Link href="/search" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-lg font-medium text-text-main/70">
-                                    <Search size={20} />
-                                    <span>Search</span>
-                                </Link>
                             </motion.div>
                         </div>
                     </motion.div>

@@ -15,4 +15,8 @@ export interface Design {
 
 // NOTE: Hardcoded DESIGNS array has been removed.
 // Data is now fetched from Supabase 'designs' table.
+// Data is now fetched from Firebase 'designs' collection.
 export const DESIGNS: Design[] = [];
+
+export const EXAMPLE_DESIGNS: Design[] = [];
+

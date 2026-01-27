@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Trash2, Edit2, ShoppingBag, ChevronRight, X } from 'lucide-react';
 
 // --- Types ---
@@ -20,6 +23,7 @@ interface BagItem {
         length?: number;
         sizeType?: 'standard' | 'custom';
         sizeValue?: string;
+        sizeDisplay?: string;
     };
     designId: string;
     price: number;
@@ -27,80 +31,151 @@ interface BagItem {
 }
 
 // --- Mock Data ---
-const MOCK_BAG_ITEMS: BagItem[] = [
-    {
-        id: 'item-1',
-        designName: 'Royal Peacock Motif',
-        designImage: 'bg-red-900',
-        serviceType: 'Embroidery Cloth Only',
-        selections: {
-            fabric: 'Raw Silk',
-            fabricId: 'raw-silk',
-            color: 'Crimson Red',
-            colorId: 'crimson',
-            colorHex: '#DC143C',
-            length: 2.5
-        },
-        price: 3250,
-        designId: 'design-1',
-        quantity: 1
-    },
-    {
-        id: 'item-2',
-        designName: 'Golden Lotus Border',
-        designImage: 'bg-yellow-700',
-        serviceType: 'Embroidery Cloth Only',
-        selections: {
-            fabric: 'Cotton Silk',
-            fabricId: 'cotton-silk',
-            color: 'Midnight Blue',
-            colorId: 'midnight',
-            colorHex: '#191970',
-            length: 1.5
-        },
-        price: 1800,
-        designId: 'design-2',
-        quantity: 1
-    }
-];
 
 export default function ShoppingBagPage() {
     const router = useRouter();
+    const { user, isAuthenticated } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [bagItems, setBagItems] = useState<BagItem[]>([]);
     const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
     useEffect(() => {
         setMounted(true);
-        // Load bag items from localStorage
-        const savedBag = localStorage.getItem('amma_bag');
-        if (savedBag) {
-            try {
-                setBagItems(JSON.parse(savedBag));
-            } catch (e) {
-                console.error("Failed to parse bag items", e);
-                setBagItems([]);
-            }
-        }
-    }, []);
+        if (!user) return;
 
-    const updateBag = (newItems: BagItem[]) => {
-        setBagItems(newItems);
-        localStorage.setItem('amma_bag', JSON.stringify(newItems));
-        window.dispatchEvent(new Event('bagUpdated'));
+        const draftsRef = collection(db, 'users', user.id, 'drafts');
+        const q = query(draftsRef, where('status', '==', 'draft'));
+
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
+            const items: BagItem[] = [];
+
+            // We need to fetch details for each draft (Design, Fabric, Color)
+            // Ideally we'd use a robust data fetching strategy (Promise.all)
+            const draftPromises = snapshot.docs.map(async (draftDoc) => {
+                const data = draftDoc.data();
+
+                // Defaults
+                let designName = 'Unknown Design';
+                let designImage = 'bg-gray-100';
+                let fabricName = 'Unknown Fabric';
+                let colorName = 'Unknown Color';
+                let colorHex = '#ccc';
+
+                // Fetch Design
+                if (data.design_id) {
+                    const designSnap = await getDoc(doc(db, 'designs', data.design_id));
+                    if (designSnap.exists()) {
+                        const d = designSnap.data();
+                        designName = d.name || d.title;
+
+                        // Handle image logic same as elsewhere
+                        if (d.category === 'Floral') designImage = 'bg-rose-100';
+                        else if (d.category === 'Traditional') designImage = 'bg-amber-100';
+                        else designImage = 'bg-slate-100';
+                        if (d.image) designImage = d.image;
+                    }
+                }
+
+                // Fetch Fabric & Color (Logic Differentiated by Service)
+                if (data.service_type === 'send_your_fabric') {
+                    if (data.fabric_details) {
+                        fabricName = data.fabric_details.fabric_type || 'Custom Fabric';
+                        colorName = data.fabric_details.color || 'Custom Color';
+                        // Keep hex default or maybe set to neutral
+                    }
+                } else {
+                    // Standard Store Fabric Logic
+                    if (data.fabric_id) {
+                        const fabricSnap = await getDoc(doc(db, 'fabrics', data.fabric_id));
+                        if (fabricSnap.exists()) fabricName = fabricSnap.data().name;
+                    }
+                    if (data.color_id) {
+                        const colorSnap = await getDoc(doc(db, 'fabric_colors', data.color_id));
+                        if (colorSnap.exists()) {
+                            const c = colorSnap.data();
+                            colorName = c.name;
+                            colorHex = c.hex_code || '#ccc';
+                        }
+                    }
+                }
+
+                // Determine Service Type Label
+                let serviceTypeLabel = 'Embroidery Cloth Only';
+                if (data.service_type === 'embroidery_stitching') serviceTypeLabel = 'Custom Stitching';
+                else if (data.service_type === 'send_your_fabric') {
+                    serviceTypeLabel = 'Send Your Fabric';
+                    // Append sub-type
+                    if (data.fabric_details?.processing_type === 'embroidery_stitching') {
+                        serviceTypeLabel += ' (With Stitching)';
+                    } else {
+                        serviceTypeLabel += ' (Embroidery Only)';
+                    }
+                }
+
+                // Fetch Size Info
+                // Fetch Size Info
+                // Fetch Size Info
+                let sizeDisplay = '';
+
+                // Check if standard stitching OR send your fabric with stitching
+                let targetSizeId = null;
+
+                if (data.service_type === 'embroidery_stitching') {
+                    targetSizeId = data.standard_size_id;
+                    if (data.custom_measurements) sizeDisplay = 'Custom Size';
+                } else if (data.service_type === 'send_your_fabric') {
+                    if (data.fabric_details?.standard_size_id) {
+                        targetSizeId = data.fabric_details.standard_size_id;
+                    } else if (data.fabric_details?.custom_measurements) {
+                        sizeDisplay = 'Custom Size';
+                    }
+                }
+
+                if (targetSizeId) {
+                    const sizeSnap = await getDoc(doc(db, 'standard_sizes', targetSizeId));
+                    if (sizeSnap.exists()) {
+                        sizeDisplay = `Size: ${sizeSnap.data().label}`;
+                    }
+                }
+
+                // Construct Item
+                return {
+                    id: draftDoc.id,
+                    designName,
+                    designImage,
+                    serviceType: serviceTypeLabel,
+                    selections: {
+                        fabric: fabricName,
+                        fabricId: data.fabric_id,
+                        color: colorName,
+                        colorId: data.color_id,
+                        colorHex: colorHex,
+                        length: data.custom_measurements?.length || 1,
+                        sizeDisplay: sizeDisplay
+                    },
+                    designId: data.design_id,
+                    price: data.estimated_price || 0,
+                    quantity: data.quantity || 1
+                } as BagItem;
+            });
+
+            const resolvedItems = await Promise.all(draftPromises);
+            setBagItems(resolvedItems);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    const updateQuantity = async (id: string, newQuantity: number) => {
+        if (!user) return;
+        const itemRef = doc(db, 'users', user.id, 'drafts', id);
+        await updateDoc(itemRef, { quantity: newQuantity });
     };
 
-    const updateQuantity = (id: string, newQuantity: number) => {
-        const newItems = bagItems.map(item =>
-            item.id === id ? { ...item, quantity: newQuantity } : item
-        );
-        updateBag(newItems);
-    };
-
-    const handleConfirmRemove = () => {
-        if (itemToRemove) {
-            const newItems = bagItems.filter(item => item.id !== itemToRemove);
-            updateBag(newItems);
+    const handleConfirmRemove = async () => {
+        if (itemToRemove && user) {
+            // Remove from Firestore
+            await deleteDoc(doc(db, 'users', user.id, 'drafts', itemToRemove));
             setItemToRemove(null);
         }
     };
@@ -186,8 +261,12 @@ export default function ShoppingBagPage() {
                                                             <span className="w-2 h-2 rounded-full border border-black/10" style={{ backgroundColor: item.selections.colorHex }} />
                                                             {item.selections.color}
                                                         </span>
-                                                        <span className="text-[#E8E6E0]">•</span>
-                                                        <span>{item.selections.length}m</span>
+                                                        {item.selections.sizeDisplay && (
+                                                            <>
+                                                                <span className="text-[#E8E6E0]">•</span>
+                                                                <span className="font-medium text-[#1C1C1C]">{item.selections.sizeDisplay}</span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
 

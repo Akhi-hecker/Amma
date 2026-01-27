@@ -3,17 +3,19 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, ChevronRight, Ruler, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
+
 import { Design } from '@/data/designs';
 
-// --- Interfaces ---
+// Interfaces
 interface Fabric {
     id: string;
     name: string;
     description: string;
     price_per_meter: number;
-    note?: string; // mapping description to note
-    color?: string; // fallback or logic needed? We'll use a specific color mapping logic or default
+    color: string;
+    note?: string;
 }
 
 interface FabricColor {
@@ -21,13 +23,6 @@ interface FabricColor {
     name: string;
     hex_code: string;
 }
-
-interface FabricLength {
-    id: string;
-    label: string;
-    length_meters: number;
-}
-
 
 
 export default function EmbroideryClothOnlyPage() {
@@ -39,22 +34,21 @@ export default function EmbroideryClothOnlyPage() {
     const [selectedDesign, setSelectedDesign] = useState<Design | null>(null);
     const [fabrics, setFabrics] = useState<Fabric[]>([]);
     const [colors, setColors] = useState<FabricColor[]>([]);
-    const [lengths, setLengths] = useState<FabricLength[]>([]);
 
-    // Selection state
+
+    // Selection State
     const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
-    const [lengthMode, setLengthMode] = useState<'preset' | 'custom'>('preset');
-    const [selectedLength, setSelectedLength] = useState<number | null>(null); // Stores length value for preset
-    const [customLength, setCustomLength] = useState<string>('');
 
-    // Derived state
+    // Derived
     const currentFabric = fabrics.find(f => f.id === selectedFabric);
     const currentColor = colors.find(c => c.id === selectedColor);
 
-    // Fetch Data
     useEffect(() => {
         setMounted(true);
+    }, []);
+
+    useEffect(() => {
         if (!router.isReady) return;
 
         async function fetchData() {
@@ -64,82 +58,72 @@ export default function EmbroideryClothOnlyPage() {
 
                 // 1. Fetch Design
                 if (designId) {
-                    const { data: designData } = await supabase
-                        .from('designs')
-                        .select('*')
-                        .eq('id', designId)
-                        .single();
+                    const docRef = doc(db, 'designs', designId as string);
+                    const docSnap = await getDoc(docRef);
 
-                    if (designData) {
+                    if (docSnap.exists()) {
+                        const designData = docSnap.data();
                         // Minimal Mapping for UI
                         let imageColor = 'bg-gray-50';
-                        // Simple mapping for visual placeholder
                         if (designData.category === 'Floral') imageColor = 'bg-rose-100';
                         else if (designData.category === 'Traditional') imageColor = 'bg-amber-100';
                         else imageColor = 'bg-slate-100';
 
                         const mappedDesign: Design = {
-                            id: designData.id,
-                            name: designData.title,
+                            id: docSnap.id,
+                            name: designData.name || designData.title, // Handle naming diffs
                             category: designData.category,
-                            image: imageColor,
-                            descriptor: designData.short_description || '',
+                            image: designData.image || imageColor,
+                            descriptor: designData.short_description || designData.descriptor || '',
                             long_description: designData.long_description,
                             fabric_suitability: designData.fabric_suitability,
                             complexity: designData.complexity,
                             base_price: Number(designData.base_price) || 1200,
-                        };
+                            is_active: designData.is_active
+                        } as Design;
                         setSelectedDesign(mappedDesign);
                     }
                 }
 
                 // 2. Fetch Fabrics
-                const { data: fabricData } = await supabase
-                    .from('fabrics')
-                    .select('*')
-                    .eq('is_active', true);
+                const fabricsRef = collection(db, 'fabrics');
+                // const qFabrics = query(fabricsRef, where('is_active', '==', true)); // Verify index exists or simplify
+                const fabricSnap = await getDocs(fabricsRef); // Fetch all and filter if needed or assume active
 
-                if (fabricData) {
-                    setFabrics(fabricData.map(f => ({
-                        id: f.id,
-                        name: f.name,
-                        description: f.description,
-                        // Ensure it's a number
-                        price_per_meter: Number(f.price_per_meter) || 0,
-                        note: f.description,
-                        // Visual placeholder logic
-                        color: f.name.toLowerCase().includes('silk') ? '#D8C8B0' : '#F0EAD6'
-                    })));
-                }
+                const fetchedFabrics: Fabric[] = [];
+                fabricSnap.forEach(doc => {
+                    const d = doc.data();
+                    if (d.is_active !== false) { // defaulting to true if missing
+                        fetchedFabrics.push({
+                            id: doc.id,
+                            name: d.name,
+                            description: d.description,
+                            price_per_meter: Number(d.price_per_meter) || 0,
+                            note: d.description,
+                            color: d.name.toLowerCase().includes('silk') ? '#D8C8B0' : '#F0EAD6'
+                        });
+                    }
+                });
+                setFabrics(fetchedFabrics);
+
 
                 // 3. Fetch Colors
-                const { data: colorData } = await supabase
-                    .from('fabric_colors')
-                    .select('*')
-                    .eq('is_active', true);
+                const colorsRef = collection(db, 'fabric_colors');
+                const colorSnap = await getDocs(colorsRef);
+                const fetchedColors: FabricColor[] = [];
+                colorSnap.forEach(doc => {
+                    const d = doc.data();
+                    if (d.is_active !== false) {
+                        fetchedColors.push({
+                            id: doc.id,
+                            name: d.name,
+                            hex_code: d.hex_code || '#CCCCCC'
+                        });
+                    }
+                });
+                setColors(fetchedColors);
 
-                if (colorData) {
-                    setColors(colorData.map(c => ({
-                        id: c.id,
-                        name: c.name,
-                        hex_code: c.hex_code || '#CCCCCC'
-                    })));
-                }
-
-                // 4. Fetch Lengths
-                const { data: lengthData } = await supabase
-                    .from('fabric_lengths')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('length_meters', { ascending: true });
-
-                if (lengthData) {
-                    setLengths(lengthData.map(l => ({
-                        id: l.id,
-                        label: l.label,
-                        length_meters: Number(l.length_meters)
-                    })));
-                }
+                // 4. Fetch Lengths - Removed as per requirement
 
             } catch (error) {
                 console.error("Error fetching customization data:", error);
@@ -155,26 +139,14 @@ export default function EmbroideryClothOnlyPage() {
     // Initialization from Query Params
     useEffect(() => {
         if (!mounted || isLoading) return;
-        const { fabricId, colorId, length } = router.query;
+        const { fabricId, colorId } = router.query;
         if (fabricId) setSelectedFabric(fabricId as string);
         if (colorId) setSelectedColor(colorId as string);
-        if (length) {
-            const l = parseFloat(length as string);
-            // Check if matches preset
-            const preset = lengths.find(p => p.length_meters === l);
-            if (preset) {
-                setLengthMode('preset');
-                setSelectedLength(l);
-            } else {
-                setLengthMode('custom');
-                setCustomLength(length as string);
-            }
-        }
-    }, [mounted, isLoading, router.query, lengths]);
+    }, [mounted, isLoading, router.query]);
 
     // Logic
-    const currentLengthVal = lengthMode === 'preset' ? selectedLength : parseFloat(customLength);
-    const validLength = currentLengthVal && currentLengthVal > 0 ? currentLengthVal : 0;
+    // Default length to 1 meter as feature is removed
+    const validLength = 1;
 
     // Price Calculation
     // Total = Design Base Price + (Fabric Price Per Meter * Length)
@@ -184,23 +156,10 @@ export default function EmbroideryClothOnlyPage() {
 
     const isStep1Complete = !!selectedFabric;
     const isStep2Complete = !!selectedColor;
-    const isStep3Complete = validLength > 0;
-    const canContinue = isStep1Complete && isStep2Complete && isStep3Complete;
+    const canContinue = isStep1Complete && isStep2Complete;
 
     const handleFabricSelect = (id: string) => setSelectedFabric(id);
     const handleColorSelect = (id: string) => setSelectedColor(id);
-    const handleLengthPreset = (val: number) => {
-        setLengthMode('preset');
-        setSelectedLength(val);
-    };
-    const handleCustomLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setLengthMode('custom');
-        const val = e.target.value;
-        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-            setCustomLength(val);
-            setSelectedLength(null);
-        }
-    };
 
     // --- Animation Variants ---
     const fadeInUp = {
@@ -223,9 +182,6 @@ export default function EmbroideryClothOnlyPage() {
         if (!canContinue) return;
 
         // Find ID for preset length if applicable
-        const selectedLengthObj = lengths.find(l => l.length_meters === selectedLength);
-        const lengthId = lengthMode === 'preset' ? selectedLengthObj?.id : undefined;
-
         router.push({
             pathname: '/order-summary-embroidery',
             query: {
@@ -233,7 +189,6 @@ export default function EmbroideryClothOnlyPage() {
                 fabricId: selectedFabric,
                 colorId: selectedColor,
                 length: validLength,
-                lengthId: lengthId, // Pass the ID
                 editId: router.query.editId
             }
         });
@@ -385,75 +340,6 @@ export default function EmbroideryClothOnlyPage() {
                     </div>
                 </motion.section>
 
-                {/* Step 3: Select Length */}
-                <motion.section
-                    variants={staggerContainer}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className={!isStep2Complete ? 'opacity-50 pointer-events-none filter grayscale' : ''}
-                >
-                    <div className="mb-4">
-                        <div className="flex items-baseline justify-between mb-1">
-                            <h2 className="font-serif text-xl">Select Length</h2>
-                            {isStep3Complete && <Check size={16} className="text-[#C9A14A]" />}
-                        </div>
-                        <p className="text-sm text-[#5A5751]">Length in meters</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3 mb-4">
-                        {lengths.length === 0 ? (
-                            <p className="text-sm text-gray-400 w-full text-center py-4">No length presets available.</p>
-                        ) : lengths.map((preset) => (
-                            <motion.button
-                                key={preset.id}
-                                variants={fadeInUp}
-                                whileTap={{ scale: 0.96 }}
-                                onClick={() => handleLengthPreset(preset.length_meters)}
-                                className={`
-                                    px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200
-                                    ${lengthMode === 'preset' && selectedLength === preset.length_meters
-                                        ? 'bg-[#1C1C1C] text-white border-[#1C1C1C] shadow-lg'
-                                        : 'bg-white text-[#5A5751] border-gray-200 hover:border-[#C9A14A]'}
-                                `}
-                            >
-                                {preset.label}
-                            </motion.button>
-                        ))}
-                    </div>
-
-                    {/* Custom Length Input */}
-                    <motion.div variants={fadeInUp} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${lengthMode === 'custom' ? 'bg-[#F9F7F3] text-[#C9A14A]' : 'text-gray-400'}`}>
-                                <Ruler size={20} />
-                            </div>
-                            <div className="flex-1">
-                                <label className="text-xs text-[#777] mb-1 block">Custom Length (meters)</label>
-                                <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    placeholder="e.g. 3.5"
-                                    value={customLength}
-                                    onChange={handleCustomLengthChange}
-                                    onFocus={() => {
-                                        setLengthMode('custom');
-                                        setSelectedLength(null);
-                                    }}
-                                    className={`
-                                        w-full text-lg font-medium outline-none bg-transparent placeholder-gray-300
-                                        ${lengthMode === 'custom' ? 'text-[#1C1C1C]' : 'text-gray-400'}
-                                    `}
-                                />
-                            </div>
-                            {lengthMode === 'custom' && (
-                                <div className="text-sm font-medium text-[#C9A14A]">
-                                    Selected
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-                </motion.section>
 
             </div>
 
