@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, ShoppingBag, User, Heart, ChevronLeft } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, Heart, ChevronLeft, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 
+// Admin emails - same list as in CMS page
+const ADMIN_EMAILS = [
+    'kallabharath2004@gmail.com',
+    'akhil2209.yt@gmail.com'
+];
+
 const Navbar = () => {
     const { user, isAuthenticated } = useAuth();
+    const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [bagCount, setBagCount] = useState(0);
@@ -129,6 +136,15 @@ const Navbar = () => {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4 md:space-x-6 relative z-50 justify-end">
+                        {/* Admin CMS Link - only for admin emails */}
+                        {isAdmin && (
+                            <Link href="/admin/cms" className={cn(
+                                "text-[#C9A14A] transition-colors hidden md:block",
+                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                            )} title="CMS Admin">
+                                <Settings size={20} strokeWidth={1.5} />
+                            </Link>
+                        )}
                         <Link href="/saved-designs" className={cn(
                             "text-[#C9A14A] transition-colors hidden md:block",
                             (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
@@ -222,6 +238,12 @@ const Navbar = () => {
                                     <Heart size={20} />
                                     <span>Saved Designs</span>
                                 </Link>
+                                {isAdmin && (
+                                    <Link href="/admin/cms" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-lg font-medium text-amber-600">
+                                        <Settings size={20} />
+                                        <span>CMS Admin</span>
+                                    </Link>
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>

@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { Instrument_Serif, Inter, Montserrat } from 'next/font/google';
+import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
 import { AuthProvider } from '@/context/AuthContext';
 import { useGuestMigration } from '@/hooks/useGuestMigration';
@@ -24,9 +25,12 @@ const montserrat = Montserrat({
 
 const AppContent = ({ Component, pageProps }: any) => {
     useGuestMigration();
+    const router = useRouter();
+    const isAdminRoute = router.pathname.startsWith('/admin');
+
     return (
         <main className={`${instrumentSerif.variable} ${inter.variable} ${montserrat.variable} font-sans`}>
-            <Navbar />
+            {!isAdminRoute && <Navbar />}
             <Component {...pageProps} />
         </main>
     );

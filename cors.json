@@ -1,0 +1,17 @@
+[
+    {
+        "origin": [
+            "http://localhost:3000",
+            "https://amma-website-e4a41.web.app",
+            "https://amma-website-e4a41.firebaseapp.com"
+        ],
+        "method": [
+            "GET",
+            "POST",
+            "DELETE",
+            "PUT",
+            "HEAD"
+        ],
+        "maxAgeSeconds": 3600
+    }
+]
