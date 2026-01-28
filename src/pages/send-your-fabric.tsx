@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Truck, Check, Package, MapPin, Plus, Loader2, FileText, ChevronRight, Ruler, Palette, Sparkles } from 'lucide-react';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, query, where, orderBy, writeBatch } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -316,7 +317,15 @@ export default function SendYourFabricPage() {
         <div className="min-h-screen bg-[#F9F7F3] font-sans text-[#1C1C1C] pb-32 pt-[64px] md:pt-[72px]">
             <Head><title>Send Your Fabric | Amma Embroidery</title></Head>
 
-            <div className="max-w-md mx-auto px-4 pt-4 space-y-8">
+            <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                <CheckoutBreadcrumbs
+                    currentStep="customize"
+                    designId={designId as string}
+                    serviceType="send_fabric"
+                />
+            </div>
+
+            <div className="max-w-md mx-auto px-4 space-y-8">
 
                 {/* Header */}
                 <motion.div

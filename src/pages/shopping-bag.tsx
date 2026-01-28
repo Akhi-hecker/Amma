@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, doc, getDoc, deleteDoc, updateDoc, addDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Trash2, Edit2, ShoppingBag, ChevronRight, X } from 'lucide-react';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 // --- Types ---
 interface BagItem {
@@ -13,6 +14,7 @@ interface BagItem {
     designName: string;
     designImage: string;
     serviceType: string;
+    rawServiceType: string; // Added for routing
     selections: {
         garment?: string;
         fabric: string;
@@ -24,12 +26,21 @@ interface BagItem {
         sizeType?: 'standard' | 'custom';
         sizeValue?: string;
         sizeDisplay?: string;
+        // Stitching
+        garmentId?: string;
+        standardSizeId?: string;
+        customMeasurements?: any;
     };
     designId: string;
     price: number;
     quantity: number;
     _isGuest?: boolean;
 }
+
+// ... (skipping to handleEdit replacement, need to ensure I don't break the component structure. Better to do multi-replace or careful chunking)
+// Wait, I cannot define BagItem inside the component if it's outside. It is outside.
+// I will split this into multiple calls or one large call if the file is small enough.
+// The file is 500 lines. I will use replace_file_content for specific blocks.
 
 export default function ShoppingBagPage() {
     const router = useRouter();
@@ -134,6 +145,7 @@ export default function ShoppingBagPage() {
                         designName,
                         designImage,
                         serviceType: serviceTypeLabel,
+                        rawServiceType: data.service_type,
                         selections: {
                             fabric: fabricName,
                             fabricId: data.fabric_id,
@@ -141,7 +153,10 @@ export default function ShoppingBagPage() {
                             colorId: data.color_id,
                             colorHex: colorHex,
                             length: data.custom_measurements?.length || data.quantity, // fallback
-                            sizeDisplay
+                            sizeDisplay,
+                            garmentId: data.garment_type_id,
+                            standardSizeId: data.standard_size_id,
+                            customMeasurements: data.custom_measurements
                         },
                         designId: data.design_id,
                         price: data.estimated_price || 0,
@@ -176,6 +191,7 @@ export default function ShoppingBagPage() {
                                     designName: details.designName || 'Custom Design',
                                     designImage: details.designImage || 'bg-gray-100',
                                     serviceType: serviceTypeLabel,
+                                    rawServiceType: item.service_type,
                                     selections: {
                                         fabric: details.fabricName || 'Selected Fabric',
                                         fabricId: item.fabric_id,
@@ -183,7 +199,10 @@ export default function ShoppingBagPage() {
                                         colorId: item.color_id,
                                         colorHex: details.colorHex || '#ccc',
                                         length: details.length || 1,
-                                        sizeDisplay: details.size
+                                        sizeDisplay: details.size,
+                                        garmentId: item.garment_type_id,
+                                        standardSizeId: item.standard_size_id,
+                                        customMeasurements: item.custom_measurements
                                     },
                                     designId: item.design_id,
                                     price: item.estimated_price || 0,
@@ -253,16 +272,34 @@ export default function ShoppingBagPage() {
     const handleEdit = (id: string) => {
         const item = bagItems.find(i => i.id === id);
         if (item) {
-            router.push({
-                pathname: '/embroidery-cloth-only', // Note: This might need dynamic routing based on service type
-                query: {
-                    designId: item.designId,
-                    fabricId: item.selections.fabricId,
-                    colorId: item.selections.colorId,
-                    length: item.selections.length?.toString(),
-                    editId: item.id
-                }
-            });
+            let pathname = '/embroidery-garment-selection';
+            if (item.rawServiceType === 'cloth_only') pathname = '/embroidery-cloth-only';
+            else if (item.rawServiceType === 'send_your_fabric') pathname = '/send-your-fabric';
+
+            const query: any = {
+                designId: item.designId,
+                fabricId: item.selections.fabricId,
+                colorId: item.selections.colorId,
+                editId: item.id
+            };
+
+            if (item.selections.length) query.length = item.selections.length;
+            if (item.selections.garmentId) query.garmentId = item.selections.garmentId;
+            if (item.selections.standardSizeId) {
+                query.sizeMode = 'standard';
+                query.standardSizeId = item.selections.standardSizeId;
+            }
+            if (item.selections.customMeasurements) {
+                // Only set sizeMode if not standard
+                if (!query.standardSizeId) query.sizeMode = 'custom';
+
+                // Flatten custom measurements
+                Object.entries(item.selections.customMeasurements).forEach(([k, v]) => {
+                    query[`custom_${k}`] = v;
+                });
+            }
+
+            router.push({ pathname, query });
         }
     };
 
@@ -285,149 +322,154 @@ export default function ShoppingBagPage() {
                 <title>Shopping Bag | Amma Embroidery</title>
             </Head>
 
-            {/* --- Sticky Top Bar --- */}
-            <header className="sticky top-0 left-0 right-0 bg-[#F9F7F3]/90 backdrop-blur-md z-40 h-[60px] flex items-center px-4 border-b border-[#E8E6E0] pt-[env(safe-area-inset-top)]">
-                <h1 className="flex-1 text-center text-lg font-serif text-[#1C1C1C]">
-                    Shopping Bag
-                </h1>
-            </header>
-
             {/* --- Main Content --- */}
-            <main className="px-4 py-6 pb-40 space-y-6 max-w-lg mx-auto">
-                <AnimatePresence mode='popLayout'>
-                    {bagItems.length > 0 ? (
-                        <>
-                            {/* --- Bag Items List --- */}
-                            <div className="space-y-4">
-                                {bagItems.map((item) => (
-                                    <motion.div
-                                        key={item.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="bg-white rounded-xl p-3 shadow-sm border border-[#E8E6E0] relative overflow-hidden"
-                                    >
-                                        <div className="flex gap-3">
-                                            {/* Thumbnail */}
-                                            <div className="w-20 h-24 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
-                                                <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
-                                                <div className="absolute inset-0 flex items-center justify-center text-[#999] text-[10px]">
-                                                    IMG
-                                                </div>
-                                            </div>
+            <main className="min-h-screen pb-40">
+                <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                    <CheckoutBreadcrumbs currentStep="bag" />
+                </div>
 
-                                            {/* Details */}
-                                            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                                                <div>
-                                                    <h3 className="font-serif text-[15px] text-[#1C1C1C] leading-snug truncate">
-                                                        {item.designName}
-                                                    </h3>
-                                                    <p className="text-[11px] text-[#777] uppercase tracking-wide mb-1">
-                                                        {item.serviceType}
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-2 text-xs text-[#5A5751]">
-                                                        <span>{item.selections.fabric}</span>
-                                                        <span className="text-[#E8E6E0]">•</span>
-                                                        <span className="flex items-center gap-1">
-                                                            <span className="w-2 h-2 rounded-full border border-black/10" style={{ backgroundColor: item.selections.colorHex }} />
-                                                            {item.selections.color}
+                <div className="px-4 space-y-6 max-w-lg mx-auto">
+
+                    <div className="text-center mb-8">
+                        <h1 className="font-serif text-3xl text-[#1C1C1C]">Shopping Bag</h1>
+                    </div>
+                    <AnimatePresence mode='popLayout'>
+                        {bagItems.length > 0 ? (
+                            <>
+                                {/* --- Bag Items List --- */}
+                                <div className="space-y-4">
+                                    {bagItems.map((item) => (
+                                        <motion.div
+                                            key={item.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="bg-white rounded-xl p-3 shadow-sm border border-[#E8E6E0] relative overflow-hidden"
+                                        >
+                                            <div className="flex gap-3">
+                                                {/* Thumbnail */}
+                                                <div className="w-20 h-24 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
+                                                    <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
+                                                    <div className="absolute inset-0 flex items-center justify-center text-[#999] text-[10px]">
+                                                        IMG
+                                                    </div>
+                                                </div>
+
+                                                {/* Details */}
+                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                                                    <div>
+                                                        <h3 className="font-serif text-[15px] text-[#1C1C1C] leading-snug truncate">
+                                                            {item.designName}
+                                                        </h3>
+                                                        <p className="text-[11px] text-[#777] uppercase tracking-wide mb-1">
+                                                            {item.serviceType}
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2 text-xs text-[#5A5751]">
+                                                            <span>{item.selections.fabric}</span>
+                                                            <span className="text-[#E8E6E0]">•</span>
+                                                            <span className="flex items-center gap-1">
+                                                                <span className="w-2 h-2 rounded-full border border-black/10" style={{ backgroundColor: item.selections.colorHex }} />
+                                                                {item.selections.color}
+                                                            </span>
+                                                            {item.selections.sizeDisplay && (
+                                                                <>
+                                                                    <span className="text-[#E8E6E0]">•</span>
+                                                                    <span className="font-medium text-[#1C1C1C]">
+                                                                        {item.selections.sizeDisplay.startsWith('Size:') ? item.selections.sizeDisplay : `Size: ${item.selections.sizeDisplay}`}
+                                                                    </span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-end mt-2">
+                                                        <span className="font-medium text-[#1C1C1C]">
+                                                            ₹{(item.price * item.quantity).toLocaleString()}
                                                         </span>
-                                                        {item.selections.sizeDisplay && (
-                                                            <>
-                                                                <span className="text-[#E8E6E0]">•</span>
-                                                                <span className="font-medium text-[#1C1C1C]">{item.selections.sizeDisplay}</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
 
-                                                <div className="flex justify-between items-end mt-2">
-                                                    <span className="font-medium text-[#1C1C1C]">
-                                                        ₹{(item.price * item.quantity).toLocaleString()}
-                                                    </span>
-
-                                                    {/* Actions Row (Mobile Friendly) */}
-                                                    <div className="flex items-center gap-3">
-                                                        <select
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                                                            className="text-xs font-medium bg-[#F9F7F3] border border-[#E8E6E0] rounded px-1.5 py-0.5 outline-none active:bg-white transition-colors"
-                                                        >
-                                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                                                                <option key={n} value={n}>{n}</option>
-                                                            ))}
-                                                        </select>
-                                                        <div className="w-px h-3 bg-[#E8E6E0]" />
-                                                        <button
-                                                            onClick={() => handleEdit(item.id)}
-                                                            className="text-xs font-medium text-[#C9A14A] active:text-[#B89240] py-1"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <div className="w-px h-3 bg-[#E8E6E0]" />
-                                                        <button
-                                                            onClick={() => setItemToRemove(item.id)}
-                                                            className="text-xs font-medium text-[#999] active:text-red-500 transition-colors py-1"
-                                                        >
-                                                            Remove
-                                                        </button>
+                                                        {/* Actions Row (Mobile Friendly) */}
+                                                        <div className="flex items-center gap-3">
+                                                            <select
+                                                                value={item.quantity}
+                                                                onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                                                                className="text-xs font-medium bg-[#F9F7F3] border border-[#E8E6E0] rounded px-1.5 py-0.5 outline-none active:bg-white transition-colors"
+                                                            >
+                                                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                                                                    <option key={n} value={n}>{n}</option>
+                                                                ))}
+                                                            </select>
+                                                            <div className="w-px h-3 bg-[#E8E6E0]" />
+                                                            <button
+                                                                onClick={() => handleEdit(item.id)}
+                                                                className="text-xs font-medium text-[#C9A14A] active:text-[#B89240] py-1"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <div className="w-px h-3 bg-[#E8E6E0]" />
+                                                            <button
+                                                                onClick={() => setItemToRemove(item.id)}
+                                                                className="text-xs font-medium text-[#999] active:text-red-500 transition-colors py-1"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-
-                            {/* --- Order Summary --- */}
-                            <div className="bg-white rounded-xl p-5 border border-[#E8E6E0]">
-                                <h3 className="font-serif text-lg text-[#1C1C1C] mb-4">Order Summary</h3>
-                                <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between text-[#5A5751]">
-                                        <span>Subtotal ({bagItems.length} items)</span>
-                                        <span>₹{subtotal.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between text-[#5A5751]">
-                                        <span>Est. Delivery</span>
-                                        <span className="text-[#1C1C1C]">5-7 Days</span>
-                                    </div>
-                                    <div className="h-px bg-[#E8E6E0] my-2" />
-                                    <div className="flex justify-between items-end">
-                                        <span className="font-medium text-[#1C1C1C]">Total</span>
-                                        <span className="font-serif text-xl text-[#C9A14A] font-medium">
-                                            ₹{total.toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <p className="text-[10px] text-[#999] mt-2">
-                                        Tax included. Shipping calculated at checkout.
-                                    </p>
+                                        </motion.div>
+                                    ))}
                                 </div>
-                            </div>
-                        </>
-                    ) : (
-                        /* --- Empty State --- */
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex flex-col items-center justify-center py-20 text-center"
-                        >
-                            <div className="w-16 h-16 bg-[#F0EEE6] rounded-full flex items-center justify-center mb-4 text-[#C9A14A]">
-                                <ShoppingBag size={28} strokeWidth={1.5} />
-                            </div>
-                            <h2 className="font-serif text-xl text-[#1C1C1C] mb-2">Your bag is empty</h2>
-                            <p className="text-sm text-[#777] mb-8 max-w-[200px]">
-                                Looks like you haven't added any beautiful embroidery yet.
-                            </p>
-                            <button
-                                onClick={() => router.push('/designs')}
-                                className="px-8 py-3 bg-[#C9A14A] text-white rounded-full font-medium shadow-lg shadow-[#C9A14A]/20 active:scale-95 transition-transform"
+
+                                {/* --- Order Summary --- */}
+                                <div className="bg-white rounded-xl p-5 border border-[#E8E6E0]">
+                                    <h3 className="font-serif text-lg text-[#1C1C1C] mb-4">Order Summary</h3>
+                                    <div className="space-y-3 text-sm">
+                                        <div className="flex justify-between text-[#5A5751]">
+                                            <span>Subtotal ({bagItems.length} items)</span>
+                                            <span>₹{subtotal.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[#5A5751]">
+                                            <span>Est. Delivery</span>
+                                            <span className="text-[#1C1C1C]">5-7 Days</span>
+                                        </div>
+                                        <div className="h-px bg-[#E8E6E0] my-2" />
+                                        <div className="flex justify-between items-end">
+                                            <span className="font-medium text-[#1C1C1C]">Total</span>
+                                            <span className="font-serif text-xl text-[#C9A14A] font-medium">
+                                                ₹{total.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] text-[#999] mt-2">
+                                            Tax included. Shipping calculated at checkout.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            /* --- Empty State --- */
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex flex-col items-center justify-center py-20 text-center"
                             >
-                                Browse Designs
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                <div className="w-16 h-16 bg-[#F0EEE6] rounded-full flex items-center justify-center mb-4 text-[#C9A14A]">
+                                    <ShoppingBag size={28} strokeWidth={1.5} />
+                                </div>
+                                <h2 className="font-serif text-xl text-[#1C1C1C] mb-2">Your bag is empty</h2>
+                                <p className="text-sm text-[#777] mb-8 max-w-[200px]">
+                                    Looks like you haven't added any beautiful embroidery yet.
+                                </p>
+                                <button
+                                    onClick={() => router.push('/designs')}
+                                    className="px-8 py-3 bg-[#C9A14A] text-white rounded-full font-medium shadow-lg shadow-[#C9A14A]/20 active:scale-95 transition-transform"
+                                >
+                                    Browse Designs
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </main>
 
             {/* --- Sticky Bottom Bar (Only if items exist) --- */}

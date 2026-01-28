@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ArrowRight, Heart, Filter, Grid, Bookmark } from 'lucide-react';
 import DesignPreviewOverlay from '../components/DesignPreviewOverlay';
 import DesignCard from '../components/DesignCard';
+import CheckoutBreadcrumbs from '../components/CheckoutBreadcrumbs';
 import { useAuth } from '@/context/AuthContext';
 
 // --- Mock Data ---
@@ -278,6 +279,9 @@ export default function DesignsGallery() {
 
             <div className="min-h-screen bg-white pt-20 pb-24 px-2.5 sm:px-4 lg:px-8 font-sans">
                 <div className="max-w-7xl mx-auto">
+                    <div className="flex justify-center mb-6">
+                        <CheckoutBreadcrumbs currentStep="designs" />
+                    </div>
 
                     {/* Header */}
                     <motion.div

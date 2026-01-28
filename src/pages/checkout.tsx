@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronDown, Check, ShieldCheck, CreditCard, Wallet, Building2 } from 'lucide-react';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 // --- Types (Mirrored from Shopping Bag) ---
 interface BagItem {
@@ -232,214 +233,217 @@ export default function CheckoutPage() {
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
             </Head>
 
-            {/* --- Local Header (Scrolls with page) --- */}
-            <header className="w-full bg-[#F9F7F3] h-[80px] flex items-center px-4 pt-4">
-                <h1 className="flex-1 text-center text-2xl font-serif text-[#1C1C1C]">
-                    Checkout
-                </h1>
-            </header>
+            <main className="min-h-screen pb-20">
+                <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                    <CheckoutBreadcrumbs currentStep="checkout" />
+                </div>
 
-            <main className="max-w-md mx-auto px-4 py-6 space-y-8">
+                <div className="max-w-md mx-auto px-4 space-y-8">
 
-                {/* --- Section 1: Delivery Details --- */}
-                <section>
-                    <h2 className="font-serif text-xl text-[#1C1C1C] mb-6 flex items-center gap-2">
-                        Delivery Details
-                    </h2>
-                    <div className="space-y-4">
-                        <Input
-                            label="Full Name"
-                            name="fullName"
-                            value={formData.fullName}
-                            onChange={handleInputChange}
-                            placeholder="e.g. Ananya Rao"
-                        />
-                        <Input
-                            label="Mobile Number"
-                            name="mobile"
-                            type="tel"
-                            inputMode="numeric"
-                            value={formData.mobile}
-                            onChange={handleInputChange}
-                            placeholder="10-digit number"
-                        />
-                        <Input
-                            label="Email (Optional)"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            placeholder="Updates on order status"
-                        />
+                    <div className="text-center mb-8">
+                        <h1 className="font-serif text-3xl text-[#1C1C1C]">Checkout</h1>
+                    </div>
 
-                        <div className="pt-2"></div>
-
-                        <Input
-                            label="Address Line 1"
-                            name="addressLine1"
-                            value={formData.addressLine1}
-                            onChange={handleInputChange}
-                            placeholder="Flat, House no., Building"
-                        />
-                        <Input
-                            label="Address Line 2 (Optional)"
-                            name="addressLine2"
-                            value={formData.addressLine2}
-                            onChange={handleInputChange}
-                            placeholder="Area, Colony, Street"
-                        />
-
-                        <div className="flex gap-4">
+                    {/* --- Section 1: Delivery Details --- */}
+                    <section>
+                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-6 flex items-center gap-2">
+                            Delivery Details
+                        </h2>
+                        <div className="space-y-4">
                             <Input
-                                label="City"
-                                name="city"
-                                value={formData.city}
+                                label="Full Name"
+                                name="fullName"
+                                value={formData.fullName}
                                 onChange={handleInputChange}
-                                containerClassName="flex-1"
+                                placeholder="e.g. Ananya Rao"
                             />
                             <Input
-                                label="Pincode"
-                                name="pincode"
+                                label="Mobile Number"
+                                name="mobile"
                                 type="tel"
                                 inputMode="numeric"
-                                value={formData.pincode}
+                                value={formData.mobile}
                                 onChange={handleInputChange}
-                                containerClassName="w-32"
+                                placeholder="10-digit number"
+                            />
+                            <Input
+                                label="Email (Optional)"
+                                name="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                placeholder="Updates on order status"
+                            />
+
+                            <div className="pt-2"></div>
+
+                            <Input
+                                label="Address Line 1"
+                                name="addressLine1"
+                                value={formData.addressLine1}
+                                onChange={handleInputChange}
+                                placeholder="Flat, House no., Building"
+                            />
+                            <Input
+                                label="Address Line 2 (Optional)"
+                                name="addressLine2"
+                                value={formData.addressLine2}
+                                onChange={handleInputChange}
+                                placeholder="Area, Colony, Street"
+                            />
+
+                            <div className="flex gap-4">
+                                <Input
+                                    label="City"
+                                    name="city"
+                                    value={formData.city}
+                                    onChange={handleInputChange}
+                                    containerClassName="flex-1"
+                                />
+                                <Input
+                                    label="Pincode"
+                                    name="pincode"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    value={formData.pincode}
+                                    onChange={handleInputChange}
+                                    containerClassName="w-32"
+                                />
+                            </div>
+                            <Input
+                                label="State"
+                                name="state"
+                                value={formData.state}
+                                onChange={handleInputChange}
                             />
                         </div>
-                        <Input
-                            label="State"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                </section>
+                    </section>
 
-                {/* --- Section 2: Order Summary (Collapsible) --- */}
-                <section className="bg-white rounded-xl border border-[#E8E6E0] overflow-hidden shadow-sm">
-                    <button
-                        onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                        className="w-full flex items-center justify-between p-5 bg-white active:bg-gray-50 transition-colors"
-                    >
-                        <div className="flex flex-col items-start text-left">
-                            <span className="font-serif text-lg text-[#1C1C1C]">Order Summary</span>
-                            <span className="text-xs text-[#777] mt-0.5">{bagItems.length} Items • ₹{total.toLocaleString()}</span>
-                        </div>
-                        <div className={`transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : ''}`}>
-                            <ChevronDown size={20} className="text-[#999]" />
-                        </div>
-                    </button>
+                    {/* --- Section 2: Order Summary (Collapsible) --- */}
+                    <section className="bg-white rounded-xl border border-[#E8E6E0] overflow-hidden shadow-sm">
+                        <button
+                            onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                            className="w-full flex items-center justify-between p-5 bg-white active:bg-gray-50 transition-colors"
+                        >
+                            <div className="flex flex-col items-start text-left">
+                                <span className="font-serif text-lg text-[#1C1C1C]">Order Summary</span>
+                                <span className="text-xs text-[#777] mt-0.5">{bagItems.length} Items • ₹{total.toLocaleString()}</span>
+                            </div>
+                            <div className={`transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : ''}`}>
+                                <ChevronDown size={20} className="text-[#999]" />
+                            </div>
+                        </button>
 
-                    <AnimatePresence>
-                        {isSummaryExpanded && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            >
-                                <div className="px-5 pb-5 pt-0 border-t border-[#E8E6E0]">
-                                    <div className="space-y-4 pt-4">
-                                        {bagItems.map((item) => (
-                                            <div key={item.id} className="flex gap-3 py-2 border-b border-dashed border-[#E8E6E0] last:border-0">
-                                                <div className="w-14 h-16 bg-gray-100 rounded-md flex-shrink-0 relative overflow-hidden">
-                                                    <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start">
-                                                        <h4 className="font-serif text-sm text-[#1C1C1C] truncate pr-2">{item.designName}</h4>
-                                                        <span className="text-sm font-medium text-[#1C1C1C]">₹{(item.price * item.quantity).toLocaleString()}</span>
+                        <AnimatePresence>
+                            {isSummaryExpanded && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                >
+                                    <div className="px-5 pb-5 pt-0 border-t border-[#E8E6E0]">
+                                        <div className="space-y-4 pt-4">
+                                            {bagItems.map((item) => (
+                                                <div key={item.id} className="flex gap-3 py-2 border-b border-dashed border-[#E8E6E0] last:border-0">
+                                                    <div className="w-14 h-16 bg-gray-100 rounded-md flex-shrink-0 relative overflow-hidden">
+                                                        <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
                                                     </div>
-                                                    <p className="text-[11px] text-[#777] uppercase tracking-wide mt-0.5">{item.serviceType}</p>
-                                                    <p className="text-xs text-[#5A5751] mt-1">
-                                                        {item.selections.fabric}, {item.selections.color}, {item.selections.length}m
-                                                    </p>
-                                                    {item.quantity > 1 && (
-                                                        <p className="text-xs text-[#999] mt-0.5">Qty: {item.quantity}</p>
-                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start">
+                                                            <h4 className="font-serif text-sm text-[#1C1C1C] truncate pr-2">{item.designName}</h4>
+                                                            <span className="text-sm font-medium text-[#1C1C1C]">₹{(item.price * item.quantity).toLocaleString()}</span>
+                                                        </div>
+                                                        <p className="text-[11px] text-[#777] uppercase tracking-wide mt-0.5">{item.serviceType}</p>
+                                                        <p className="text-xs text-[#5A5751] mt-1">
+                                                            {item.selections.fabric}, {item.selections.color}, {item.selections.length}m
+                                                        </p>
+                                                        {item.quantity > 1 && (
+                                                            <p className="text-xs text-[#999] mt-0.5">Qty: {item.quantity}</p>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="mt-4 pt-4 border-t border-[#E8E6E0] space-y-2">
+                                            <div className="flex justify-between text-sm text-[#5A5751]">
+                                                <span>Subtotal</span>
+                                                <span>₹{subtotal.toLocaleString()}</span>
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-4 pt-4 border-t border-[#E8E6E0] space-y-2">
-                                        <div className="flex justify-between text-sm text-[#5A5751]">
-                                            <span>Subtotal</span>
-                                            <span>₹{subtotal.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm text-[#5A5751]">
-                                            <span>Delivery</span>
-                                            <span className="text-green-600 font-medium">Free</span>
-                                        </div>
-                                        <div className="flex justify-between text-base font-medium text-[#1C1C1C] pt-2">
-                                            <span>Total</span>
-                                            <span>₹{total.toLocaleString()}</span>
+                                            <div className="flex justify-between text-sm text-[#5A5751]">
+                                                <span>Delivery</span>
+                                                <span className="text-green-600 font-medium">Free</span>
+                                            </div>
+                                            <div className="flex justify-between text-base font-medium text-[#1C1C1C] pt-2">
+                                                <span>Total</span>
+                                                <span>₹{total.toLocaleString()}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </section>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </section>
 
-                {/* --- Section 3: Payment Method --- */}
-                <section>
-                    <h2 className="font-serif text-xl text-[#1C1C1C] mb-4">
-                        Payment Method
-                    </h2>
-                    <div className="space-y-3">
-                        {PAYMENT_METHODS.map((method) => {
-                            const isSelected = paymentMethod === method.id;
-                            return (
-                                <div
-                                    key={method.id}
-                                    onClick={() => setPaymentMethod(method.id)}
-                                    className={`
+                    {/* --- Section 3: Payment Method --- */}
+                    <section>
+                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-4">
+                            Payment Method
+                        </h2>
+                        <div className="space-y-3">
+                            {PAYMENT_METHODS.map((method) => {
+                                const isSelected = paymentMethod === method.id;
+                                return (
+                                    <div
+                                        key={method.id}
+                                        onClick={() => setPaymentMethod(method.id)}
+                                        className={`
                                         relative rounded-xl p-4 border cursor-pointer transition-all duration-200
                                         ${isSelected
-                                            ? 'bg-white border-[#C9A14A] ring-1 ring-[#C9A14A] shadow-md shadow-[#C9A14A]/5'
-                                            : 'bg-white border-[#E8E6E0] hover:border-[#d4d1c9]'}
+                                                ? 'bg-white border-[#C9A14A] ring-1 ring-[#C9A14A] shadow-md shadow-[#C9A14A]/5'
+                                                : 'bg-white border-[#E8E6E0] hover:border-[#d4d1c9]'}
                                     `}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`
                                             w-5 h-5 rounded-full border flex items-center justify-center transition-colors
                                             ${isSelected ? 'border-[#C9A14A] bg-[#C9A14A]' : 'border-[#999] bg-transparent'}
                                         `}>
-                                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                                        </div>
+                                                {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                                            </div>
 
-                                        <div className={`
+                                            <div className={`
                                             w-10 h-10 rounded-full flex items-center justify-center
                                             ${isSelected ? 'bg-[#C9A14A]/10 text-[#C9A14A]' : 'bg-gray-100 text-[#777]'}
                                         `}>
-                                            {method.icon}
-                                        </div>
+                                                {method.icon}
+                                            </div>
 
-                                        <div>
-                                            <p className={`font-medium text-sm ${isSelected ? 'text-[#1C1C1C]' : 'text-[#5A5751]'}`}>
-                                                {method.title}
-                                            </p>
-                                            <p className="text-xs text-[#999] mt-0.5">
-                                                {method.subtitle}
-                                            </p>
+                                            <div>
+                                                <p className={`font-medium text-sm ${isSelected ? 'text-[#1C1C1C]' : 'text-[#5A5751]'}`}>
+                                                    {method.title}
+                                                </p>
+                                                <p className="text-xs text-[#999] mt-0.5">
+                                                    {method.subtitle}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
 
-                    {/* Trust Note */}
-                    <div className="flex items-center justify-center gap-2 mt-6 opacity-60">
-                        <ShieldCheck size={14} className="text-[#5A5751]" />
-                        <span className="text-[11px] text-[#5A5751] uppercase tracking-wide">
-                            Secure payments via trusted providers
-                        </span>
-                    </div>
-                </section>
+                        {/* Trust Note */}
+                        <div className="flex items-center justify-center gap-2 mt-6 opacity-60">
+                            <ShieldCheck size={14} className="text-[#5A5751]" />
+                            <span className="text-[11px] text-[#5A5751] uppercase tracking-wide">
+                                Secure payments via trusted providers
+                            </span>
+                        </div>
+                    </section>
 
+                </div>
             </main>
 
             {/* --- Sticky Place Order Bar --- */}

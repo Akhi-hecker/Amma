@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { motion, Variants } from 'framer-motion';
 import { Scissors, Shirt, Truck, Ruler, Sparkles, Star, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 export default function ServiceSelection() {
     const router = useRouter();
@@ -49,14 +50,20 @@ export default function ServiceSelection() {
             </Head>
 
             <div className="min-h-screen bg-[#F9F7F3] pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md mx-auto">
+                <div className="w-full max-w-7xl mx-auto mb-8 flex flex-col items-center">
+                    <div className="mb-6 w-full flex justify-center">
+                        <CheckoutBreadcrumbs
+                            currentStep="service"
+                            designId={designId as string}
+                        />
+                    </div>
 
                     {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="text-center mb-12"
+                        className="text-center mb-0"
                     >
                         <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">
                             Choose Your Service
@@ -68,6 +75,9 @@ export default function ServiceSelection() {
                             No rush. You can change this later.
                         </p>
                     </motion.div>
+                </div>
+
+                <div className="max-w-md mx-auto">
 
                     {/* Cards Container */}
                     <motion.div

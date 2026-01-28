@@ -3,9 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Loader2, MapPin, ChevronRight, Plus, Check } from 'lucide-react';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 import { Design } from '@/data/designs';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, addDoc, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, query, orderBy, where, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 // ...
@@ -34,6 +35,8 @@ export default function OrderSummaryEmbroideryPage() {
     const [selectedColor, setSelectedColor] = useState<any>(null);
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [garmentName, setGarmentName] = useState<string>('Custom Garment');
+    const [garmentBasePrice, setGarmentBasePrice] = useState<number>(0);
 
     // Modal State
     const [showAddressModal, setShowAddressModal] = useState(false);
@@ -54,21 +57,22 @@ export default function OrderSummaryEmbroideryPage() {
 
     // Cost Calcs (Simplified for reconstruction)
     const isStitching = router.query.garmentId;
-    const garmentName = "Custom Garment"; // Placeholder or fetch
+
     // Real logic would be more complex, fetching garment details etc.
     // Assuming variables are available in scope or need to be derived.
 
-    // RECONSTRUCTION NOTE: The original file had extensive logic for costs. 
-    // I need to ensure variables like 'garmentBasePrice', 'embroideryCost', 'fabricCost', 'stitchingCost', 'totalPrice' are defined.
-
     // Pricing Calculation
-    const garmentBasePrice = 0; // TODO: Fetch from garment selection if applicable
     const embroideryCost = selectedDesign?.base_price || 0;
     const fabricCost = selectedFabric ? (Number(selectedFabric.price_per_meter) * selectedLength) : 0;
     const stitchingCost = isStitching ? 1500 : 0; // standard stitching cost
     const totalPrice = garmentBasePrice + embroideryCost + fabricCost + stitchingCost;
 
-    const sizeDisplay = "Standard M"; // Placeholder
+    const [sizeLabel, setSizeLabel] = useState<string>('');
+
+    // Derived Display Logic
+    const sizeDisplay = sizeType === 'custom'
+        ? 'Custom Measurements'
+        : (sizeLabel || 'Standard Size');
 
     // ...
     useEffect(() => {
@@ -135,7 +139,29 @@ export default function OrderSummaryEmbroideryPage() {
                 }
             }
 
-            // 4. Fetch Addresses
+            // 4. Fetch Standard Size (if applicable)
+            const { standardSizeId } = router.query;
+            if (standardSizeId) {
+                const sizeRef = doc(db, 'standard_sizes', standardSizeId as string);
+                const sizeSnap = await getDoc(sizeRef);
+                if (sizeSnap.exists()) {
+                    setSizeLabel(sizeSnap.data().label);
+                }
+            }
+
+            // 5. Fetch Garment Details (if applicable)
+            const { garmentId } = router.query;
+            if (garmentId) {
+                const garmentRef = doc(db, 'garment_types', garmentId as string);
+                const garmentSnap = await getDoc(garmentRef);
+                if (garmentSnap.exists()) {
+                    const data = garmentSnap.data();
+                    setGarmentName(data.name);
+                    setGarmentBasePrice(Number(data.base_stitching_price) || 0);
+                }
+            }
+
+            // 6. Fetch Addresses
             if (auth.currentUser) {
                 const addrRef = collection(db, 'users', auth.currentUser.uid, 'addresses');
                 // Sorting requires index usually, stick to simple fetch
@@ -163,13 +189,13 @@ export default function OrderSummaryEmbroideryPage() {
     // ...
 
     const handleAddToBag = async () => {
-        const { lengthId } = router.query;
+        const { lengthId, editId } = router.query;
         setIsLoading(true);
 
         try {
             // Prepare Data
             const draftData = {
-                id: user ? undefined : `guest_${Date.now()}`,
+                id: editId ? (editId as string) : (user ? undefined : `guest_${Date.now()}`),
                 service_type: isStitching ? 'embroidery_stitching' : 'cloth_only',
                 design_id: selectedDesign?.id,
                 fabric_id: selectedFabric?.id,
@@ -179,7 +205,8 @@ export default function OrderSummaryEmbroideryPage() {
                 status: 'draft',
                 garment_type_id: isStitching ? (router.query.garmentId || null) : null,
                 fabric_length_id: !isStitching ? (lengthId || null) : null,
-                custom_measurements: !isStitching && !lengthId && sizeType === 'custom' ? { length: selectedLength } : null,
+                custom_measurements: !isStitching && !lengthId && sizeType === 'custom' ? { length: selectedLength } :
+                    (isStitching && sizeType === 'custom' && router.query.customMeasurements ? JSON.parse(router.query.customMeasurements as string) : null),
                 address_id: selectedAddressId || null,
                 created_at: new Date().toISOString(),
                 // Store minimal details for display in bag without refetching for guests
@@ -194,27 +221,50 @@ export default function OrderSummaryEmbroideryPage() {
                 }
             };
 
+            // Re-collect custom measurements from query if stitching custom
+            if (isStitching && sizeType === 'custom') {
+                const measurements: any = {};
+                Object.keys(router.query).forEach(k => {
+                    if (k.startsWith('custom_')) measurements[k.replace('custom_', '')] = router.query[k];
+                });
+                if (Object.keys(measurements).length > 0) {
+                    draftData.custom_measurements = measurements;
+                }
+            }
+
+
             if (user) {
                 const draftsRef = collection(db, 'users', user.uid, 'drafts');
-                // Remove _displayDetails before saving to Firestore to keep it clean (optional, but good practice)
                 const { _displayDetails, id, ...firestoreData } = draftData;
-                await addDoc(draftsRef, firestoreData);
+
+                if (editId) {
+                    // Update existing doc
+                    await updateDoc(doc(draftsRef, editId as string), firestoreData);
+                } else {
+                    // Create new
+                    await addDoc(draftsRef, firestoreData);
+                }
             } else {
                 // Guest Logic
                 const currentBag = JSON.parse(localStorage.getItem('amma_guest_bag') || '[]');
-                currentBag.push(draftData);
-                localStorage.setItem('amma_guest_bag', JSON.stringify(currentBag));
+                if (editId) {
+                    const updatedBag = currentBag.map((item: any) => item.id === editId ? draftData : item);
+                    localStorage.setItem('amma_guest_bag', JSON.stringify(updatedBag));
+                } else {
+                    currentBag.push(draftData);
+                    localStorage.setItem('amma_guest_bag', JSON.stringify(currentBag));
+                }
             }
 
             window.dispatchEvent(new Event('bagUpdated'));
 
             // Show Feedback
-            alert("Added to Bag!");
+            alert(editId ? "Bag Updated!" : "Added to Bag!");
             router.push('/shopping-bag');
 
         } catch (err) {
             console.error("Error adding to bag:", err);
-            alert("Failed to add to bag. Please try again.");
+            alert("Failed to process request. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -228,14 +278,26 @@ export default function OrderSummaryEmbroideryPage() {
                 <title>Order Summary | Amma Embroidery</title>
             </Head>
 
-            {/* --- Sticky Top Bar --- */}
-            <div className="sticky top-0 left-0 right-0 bg-[#F9F7F3]/90 backdrop-blur-md z-40 px-4 h-[60px] flex items-center justify-center border-b border-[#E8E6E0]">
-                <h1 className="font-serif text-lg text-[#1C1C1C]">
-                    Order Summary
-                </h1>
+            <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                <CheckoutBreadcrumbs
+                    currentStep="summary"
+                    designId={router.query.designId as string}
+                    serviceType={isStitching ? 'stitching' : 'cloth_only'}
+                    fabricId={router.query.fabricId as string}
+                    colorId={router.query.colorId as string}
+                    length={router.query.length as string}
+                    garmentId={router.query.garmentId as string}
+                    sizeMode={router.query.sizeMode as string}
+                    standardSizeId={router.query.standardSizeId as string}
+                    editId={router.query.editId as string}
+                />
             </div>
 
-            <div className="max-w-md mx-auto px-4 py-6 space-y-8">
+            <div className="max-w-md mx-auto px-4 pb-20 space-y-6">
+
+                <div className="text-center mb-8">
+                    <h1 className="font-serif text-3xl text-[#1C1C1C]">Order Summary</h1>
+                </div>
 
                 {/* --- Design Card --- */}
                 <motion.div
@@ -300,23 +362,25 @@ export default function OrderSummaryEmbroideryPage() {
                             <button onClick={() => handleEdit('color')} className="text-xs font-medium text-[#C9A14A] hover:text-[#B89240] py-1 px-2 -mr-2">Edit</button>
                         </div>
 
-                        {/* Size/Length Row */}
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-xs text-[#999] uppercase tracking-wide mb-1">
-                                    {isStitching ? 'Size' : 'Length'}
-                                </p>
-                                <p className="font-medium text-[#1C1C1C]">
-                                    {isStitching ? sizeDisplay : `${selectedLength} meters`}
-                                </p>
-                                {(sizeDetails && sizeType === 'custom') && (
-                                    <p className="text-[10px] text-[#777] mt-1 line-clamp-1">
-                                        {'Custom Fit'}
+                        {/* Size/Length Row - Only for Stitching as per request */}
+                        {isStitching && (
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-xs text-[#999] uppercase tracking-wide mb-1">
+                                        {'Size'}
                                     </p>
-                                )}
+                                    <p className="font-medium text-[#1C1C1C]">
+                                        {sizeDisplay}
+                                    </p>
+                                    {(sizeDetails && sizeType === 'custom') && (
+                                        <p className="text-[10px] text-[#777] mt-1 line-clamp-1">
+                                            {'Custom Fit'}
+                                        </p>
+                                    )}
+                                </div>
+                                <button onClick={() => handleEdit('size')} className="text-xs font-medium text-[#C9A14A] hover:text-[#B89240] py-1 px-2 -mr-2">Edit</button>
                             </div>
-                            <button onClick={() => handleEdit(isStitching ? 'size' : 'length')} className="text-xs font-medium text-[#C9A14A] hover:text-[#B89240] py-1 px-2 -mr-2">Edit</button>
-                        </div>
+                        )}
 
                         {/* Stitching Included */}
                         {isStitching && (

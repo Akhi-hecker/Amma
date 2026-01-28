@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 
 import { Design } from '@/data/designs';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 // Interfaces
 interface Fabric {
@@ -216,8 +217,17 @@ export default function EmbroideryClothOnlyPage() {
                 <title>Customize Fabric | Amma Embroidery</title>
             </Head>
 
+            {/* Breadcrumbs Container */}
+            <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                <CheckoutBreadcrumbs
+                    currentStep="customize"
+                    designId={router.query.designId as string}
+                    serviceType="cloth_only"
+                />
+            </div>
+
             {/* Main Content */}
-            <div className="max-w-md mx-auto px-4 py-8 space-y-12">
+            <div className="max-w-md mx-auto px-4 pb-20 space-y-12">
 
                 {/* Page Heading */}
                 <div className="text-center pt-2">

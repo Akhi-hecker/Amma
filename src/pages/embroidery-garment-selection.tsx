@@ -11,10 +11,12 @@ import {
     MoreHorizontal,
     ShoppingBag,
     Loader2,
+    ChevronRight,
 } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, writeBatch } from 'firebase/firestore';
 import { Design } from '@/data/designs';
+import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 // Interfaces
 interface GarmentType {
@@ -378,6 +380,26 @@ export default function EmbroideryCustomizationPage() {
             }
         }
 
+        // Initialize state from query params if available (for editing/back navigation)
+        const { garmentId, fabricId, colorId, sizeMode: qSizeMode, standardSizeId, custom_shoulder } = router.query;
+        if (garmentId) setSelectedGarment(garmentId as string);
+        if (fabricId) setSelectedFabric(fabricId as string);
+        if (colorId) setSelectedColor(colorId as string);
+        if (qSizeMode) setSizeMode(qSizeMode as 'standard' | 'custom');
+        if (standardSizeId) setSelectedStandardSize(standardSizeId as string);
+
+        // Check for custom measurements in query (checking one key is enough to assume existence)
+        if (custom_shoulder) {
+            const restoredCustom: any = {};
+            Object.keys(router.query).forEach(key => {
+                if (key.startsWith('custom_')) {
+                    restoredCustom[key.replace('custom_', '')] = router.query[key];
+                }
+            });
+            // Merge with default to ensure all fields exist
+            setCustomMeasurements(prev => ({ ...prev, ...restoredCustom }));
+        }
+
         fetchData();
     }, [router.isReady, router.query]);
 
@@ -400,61 +422,34 @@ export default function EmbroideryCustomizationPage() {
         }));
     };
 
-    const handleAddToBag = async () => {
+    const handleContinue = async () => {
         if (!canAddToBag || !selectedDesign) return;
-        setIsLoading(true);
 
-        try {
-            // Prepare Data for order_drafts
-            const draftData: any = {
-                id: auth.currentUser ? undefined : `guest_${Date.now()}`,
-                service_type: 'embroidery_stitching',
-                design_id: selectedDesign.id,
-                garment_type_id: selectedGarment,
-                fabric_id: selectedFabric,
-                color_id: selectedColor,
-                standard_size_id: sizeMode === 'standard' ? selectedStandardSize : null,
-                custom_measurements: sizeMode === 'custom' ? customMeasurements : null,
-                estimated_price: priceBreakdown.total,
-                quantity: 1,
-                status: 'draft',
-                created_at: new Date().toISOString(),
-                // Store minimal details for display in bag without refetching for guests
-                _displayDetails: {
-                    designName: selectedDesign.name,
-                    designImage: selectedDesign.image,
-                    fabricName: fabrics.find(f => f.id === selectedFabric)?.name,
-                    colorName: colors.find(c => c.id === selectedColor)?.name,
-                    colorHex: colors.find(c => c.id === selectedColor)?.hex_code,
-                    size: sizeMode === 'standard'
-                        ? standardSizes.find(s => s.id === selectedStandardSize)?.label
-                        : 'Custom Size'
-                }
-            };
+        // Redirect to Order Summary with selections as query params
+        const query: any = {
+            designId: selectedDesign.id,
+            garmentId: selectedGarment,
+            fabricId: selectedFabric,
+            colorId: selectedColor,
+            sizeMode,
+            standardSizeId: selectedStandardSize,
+            // Custom measurements need to be serialized if used
+            ...Object.fromEntries(
+                Object.entries(customMeasurements).map(([k, v]) => [`custom_${k}`, v])
+            )
+        };
 
-            if (auth.currentUser) {
-                // Insert into Firestore
-                const draftsRef = collection(db, 'users', auth.currentUser.uid, 'drafts');
-                const { _displayDetails, id, ...firestoreData } = draftData;
-                await addDoc(draftsRef, firestoreData);
-            } else {
-                // Guest Logic
-                const currentBag = JSON.parse(localStorage.getItem('amma_guest_bag') || '[]');
-                currentBag.push(draftData);
-                localStorage.setItem('amma_guest_bag', JSON.stringify(currentBag));
-            }
-
-            window.dispatchEvent(new Event('bagUpdated')); // Optional: keep for legacy listeners
-            alert("Added to Bag!");
-            router.push('/shopping-bag');
-
-        } catch (err) {
-            console.error("Error adding to bag:", err);
-            alert("Failed to add to bag. Please try again.");
-        } finally {
-            setIsLoading(false);
+        if (router.query.editId) {
+            query.editId = router.query.editId;
         }
+
+        router.push({
+            pathname: '/order-summary-embroidery',
+            query
+        });
     };
+
+
 
 
     if (!mounted) return null;
@@ -478,7 +473,15 @@ export default function EmbroideryCustomizationPage() {
                 <title>Customize Product | Amma Embroidery</title>
             </Head>
 
-            <div className="max-w-md mx-auto px-4 py-8 space-y-12">
+            <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-6 flex justify-center">
+                <CheckoutBreadcrumbs
+                    currentStep="customize"
+                    designId={router.query.designId as string}
+                    serviceType="stitching"
+                />
+            </div>
+
+            <div className="max-w-md mx-auto px-4 pb-20 space-y-12">
 
                 {/* Header */}
                 <div className="text-center pt-2">
@@ -784,7 +787,7 @@ export default function EmbroideryCustomizationPage() {
                         <p className="font-serif text-xl text-[#1C1C1C]">₹{priceBreakdown.total.toFixed(2)}</p>
                     </div>
                     <button
-                        onClick={handleAddToBag}
+                        onClick={handleContinue}
                         disabled={!canAddToBag}
                         className={`
                             flex-1 py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300
@@ -794,8 +797,8 @@ export default function EmbroideryCustomizationPage() {
                             }
                         `}
                     >
-                        <span>Add to Bag</span>
-                        <ShoppingBag size={18} />
+                        <span>Continue</span>
+                        <ChevronRight size={18} />
                     </button>
                 </div>
             </div>
