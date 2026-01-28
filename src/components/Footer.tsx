@@ -1,125 +1,81 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Instagram, Facebook, Twitter, Send } from 'lucide-react';
+import { Instagram, Facebook, Twitter, ArrowRight } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-background-light text-text-main font-sans pt-16 pb-8 border-t border-divider">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="container mx-auto px-6 md:px-12 lg:px-24"
-            >
-                {/* Headline */}
-                <div className="text-center mb-12 md:mb-16">
-                    <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight">
-                        Designed with Passion. <br className="hidden md:block" />
-                        <span className="text-primary italic font-serif">Embroidered with Precision.</span>
-                    </h2>
-                </div>
+        <footer className="w-full bg-[#1C1C1C] text-white font-sans pt-20 pb-10 border-t border-white/5">
+            <div className="container mx-auto px-6 md:px-12 max-w-7xl">
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-
-                    {/* Brand Story */}
-                    <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-serif font-semibold">About Amma</h3>
-                        <p className="text-text-muted text-sm leading-relaxed max-w-xs pl-4 md:pl-0">
-                            We bring your fashion dreams to life with intricate, high-quality computer embroidery.
-                            Reviewing every stitch to ensure perfection and elegance in every piece.
+                <div className="flex flex-col md:flex-row justify-between items-start gap-12 md:gap-6 mb-20 border-b border-white/5 pb-16">
+                    {/* Brand & Mission */}
+                    <div className="max-w-xs">
+                        <h3 className="font-serif text-3xl font-medium tracking-tight text-white mb-6">Amma</h3>
+                        <p className="text-white/40 text-sm leading-relaxed mb-6">
+                            Elevating embroidery to an art form. We combine traditional craftsmanship with modern technology to create timeless pieces.
                         </p>
-                    </div>
-
-                    {/* Contact Info */}
-                    <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-serif font-semibold">Contact Us</h3>
-                        <div className="flex flex-col gap-3 text-text-muted text-sm pl-4 md:pl-0">
-                            <a href="mailto:hello@ammaembroidery.com" className="hover:text-primary transition-colors h-[48px] flex items-center md:h-auto">
-                                hello@ammaembroidery.com
-                            </a>
-                            <a href="tel:+1234567890" className="hover:text-primary transition-colors h-[48px] flex items-center md:h-auto">
-                                +91 98765 43210
-                            </a>
-                            <address className="not-italic">
-                                123 Fashion Avenue,<br />
-                                Creative District, India
-                            </address>
+                        <div className="flex items-center gap-4">
+                            <SocialLink icon={<Instagram size={18} />} href="#" />
+                            <SocialLink icon={<Facebook size={18} />} href="#" />
+                            <SocialLink icon={<Twitter size={18} />} href="#" />
                         </div>
                     </div>
 
-                    {/* Policy Links */}
-                    <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-serif font-semibold">Policies</h3>
-                        <ul className="flex flex-col gap-2 pl-4 md:pl-0">
-                            <li>
-                                <a href="/privacy-policy" className="text-text-muted text-sm hover:text-primary transition-colors h-[48px] flex items-center md:h-auto">
-                                    Privacy Policy
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/returns" className="text-text-muted text-sm hover:text-primary transition-colors h-[48px] flex items-center md:h-auto">
-                                    Returns & Exchanges
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/terms" className="text-text-muted text-sm hover:text-primary transition-colors h-[48px] flex items-center md:h-auto">
-                                    Terms of Service
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Newsletter */}
-                    <div className="flex flex-col gap-6">
-                        <h3 className="text-lg font-serif font-semibold">Stay Inspired</h3>
-                        <div className="pl-4 md:pl-0">
-                            <p className="text-text-muted text-sm mb-3">
-                                Subscribe to get updates on new designs and exclusive offers.
-                            </p>
-                            <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
-                                <input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    className="w-full px-4 h-[48px] rounded-lg border border-text-main/10 bg-white focus:outline-none focus:border-primary transition-colors text-sm"
-                                />
-                                <button
-                                    type="submit"
-                                    className="w-full h-[48px] bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-                                >
-                                    Subscribe
-                                    <Send size={16} />
-                                </button>
-                            </form>
+                    {/* Quick Nav */}
+                    <div className="grid grid-cols-2 gap-x-20 gap-y-8">
+                        <div className="flex flex-col gap-4">
+                            <h4 className="text-xs font-bold text-[#C9A14A] tracking-wider uppercase mb-2">Explore</h4>
+                            <FooterLink href="/designs">Browse Designs</FooterLink>
+                            <FooterLink href="/how-it-works">How It Works</FooterLink>
+                            <FooterLink href="/about">Our Story</FooterLink>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            <h4 className="text-xs font-bold text-[#C9A14A] tracking-wider uppercase mb-2">Help</h4>
+                            <FooterLink href="/contact">Contact Us</FooterLink>
+                            <FooterLink href="/returns">Returns</FooterLink>
+                            <FooterLink href="/faq">FAQ</FooterLink>
                         </div>
                     </div>
 
-                </div>
-
-                {/* Footer Bottom / Socials */}
-                <div className="flex flex-col md:flex-row items-center justify-between border-t border-text-main/5 pt-8 gap-6">
-
-                    <div className="flex items-center gap-6 order-2 md:order-1">
-                        <a href="#" aria-label="Instagram" className="text-text-main/60 hover:text-primary transition-colors p-2 -ml-2">
-                            <Instagram size={24} strokeWidth={1.5} />
-                        </a>
-                        <a href="#" aria-label="Facebook" className="text-text-main/60 hover:text-primary transition-colors p-2">
-                            <Facebook size={24} strokeWidth={1.5} />
-                        </a>
-                        <a href="#" aria-label="Twitter" className="text-text-main/60 hover:text-primary transition-colors p-2">
-                            <Twitter size={24} strokeWidth={1.5} />
-                        </a>
+                    {/* Newsletter - Minimal */}
+                    <div className="max-w-xs w-full">
+                        <h4 className="text-xs font-bold text-[#C9A14A] tracking-wider uppercase mb-6">Stay Updated</h4>
+                        <div className="relative">
+                            <input
+                                type="email"
+                                placeholder="Email address"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C9A14A] transition-colors"
+                            />
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-[#C9A14A] transition-colors p-1">
+                                <ArrowRight size={16} />
+                            </button>
+                        </div>
                     </div>
-
-                    <p className="text-xs text-text-muted text-center md:text-right order-1 md:order-2">
-                        © {new Date().getFullYear()} Amma Embroidery. All rights reserved.
-                    </p>
                 </div>
 
-            </motion.div>
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/20">
+                    <p>© {new Date().getFullYear()} Amma Embroidery. All rights reserved.</p>
+                    <div className="flex gap-6">
+                        <a href="#" className="hover:text-white/40 transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-white/40 transition-colors">Terms of Service</a>
+                    </div>
+                </div>
+
+            </div>
         </footer>
     );
 };
+
+// Sub-components for consistency
+const FooterLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
+    <a href={href} className="text-sm text-white/60 hover:text-white transition-colors hover:translate-x-1 duration-300 inline-block">
+        {children}
+    </a>
+);
+
+const SocialLink = ({ icon, href }: { icon: React.ReactNode, href: string }) => (
+    <a href={href} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:bg-[#C9A14A] hover:text-white transition-all duration-300">
+        {icon}
+    </a>
+);
 
 export default Footer;

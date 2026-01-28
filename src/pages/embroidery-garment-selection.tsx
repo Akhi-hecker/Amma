@@ -272,9 +272,11 @@ export default function EmbroideryCustomizationPage() {
                 const fabricsRef = collection(db, 'fabrics');
                 const fabricSnap = await getDocs(fabricsRef);
                 const fetchedFabrics: Fabric[] = [];
+                const fabricNames = new Set();
                 fabricSnap.forEach(d => {
                     const data = d.data();
-                    if (data.is_active !== false) {
+                    if (data.is_active !== false && !fabricNames.has(data.name)) {
+                        fabricNames.add(data.name);
                         fetchedFabrics.push({
                             id: d.id,
                             name: data.name,
@@ -290,9 +292,11 @@ export default function EmbroideryCustomizationPage() {
                 const colorsRef = collection(db, 'fabric_colors');
                 const colorSnap = await getDocs(colorsRef);
                 const fetchedColors: FabricColor[] = [];
+                const colorNames = new Set();
                 colorSnap.forEach(d => {
                     const data = d.data();
-                    if (data.is_active !== false) {
+                    if (data.is_active !== false && !colorNames.has(data.hex_code)) { // Dedupe by hex code
+                        colorNames.add(data.hex_code);
                         fetchedColors.push({
                             id: d.id,
                             name: data.name,
@@ -304,12 +308,14 @@ export default function EmbroideryCustomizationPage() {
 
                 // 5. Fetch Standard Sizes
                 const sizesRef = collection(db, 'standard_sizes');
-                // Sorting might be needed manually if 'orderBy' requires index
                 const sizeSnap = await getDocs(sizesRef);
                 const fetchedSizes: StandardSize[] = [];
+                const sizeLabels = new Set();
+
                 sizeSnap.forEach(d => {
                     const data = d.data();
-                    if (data.is_active !== false) {
+                    if (data.is_active !== false && !sizeLabels.has(data.label)) {
+                        sizeLabels.add(data.label);
                         fetchedSizes.push({
                             id: d.id,
                             label: data.label,
@@ -317,8 +323,7 @@ export default function EmbroideryCustomizationPage() {
                         });
                     }
                 });
-                // Sort by label logic S, M, L, XL etc? or just ASCII
-                // Simple sort for now or use field 'order' if exists
+
                 if (fetchedSizes.length === 0) {
                     // Seed Sizes
                     try {

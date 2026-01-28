@@ -34,3 +34,10 @@ next-env.d.ts
 
 
 client_secret*.json
+
+node_modules
+.env
+.env.local
+.env.production
+.next
+dist

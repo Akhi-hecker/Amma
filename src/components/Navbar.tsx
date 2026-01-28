@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, ShoppingBag, User, Heart } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, Heart, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import { db } from '@/lib/firebase';
@@ -56,7 +56,7 @@ const Navbar = () => {
         { href: '/contact', label: 'Custom Embroidery' },
         { href: '/ready-made', label: 'Ready-Made' },
         { href: '/about', label: 'Our Story' },
-        { href: '/contact', label: 'Contact' },
+        // 'Contact' removed as per request (duplicate of Custom Embroidery)
     ];
 
     return (
@@ -68,8 +68,23 @@ const Navbar = () => {
                 )}
             >
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
+
+                    {/* Back Button (Mobile/Global) */}
+                    {!isHomePage && (
+                        <button
+                            onClick={() => router.back()}
+                            className={cn(
+                                "mr-2 md:hidden p-1 rounded-full transition-colors",
+                                scrolled ? "text-[#1C1C1C]" : "text-[#C9A14A]"
+                            )}
+                            aria-label="Go back"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                    )}
+
                     {/* Logo */}
-                    <Link href="/" className="relative z-50 group">
+                    <Link href="/" className="relative z-50 group flex-1 md:flex-none">
                         <span className={cn(
                             "font-serif text-2xl font-bold tracking-wide transition-colors duration-300",
                             isOpen ? "text-primary" : "text-primary"
@@ -95,7 +110,7 @@ const Navbar = () => {
                     </div>
 
                     {/* Icons */}
-                    <div className="flex items-center space-x-4 md:space-x-6 relative z-50">
+                    <div className="flex items-center space-x-4 md:space-x-6 relative z-50 justify-end">
                         {isAuthenticated && (
                             <Link href="/saved-designs" className={cn(
                                 "text-[#C9A14A] transition-colors hidden md:block",

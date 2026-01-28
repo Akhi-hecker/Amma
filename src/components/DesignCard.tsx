@@ -1,7 +1,6 @@
-
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { Design } from '@/data/designs';
 
 interface DesignCardProps {
@@ -29,87 +28,90 @@ export default function DesignCard({
         if (!isPressed) return;
         const dx = e.touches[0].clientX - startRef.current.x;
         const dy = e.touches[0].clientY - startRef.current.y;
-        // Threshold of 10px for scroll detection
         if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
             setIsPressed(false);
         }
     };
 
     const handleTouchEnd = () => {
-        // Smooth release
         setTimeout(() => setIsPressed(false), 150);
     };
 
     return (
         <motion.div
             layout
-            variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
-                exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
-            }}
-            initial="hidden"
-            animate={{
-                opacity: 1, y: 0,
-                scale: isPressed ? 0.98 : 1,
-            }}
-            transition={{ duration: 0.1, ease: 'easeOut' }}
-            className="group relative cursor-pointer"
+            whileHover={{ y: -8 }}
+            className="group relative cursor-pointer h-full"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onClick={onCardClick}
         >
             <div className={`
-                bg-white rounded-lg overflow-hidden transition-all duration-300 border border-[#F0F0F0] h-full flex flex-col
-                ${isPressed ? 'shadow-sm' : 'shadow-sm hover:shadow-xl'}
+                relative bg-white rounded-xl overflow-hidden transition-all duration-500 h-full flex flex-col border border-[#1C1C1C]/10
+                ${isPressed ? 'scale-[0.98]' : ''}
+                shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)]
             `}>
-                {/* Image Area - Aspect Ratio 5:6 */}
-                <div className={`w-full aspect-[5/6] relative overflow-hidden ${design.image}`}>
-                    {/* Top Overlay Badges & Actions */}
-                    <div className="absolute top-3 left-3 z-10">
-                        {design.badge && (
-                            <span className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-sm text-[10px] md:text-xs font-semibold uppercase tracking-wide text-[#C9A14A] shadow-sm">
+                {/* Image Area - Aspect Ratio 4:5 for more portrait elegance */}
+                <div className={`w-full aspect-[4/5] relative overflow-hidden ${design.image}`}>
+
+                    {/* Badge */}
+                    {design.badge && (
+                        <div className="absolute top-4 left-4 z-10">
+                            <span className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-sm text-[10px] tracking-[0.1em] font-bold uppercase text-[#1C1C1C] shadow-sm">
                                 {design.badge}
                             </span>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
+                    {/* Like Button */}
                     <button
                         onClick={(e) => toggleWishlist(e, design.id)}
-                        className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all active:scale-95"
+                        className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-[#C9A14A] transition-all duration-300"
                     >
                         <Heart
-                            size={18}
-                            className={`transition-colors duration-300 ${wishlist.includes(design.id) ? 'fill-[#C9A14A] text-[#C9A14A]' : 'text-[#1C1C1C]'}`}
+                            size={16}
+                            fill={wishlist.includes(design.id) ? "currentColor" : "none"}
+                            strokeWidth={2}
+                            className={wishlist.includes(design.id) ? 'text-[#C9A14A]' : ''}
                         />
                     </button>
 
-                    {/* Placeholder Content */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:scale-105 transition-transform duration-700 ease-in-out">
-                        <span className="font-serif text-2xl md:text-3xl italic text-[#1C1C1C]">{design.category}</span>
-                    </div>
+                    {/* Image Hover Zoom */}
+                    <div className="absolute inset-0 bg-[#000]/0 group-hover:bg-[#000]/5 transition-colors duration-500" />
 
-                    {/* Subtle Gold Overlay */}
-                    <div className="absolute inset-0 bg-[#C9A14A]/0 group-hover:bg-[#C9A14A]/5 transition-colors duration-300" />
+                    {/* Placeholder Content (if no image) */}
+                    {!design.image?.includes('url') && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-20 transition-opacity duration-700">
+                            <span className="font-serif text-4xl italic text-[#1C1C1C]">Amma</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Content Area */}
-                <div className="p-2.5 sm:p-4 flex-grow flex flex-col justify-start">
-                    <div className="mb-0.5">
-                        <h3 className="font-serif text-sm sm:text-lg text-[#1C1C1C] md:group-hover:text-[#C9A14A] transition-colors duration-200 ease-out line-clamp-1 leading-tight">
-                            {design.name}
-                        </h3>
+                <div className="p-5 flex-grow flex flex-col justify-between bg-white">
+                    <div>
+                        <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-serif text-lg text-[#1C1C1C] leading-snug group-hover:text-[#C9A14A] transition-colors duration-300">
+                                {design.name}
+                            </h3>
+                        </div>
+                        <p className="text-[10px] uppercase text-[#999999] font-bold tracking-widest mb-2">
+                            {design.category}
+                        </p>
                     </div>
-                    <p className="text-[9px] sm:text-[10px] uppercase text-[#999999] font-medium tracking-wider mb-1">
-                        {design.category}
-                    </p>
-                    <p className="font-sans text-[10px] sm:text-xs text-[#666666] line-clamp-1 leading-relaxed">
-                        {design.descriptor}
-                    </p>
+
+                    <div className="flex items-center justify-between border-t border-[#F0F0F0] pt-3 mt-2">
+                        <span className="text-xs font-sans text-[#555555] font-medium">
+                            {design.base_price ? `From ₹${design.base_price}` : (design.fabric_suitability || 'Customizable')}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                            <Star size={14} fill="#C9A14A" className="text-[#C9A14A]" />
+                            <span className="text-xs font-serif font-bold text-[#1C1C1C] mt-0.5">4.9</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </motion.div>
+        </motion.div >
     );
 }
-

@@ -1,11 +1,10 @@
-
 import Head from 'next/head'
 import Hero from '@/components/Hero'
-import TrustLogos from '@/components/TrustLogos'
+import TopDesigns from '@/components/TopDesigns'
 import Features from '@/components/Features'
 import HowItWorks from '@/components/HowItWorks'
 import Testimonials from '@/components/Testimonials'
-import Pricing from '@/components/Pricing'
+
 import FAQ from '@/components/FAQ'
 import Footer from '@/components/Footer'
 
@@ -19,10 +18,10 @@ export default function Home() {
             </Head>
             <main>
                 <Hero />
-                <TrustLogos />
+                <TopDesigns />
                 <Features />
                 <HowItWorks />
-                <Pricing />
+
                 <Testimonials />
                 <FAQ />
             </main>

@@ -55,16 +55,13 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                 {/* Close Button - Floats on top for both mobile and desktop */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-20 p-2 bg-black/10 hover:bg-black/20 text-white sm:bg-white/10 sm:hover:bg-black/5 rounded-full backdrop-blur-md transition-colors sm:text-black"
+                    className="absolute top-4 right-4 sm:right-auto sm:left-4 z-20 p-2 bg-black/10 hover:bg-black/20 text-white rounded-full backdrop-blur-md transition-colors"
                 >
                     <X size={24} />
                 </button>
 
                 {/* --- MOBILE LAYOUT (Vertical Scroll) --- */}
                 <div className="flex-1 overflow-y-auto sm:hidden flex flex-col bg-white">
-                    {/* Image Stack - Horizontal Snap Carousel */}
-                    {/* Image Stack - Horizontal Snap Carousel */}
-                    {/* Wrapper for Carousel + Dots to ensure positioning context */}
                     <div className="relative w-full">
                         {/* Image Stack - Horizontal Snap Carousel */}
                         <div
@@ -84,7 +81,76 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                                 </div>
                             ))}
                         </div>
+                    </div>
 
+                    {/* Mobile Info Section - Moved Inside Scroll */}
+                    <div className="bg-white -mt-6 rounded-t-3xl relative z-10 px-6 pt-8 pb-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                        {/* Pagination Dots */}
+                        <div className="flex justify-center gap-2 mb-6">
+                            {views.map((view) => (
+                                <div
+                                    key={view.id}
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${activeView === view.id
+                                        ? 'bg-[#C9A14A] w-6'
+                                        : 'bg-gray-200 w-1.5'
+                                        }`}
+                                />
+                            ))}
+                        </div>
+
+                        <div className="mb-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <span className="block text-[#C9A14A] text-xs font-bold uppercase tracking-widest mb-1">
+                                        {design.category}
+                                    </span>
+                                    <h2 className="font-serif text-3xl text-[#1C1C1C] leading-tight">
+                                        {design.name}
+                                    </h2>
+                                </div>
+                                <button
+                                    onClick={(e) => toggleWishlist(e, design.id)}
+                                    className="p-2 -mr-2 text-[#1C1C1C]"
+                                >
+                                    <Heart
+                                        size={22}
+                                        className={`transition-colors ${isLiked ? 'fill-[#C9A14A] text-[#C9A14A]' : 'text-[#1C1C1C]'}`}
+                                    />
+                                </button>
+                            </div>
+                            <div className="h-1 w-12 bg-[#C9A14A]/30 mt-2"></div>
+                        </div>
+
+                        {/* Description */}
+                        <div className="space-y-4 mb-6">
+                            <p className="text-[#555555] font-light leading-relaxed text-sm">
+                                {design.descriptor}
+                            </p>
+                            <p className="text-[#555555] font-light leading-relaxed text-sm">
+                                {design.long_description || `Experience the finest craftsmanship with our ${design.category.toLowerCase()} collection. Each stitch is placed with precision to ensure a premium finish that stands out.`}
+                            </p>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            <div className="bg-[#F9F7F3] p-3 rounded-lg">
+                                <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Fabric Suitability</span>
+                                <span className="block text-sm text-[#1C1C1C] font-medium">{design.fabric_suitability || 'Universal'}</span>
+                            </div>
+                            <div className="bg-[#F9F7F3] p-3 rounded-lg">
+                                <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Complexity</span>
+                                <span className="block text-sm text-[#1C1C1C] font-medium">{design.complexity || 'Standard'}</span>
+                            </div>
+                        </div>
+
+                        {/* CTA Button */}
+                        <button
+                            onClick={() => protectAction(() => onSelect(design), { action: 'select_design', designId: design.id })}
+                            className="w-full bg-[#C9A14A] text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-[#C9A14A]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                        >
+                            <span>Choose This Design</span>
+                            <ArrowRight size={18} />
+                        </button>
                     </div>
                 </div>
 
@@ -124,65 +190,7 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                     </div>
                 </div>
 
-                {/* Mobile Info Section */}
-                <div className="sm:hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg p-6 pb-24 z-20">
-                    {/* Mobile Pagination Dots (Floating above card) */}
-                    <div className="absolute -top-10 left-0 right-0 flex justify-center gap-2 z-30 pointer-events-none">
-                        {views.map((view) => (
-                            <div
-                                key={view.id}
-                                className={`h-2 rounded-full transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.3)] ${activeView === view.id
-                                    ? 'bg-[#C9A14A] w-6'
-                                    : 'bg-white/90 backdrop-blur-md w-2'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                    <div className="mb-4">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <span className="block text-[#C9A14A] text-xs font-bold uppercase tracking-widest mb-1">
-                                    {design.category}
-                                </span>
-                                <h2 className="font-serif text-3xl text-[#1C1C1C] leading-tight">
-                                    {design.name}
-                                </h2>
-                            </div>
-                            <button
-                                onClick={(e) => toggleWishlist(e, design.id)}
-                                className="p-2 -mr-2 text-[#1C1C1C]"
-                            >
-                                <Heart
-                                    size={22}
-                                    className={`transition-colors ${isLiked ? 'fill-[#C9A14A] text-[#C9A14A]' : 'text-[#1C1C1C]'}`}
-                                />
-                            </button>
-                        </div>
-                        <div className="h-1 w-12 bg-[#C9A14A]/30 mt-2"></div>
-                    </div>
 
-                    {/* Description */}
-                    <div className="space-y-4 mb-6">
-                        <p className="text-[#555555] font-light leading-relaxed text-sm">
-                            {design.descriptor}
-                        </p>
-                        <p className="text-[#555555] font-light leading-relaxed text-sm">
-                            {design.long_description || `Experience the finest craftsmanship with our ${design.category.toLowerCase()} collection. Each stitch is placed with precision to ensure a premium finish that stands out.`}
-                        </p>
-                    </div>
-
-                    {/* Details Grid (Mock) */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="bg-[#F9F7F3] p-3 rounded-lg">
-                            <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Fabric Suitability</span>
-                            <span className="block text-sm text-[#1C1C1C] font-medium">{design.fabric_suitability || 'Universal'}</span>
-                        </div>
-                        <div className="bg-[#F9F7F3] p-3 rounded-lg">
-                            <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Complexity</span>
-                            <span className="block text-sm text-[#1C1C1C] font-medium">{design.complexity || 'Standard'}</span>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Right Side: Information & Action */}
                 <div className="hidden sm:flex w-full sm:w-[45%] flex-col p-6 sm:p-10 bg-white">
@@ -310,7 +318,7 @@ function ZoomableImage({ view, designCategory }: { view: any, designCategory: st
 
             {/* Label Overlay */}
             {!isZoomed && (
-                <div className="absolute bottom-3 left-3 bg-white/50 backdrop-blur-sm px-2 py-1 rounded text-[10px] uppercase font-semibold text-black/80 pointer-events-none">
+                <div className="absolute bottom-8 sm:bottom-3 left-3 bg-white/50 backdrop-blur-sm px-2 py-1 rounded text-[10px] uppercase font-semibold text-black/80 pointer-events-none">
                     {view.label}
                 </div>
             )}

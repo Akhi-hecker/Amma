@@ -1,157 +1,80 @@
-import React from 'react';
-import { motion, Variants } from 'framer-motion';
-import { Scissors, Spline, Layers, Crosshair } from 'lucide-react';
+import React, { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Scissors, Spline, Layers } from 'lucide-react';
 
 const FEATURES = [
     {
-        icon: Crosshair,
-        title: 'Precision Stitching',
-        highlight: 'Precision',
-        description: 'Our high-precision machines place every stitch with sub-millimeter accuracy for flawless, intricate designs.',
-        bg: 'bg-[#F9F7F3]',
-        image: '/feature-precision.png',
-    },
-    {
-        icon: Layers,
-        title: 'Premium Fabrics',
-        highlight: 'Premium',
-        description: 'We source only the finest fabrics that provide the perfect stable canvas for high-density embroidery.',
-        bg: 'bg-[#F9F7F3]',
-        image: '/feature-fabric.png',
+        icon: Scissors,
+        title: 'Precision Cut',
+        desc: 'Laser-guided accuracy',
+        delay: 0.1
     },
     {
         icon: Spline,
-        title: 'Finest Threads',
-        highlight: 'Finest',
-        description: 'Using high-tensile, color-fast threads ensures your custom design remains vibrant and durable for years.',
-        bg: 'bg-[#F9F7F3]',
-        image: '/feature-threads.png',
+        title: 'Premium Thread',
+        desc: 'Vibrant & color-fast',
+        delay: 0.2
     },
     {
-        icon: Scissors,
-        title: 'Master Tailoring',
-        highlight: 'Master',
-        description: 'Each garment is cut and finished by expert tailors, ensuring the embroidery sits perfectly on the body.',
-        bg: 'bg-[#F9F7F3]',
-        image: '/feature-finishing.png',
-    },
+        icon: Layers,
+        title: 'Finest Fabric',
+        desc: 'Hand-selected quality',
+        delay: 0.3
+    }
 ];
 
-const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-        },
-    },
-};
-
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.6,
-            ease: 'easeOut',
-        },
-    },
-};
-
-const iconVariants: Variants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: {
-        scale: 1,
-        opacity: 1,
-        transition: { duration: 0.4, ease: "backOut" }
-    }
-};
-
 const Features = () => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-10%" });
+
     return (
-        <section className="w-full py-24 md:py-32 bg-white relative">
-            <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+        <section className="w-full py-16 md:py-24 bg-[#111111] border-y border-white/5 relative overflow-hidden">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C9A14A] rounded-full opacity-[0.03] blur-[120px] pointer-events-none" />
 
-                {/* Section Header */}
-                <div className="text-center max-w-3xl mx-auto mb-20">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, ease: "easeOut" }}
-                        className="inline-block relative mb-6"
-                    >
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#1C1C1C] leading-tight relative z-10">
-                            Why Our Embroidery is <span className="text-[#C9A14A] italic">Different</span>
-                        </h2>
-                    </motion.div>
+            <div ref={ref} className="container mx-auto px-6 md:px-12 max-w-7xl relative z-10">
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                        className="text-[#555555] text-lg md:text-xl font-sans leading-relaxed max-w-2xl mx-auto"
-                    >
-                        We use high-precision machines, premium fabrics, and careful finishing to create custom embroidered fashion that feels unique and exquisite.
-                    </motion.p>
+                {/* Header */}
+                <div className="text-center mb-12 md:mb-20">
+                    <span className="text-[#C9A14A] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
+                        The Amma Standard
+                    </span>
+                    <h2 className="text-3xl md:text-4xl font-serif text-white">
+                        Uncompromising <span className="italic text-[#C9A14A]">Quality</span>
+                    </h2>
                 </div>
 
-                {/* Feature Cards Grid */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-50px" }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 !overflow-visible"
-                >
+                <div className="flex flex-row divide-x divide-white/10 border-t border-b border-white/10">
                     {FEATURES.map((feature, idx) => (
                         <motion.div
                             key={idx}
-                            variants={itemVariants}
-                            style={{ top: `${6 + idx * 2}rem` }}
-                            className={`group overflow-hidden rounded-2xl ${feature.bg} shadow-sm hover:shadow-xl transition-all duration-500 border border-black/5 hover:-translate-y-2 sticky md:relative md:!top-auto`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                            transition={{ duration: 0.8, delay: feature.delay, ease: "easeOut" }}
+                            className="flex-1 py-6 md:py-8 px-2 md:px-4 flex flex-col items-center text-center group cursor-default"
                         >
-                            {/* Top Image Area */}
-                            <div className="h-48 w-full relative overflow-hidden">
-                                <img
-                                    src={feature.image}
-                                    alt={feature.title}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            {/* Animated Icon Container */}
+                            <div className="mb-3 md:mb-6 relative">
+                                <div className="absolute inset-0 bg-[#C9A14A]/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                <feature.icon
+                                    strokeWidth={1}
+                                    className="w-5 h-5 md:w-10 md:h-10 text-white group-hover:text-[#C9A14A] transition-colors duration-500 relative z-10 transform group-hover:scale-110 duration-500 ease-out"
                                 />
-                                <div className="absolute inset-0 bg-[#C9A14A]/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             </div>
 
-                            {/* Content */}
-                            <div className="p-8 relative">
+                            <h3 className="text-xs md:text-2xl font-serif text-white mb-2 tracking-tight group-hover:tracking-wide transition-all duration-500">
+                                {feature.title}
+                            </h3>
 
-                                {/* Icon Badge - Floating slightly over edge or just structured? Design says inside. */}
-                                <div className="-mt-14 mb-5 relative z-10">
-                                    <motion.div
-                                        variants={iconVariants}
-                                        className="w-16 h-16 rounded-full bg-[#C9A14A] flex items-center justify-center shadow-lg mx-auto md:mx-0 border-4 border-white"
-                                    >
-                                        <feature.icon strokeWidth={1.5} className="w-8 h-8 text-white" />
-                                    </motion.div>
-                                </div>
+                            <div className="hidden md:block h-px w-8 bg-[#C9A14A] my-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                {/* Headline */}
-                                <h3 className="font-serif text-2xl text-[#1C1C1C] mb-3 leading-tight">
-                                    {feature.title.split(' ').map((word, i) => (
-                                        word === feature.highlight ? <span key={i} className="text-[#C9A14A]">{word} </span> : <span key={i}>{word} </span>
-                                    ))}
-                                </h3>
-
-                                {/* Body Text */}
-                                <p className="font-sans text-base text-[#555555] leading-relaxed opacity-90">
-                                    {feature.description}
-                                </p>
-                            </div>
+                            <p className="text-[10px] md:text-sm font-sans text-white/40 uppercase tracking-widest font-medium group-hover:text-white/60 transition-colors duration-500 line-clamp-2 md:line-clamp-none">
+                                {feature.desc}
+                            </p>
                         </motion.div>
                     ))}
-                </motion.div>
+                </div>
+
             </div>
         </section>
     );

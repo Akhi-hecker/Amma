@@ -1,137 +1,85 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { PenTool, Layers, Palette, ShoppingBag, Truck } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { PenTool, Layers, Palette, ShoppingBag, Truck, ChevronRight } from 'lucide-react';
 
 const STEPS = [
-    {
-        id: '01',
-        icon: PenTool,
-        title: 'Choose a Design',
-        description: 'Browse our exclusive collection or upload your own concept.',
-    },
-    {
-        id: '02',
-        icon: Layers,
-        title: 'Pick Fabric',
-        description: 'Select from refined cottons, linens, and silks that last.',
-    },
-    {
-        id: '03',
-        icon: Palette,
-        title: 'Select Color',
-        description: 'Match the perfect thread shade to your unique style.',
-    },
-    {
-        id: '04',
-        icon: ShoppingBag,
-        title: 'Place Order',
-        description: 'Secure checkout with precise customization details.',
-    },
-    {
-        id: '05',
-        icon: Truck,
-        title: "We Deliver",
-        description: 'Your custom masterpiece arrives at your doorstep, ready to wear.',
-    },
+    { id: '01', title: 'Choose Design', icon: PenTool },
+    { id: '02', title: 'Select Fabric', icon: Layers },
+    { id: '03', title: 'Customize', icon: Palette },
+    { id: '04', title: 'Order', icon: ShoppingBag },
+    { id: '05', title: 'Delivery', icon: Truck },
 ];
 
 const HowItWorks = () => {
-    const containerRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end start"],
-    });
-
-    // The "Golden Thread" height animation
-    const settingsHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
     return (
-        <section ref={containerRef} className="w-full py-24 md:py-32 bg-[#F9F7F3] relative overflow-hidden">
-            <div className="container mx-auto px-6 md:px-12 max-w-6xl relative z-10">
+        <section className="w-full py-20 md:py-32 bg-white relative">
+            <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
 
-                {/* Header */}
-                <div className="text-center mb-20 md:mb-32">
+                <div className="text-center mb-20">
+                    <motion.span
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        className="text-[#C9A14A] text-xs font-bold tracking-[0.25em] uppercase mb-4 block"
+                    >
+                        Process
+                    </motion.span>
                     <motion.h2
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="text-4xl md:text-6xl font-serif text-[#1C1C1C] mb-6"
+                        transition={{ duration: 0.6 }}
+                        className="text-3xl md:text-5xl font-serif text-[#1C1C1C]"
                     >
-                        Your Custom Outfit <br /> <span className="text-[#C9A14A] italic">in 5 Simple Steps</span>
+                        Your Custom Outfit <br className="md:hidden" />
+                        <span className="italic font-normal text-gray-400">in 5 simple steps</span>
                     </motion.h2>
                 </div>
 
-                {/* Timeline Container */}
-                <div className="relative">
-                    {/* The Static Vertical Line Base */}
-                    <div className="absolute left-[19px] md:left-1/2 top-0 bottom-0 w-[1px] bg-[#C9A14A]/20 transform md:-translate-x-1/2" />
+                {/* Steps Container */}
+                <div className="flex flex-row justify-between items-start gap-2 md:gap-4 max-w-6xl mx-auto relative px-1">
 
-                    {/* The Animated "Golden Thread" */}
-                    <motion.div
-                        style={{ height: settingsHeight }}
-                        className="absolute left-[19px] md:left-1/2 top-0 w-[2px] bg-gradient-to-b from-[#C9A14A] via-[#E8C47A] to-[#C9A14A] transform md:-translate-x-1/2 origin-top"
-                    />
+                    {/* Horizontal Line for Desktop and Mobile (Adjusted top position) */}
+                    <div className="absolute top-[1.5rem] md:top-[2.5rem] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#E6E3DE] to-transparent z-0" />
 
-                    <div className="space-y-12 md:space-y-24">
-                        {STEPS.map((step, idx) => {
-                            const isEven = idx % 2 === 1;
-                            return (
-                                <TimelineItem key={step.id} step={step} index={idx} isEven={isEven} />
-                            );
-                        })}
-                    </div>
+                    {STEPS.map((step, idx) => (
+                        <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 md:gap-4 w-full md:w-auto text-center group">
+
+                            {/* Icon Circle */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1, duration: 0.5 }}
+                                className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white border border-[#E6E3DE] flex items-center justify-center shrink-0 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] group-hover:border-[#C9A14A] group-hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.3)] transition-all duration-500 relative z-10"
+                            >
+                                <step.icon strokeWidth={1.2} className="w-5 h-5 md:w-8 md:h-8 text-[#1C1C1C] group-hover:text-[#C9A14A] transition-colors duration-500" />
+
+                                {/* Small Badge Number */}
+                                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 rounded-full bg-[#1C1C1C] text-white text-[8px] md:text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                                    {step.id}
+                                </div>
+                            </motion.div>
+
+                            {/* Text */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 + 0.2 }}
+                                className="flex-1 w-full"
+                            >
+                                <h3 className="text-[9px] md:text-lg font-serif text-[#1C1C1C] group-hover:text-[#C9A14A] transition-colors duration-300 leading-tight">
+                                    {step.title}
+                                </h3>
+                            </motion.div>
+
+                        </div>
+                    ))}
                 </div>
-            </div>
 
-            {/* Ambient Background Blur for Texture */}
-            <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#C9A14A]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-[#C9A14A]/5 rounded-full blur-3xl pointer-events-none" />
+            </div>
         </section>
     );
 };
-
-const TimelineItem = ({ step, index, isEven }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10%" }}
-            transition={{ duration: 0.7, delay: index * 0.1, ease: "easeOut" }}
-            className={`relative flex items-start md:items-center ${isEven ? 'md:flex-row-reverse' : 'md:flex-row'}`}
-        >
-            {/* Timeline Dot */}
-            <div className="absolute left-0 md:left-1/2 w-10 h-10 flex items-center justify-center transform md:-translate-x-1/2 z-10 bg-[#F9F7F3]">
-                <div className="w-3 h-3 bg-[#C9A14A] rounded-full ring-4 ring-[#F9F7F3] shadow-[0_0_0_1px_rgba(201,161,74,0.4)]" />
-            </div>
-
-            {/* Content Side */}
-            <div className={`ml-16 md:ml-0 md:w-1/2 ${isEven ? 'md:pr-16 md:text-right' : 'md:pl-16 md:text-left'}`}>
-                <div className={`flex flex-col ${isEven ? 'md:items-end' : 'md:items-start'}`}>
-                    <span className="text-6xl md:text-7xl font-serif text-[#C9A14A]/40 font-bold leading-none mb-4 block">
-                        {step.id}
-                    </span>
-                    <h3 className="text-2xl md:text-3xl font-serif text-[#1C1C1C] mb-2">
-                        {step.title}
-                    </h3>
-                    <p className="text-[#555555] font-sans text-lg leading-relaxed max-w-sm">
-                        {step.description}
-                    </p>
-                </div>
-            </div>
-
-            {/* Spacer for structure */}
-            <div className="hidden md:block md:w-1/2" />
-
-            {/* Desktop Icon - Beside the Golden Dot */}
-            <div className={`absolute top-0 md:top-1/2 transform md:-translate-y-1/2 
-                ${isEven ? 'md:right-[calc(50%+4rem)]' : 'md:left-[calc(50%+4rem)]'} 
-                hidden md:flex items-center justify-center w-14 h-14 rounded-full bg-white border border-[#C9A14A]/30 text-[#C9A14A] shadow-sm z-10
-             `}>
-                <step.icon strokeWidth={1.2} className="w-7 h-7" />
-            </div>
-        </motion.div>
-    )
-}
 
 export default HowItWorks;

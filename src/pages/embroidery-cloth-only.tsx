@@ -162,19 +162,22 @@ export default function EmbroideryClothOnlyPage() {
     const handleColorSelect = (id: string) => setSelectedColor(id);
 
     // --- Animation Variants ---
-    const fadeInUp = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-    };
 
-    const staggerContainer = {
+
+    // --- Animation Variants ---
+    const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.05
             }
         }
+    };
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
     };
 
     // --- Navigation ---
@@ -213,10 +216,11 @@ export default function EmbroideryClothOnlyPage() {
                 <title>Customize Fabric | Amma Embroidery</title>
             </Head>
 
-            <div className="max-w-md mx-auto px-4 py-6 space-y-10">
+            {/* Main Content */}
+            <div className="max-w-md mx-auto px-4 py-8 space-y-12">
 
-                {/* Page Header */}
-                <div className="text-center pt-4">
+                {/* Page Heading */}
+                <div className="text-center pt-2">
                     <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">
                         Customize Fabric
                     </h1>
@@ -225,18 +229,17 @@ export default function EmbroideryClothOnlyPage() {
                     </p>
                 </div>
 
-                {/* Selected Design Summary (Static) */}
+                {/* Selected Design Summary (Compact) */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl p-4 shadow-card flex items-center gap-4 border border-transparent"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 border border-gray-100"
                 >
                     <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden relative">
                         <div className={`absolute inset-0 ${selectedDesign?.image || 'bg-gray-200'}`} />
                         {/* Placeholder overlay if no real image */}
                         {!selectedDesign?.image?.includes('url') && (
                             <div className="absolute inset-0 flex items-center justify-center text-gray-500/50 text-xs text-center p-1">
-                                Preview
+                                Emb.
                             </div>
                         )}
                     </div>
@@ -247,19 +250,15 @@ export default function EmbroideryClothOnlyPage() {
                     </div>
                 </motion.div>
 
-                {/* Step 1: Choose Fabric */}
                 <motion.section
-                    variants={staggerContainer}
+                    variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
                 >
-                    <div className="mb-4">
-                        <div className="flex items-baseline justify-between mb-1">
-                            <h2 className="font-serif text-xl">Choose Fabric</h2>
-                            {isStep1Complete && <Check size={16} className="text-[#C9A14A]" />}
-                        </div>
-                        <p className="text-sm text-[#5A5751]">Select the base fabric for embroidery</p>
+                    <div className="flex items-baseline justify-between mb-4">
+                        <h2 className="font-serif text-xl">1. Choose Fabric</h2>
+                        {isStep1Complete && <Check size={18} className="text-[#C9A14A]" />}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -268,24 +267,29 @@ export default function EmbroideryClothOnlyPage() {
                         ) : fabrics.map((fabric) => (
                             <motion.div
                                 key={fabric.id}
-                                variants={fadeInUp}
+                                variants={cardVariants}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleFabricSelect(fabric.id)}
                                 className={`
                                     relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 bg-white
-                                    ${selectedFabric === fabric.id
-                                        ? 'border-[#C9A14A] shadow-soft'
-                                        : 'border-transparent shadow-sm hover:border-gray-200'}
+                                    ${selectedFabric === fabric.id ? 'border-[#C9A14A] shadow-md ring-1 ring-[#C9A14A]/20' : 'border-transparent shadow-sm hover:border-gray-200'}
                                 `}
                             >
+                                {/* Fabric Texture Placeholder matches embroidery-garment-selection */}
                                 <div
-                                    className="h-20 w-full rounded-md mb-3"
+                                    className="h-24 w-full rounded-md mb-3 border border-black/5 relative overflow-hidden"
                                     style={{ backgroundColor: fabric.color }}
-                                />
+                                >
+                                    {/* Texture overlay */}
+                                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '8px 8px' }} />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                                </div>
+
                                 <h3 className="font-medium text-sm text-[#1C1C1C]">{fabric.name}</h3>
                                 <p className="text-xs text-[#777] mt-1 line-clamp-2">{fabric.note}</p>
-                                <p className="text-xs font-semibold text-[#1C1C1C] mt-2">₹{fabric.price_per_meter}/m</p>
+                                <p className="text-xs font-serif text-[#C9A14A] mt-2">₹{fabric.price_per_meter}/m</p>
 
+                                {/* Selection Indicators */}
                                 {selectedFabric === fabric.id && (
                                     <div className="absolute top-2 right-2 bg-[#C9A14A] text-white rounded-full p-0.5">
                                         <Check size={12} strokeWidth={3} />
@@ -298,91 +302,74 @@ export default function EmbroideryClothOnlyPage() {
 
                 {/* Step 2: Choose Color */}
                 <motion.section
-                    variants={staggerContainer}
+                    variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className={!isStep1Complete ? 'opacity-50 pointer-events-none filter grayscale' : ''}
+                    className={`transition-opacity duration-500 ${!isStep1Complete ? 'opacity-40 pointer-events-none grayscale' : ''} `}
                 >
-                    <div className="mb-4">
-                        <div className="flex items-baseline justify-between mb-1">
-                            <h2 className="font-serif text-xl">Choose Color</h2>
-                            {isStep2Complete && <Check size={16} className="text-[#C9A14A]" />}
-                        </div>
-                        <p className="text-sm text-[#5A5751]">
-                            {currentColor ? `Selected: ${currentColor.name}` : 'Tap a color to select'}
-                        </p>
+                    <div className="flex items-baseline justify-between mb-4">
+                        <h2 className="font-serif text-xl">2. Choose Color</h2>
+                        {isStep2Complete && <Check size={18} className="text-[#C9A14A]" />}
                     </div>
 
-                    <div className="grid grid-cols-4 gap-4 justify-items-center">
+                    <div className="grid grid-cols-5 gap-4">
                         {colors.length === 0 ? (
-                            <p className="text-sm text-gray-400 col-span-4 text-center py-4">No colors available.</p>
+                            <p className="text-sm text-gray-400 col-span-5 text-center py-4">No colors available.</p>
                         ) : colors.map((color) => (
                             <motion.button
                                 key={color.id}
-                                variants={fadeInUp}
+                                variants={cardVariants}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => handleColorSelect(color.id)}
                                 className={`
-                                    w-14 h-14 rounded-full relative focus:outline-none transition-all duration-300
-                                    ${selectedColor === color.id ? 'ring-2 ring-offset-2 ring-[#C9A14A] scale-105' : 'hover:scale-105'}
+                                    aspect-square rounded-full relative focus:outline-none transition-all duration-300 shadow-sm
+                                    ${selectedColor === color.id ? 'ring-2 ring-offset-2 ring-[#C9A14A] scale-105 shadow-md' : 'hover:scale-110 hover:shadow-md'}
                                 `}
                                 style={{ backgroundColor: color.hex_code }}
                                 aria-label={color.name}
                             >
                                 {selectedColor === color.id && (
                                     <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md">
-                                        <Check size={20} strokeWidth={3} />
+                                        <Check size={16} strokeWidth={3} />
                                     </span>
                                 )}
                             </motion.button>
                         ))}
+                    </div>
+                    <div className="h-6 mt-3 text-center">
+                        {selectedColor && (
+                            <span className="text-xs text-[#777] font-medium animate-pulse">
+                                {colors.find(c => c.id === selectedColor)?.name}
+                            </span>
+                        )}
                     </div>
                 </motion.section>
 
 
             </div>
 
-            {/* Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-8 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
-                <div className="max-w-md mx-auto flex flex-col gap-3">
-
-                    {/* Price Row */}
-                    <div className="flex justify-between items-end mb-1">
-                        <div>
-                            <p className="text-xs text-[#777] mb-0.5">Estimated Price</p>
-                            <p className="text-[10px] text-[#999]">Final price confirmed later</p>
-                        </div>
-                        <div className="text-right">
-                            <AnimatePresence mode="wait">
-                                <motion.span
-                                    key={totalPrice}
-                                    initial={{ opacity: 0, y: -5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
-                                    className="block text-2xl font-serif text-[#1C1C1C]"
-                                >
-                                    ₹{totalPrice.toLocaleString()}
-                                </motion.span>
-                            </AnimatePresence>
-                        </div>
+            {/* Sticky Bottom Bar - Enhanced with Glassmorphism */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#E8E6E0] p-4 pb-8 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-all">
+                <div className="max-w-md mx-auto flex items-center gap-4">
+                    <div className="flex-1">
+                        <p className="text-xs text-gray-500 mb-0.5">Total Estimate</p>
+                        <p className="font-serif text-xl text-[#1C1C1C]">₹{totalPrice.toLocaleString()}</p>
                     </div>
-
-                    {/* CTA Button */}
                     <button
                         onClick={handleContinue}
                         disabled={!canContinue}
                         className={`
-                            w-full py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300
+                            flex-1 py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300
                             ${canContinue
                                 ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:bg-[#B89240] transform active:scale-[0.98]'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }
                         `}
                     >
                         <span>Continue</span>
-                        <ChevronRight size={16} />
+                        <ChevronRight size={18} />
                     </button>
-
                 </div>
             </div>
         </div>

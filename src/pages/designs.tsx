@@ -16,6 +16,8 @@ import { collection, getDocs, query, where, doc, setDoc, deleteDoc } from 'fireb
 const STYLE_SHORTCUTS = [
     { id: '0', label: 'All', color: 'bg-gray-50' },
     { id: '1', label: 'Bridal', color: 'bg-red-50' },
+    { id: '7', label: 'Modern', color: 'bg-blue-50' },
+    { id: '8', label: 'Traditional', color: 'bg-orange-50' },
     { id: '2', label: 'Floral', color: 'bg-pink-50' },
     { id: '3', label: 'Border', color: 'bg-amber-50' },
     { id: '4', label: 'Minimal', color: 'bg-slate-50' },
@@ -270,7 +272,7 @@ export default function DesignsGallery() {
                 <meta name="description" content="Browse our carefully crafted embroidery designs for every occasion." />
             </Head>
 
-            <div className="min-h-screen bg-[#F9F7F3] pt-20 pb-24 px-2.5 sm:px-4 lg:px-8 font-sans">
+            <div className="min-h-screen bg-white pt-20 pb-24 px-2.5 sm:px-4 lg:px-8 font-sans">
                 <div className="max-w-7xl mx-auto">
 
                     {/* Header */}
