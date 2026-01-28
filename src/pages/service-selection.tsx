@@ -14,12 +14,9 @@ export default function ServiceSelection() {
 
     useEffect(() => {
         setMounted(true);
-        if (!isLoading && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [isLoading, isAuthenticated, router]);
+    }, []);
 
-    if (!mounted || isLoading || !isAuthenticated) return null;
+    if (!mounted || isLoading) return null;
 
     const containerVariants: Variants = {
         hidden: { opacity: 0 },

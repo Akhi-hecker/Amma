@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 import { Instrument_Serif, Inter, Montserrat } from 'next/font/google';
 import Navbar from '@/components/Navbar';
 import { AuthProvider } from '@/context/AuthContext';
+import { useGuestMigration } from '@/hooks/useGuestMigration';
 
 // Font configurations
 const instrumentSerif = Instrument_Serif({
@@ -21,13 +22,20 @@ const montserrat = Montserrat({
     variable: '--font-montserrat',
 });
 
+const AppContent = ({ Component, pageProps }: any) => {
+    useGuestMigration();
+    return (
+        <main className={`${instrumentSerif.variable} ${inter.variable} ${montserrat.variable} font-sans`}>
+            <Navbar />
+            <Component {...pageProps} />
+        </main>
+    );
+};
+
 export default function App({ Component, pageProps }: AppProps) {
     return (
         <AuthProvider>
-            <main className={`${instrumentSerif.variable} ${inter.variable} ${montserrat.variable} font-sans`}>
-                <Navbar />
-                <Component {...pageProps} />
-            </main>
+            <AppContent Component={Component} pageProps={pageProps} />
         </AuthProvider>
     );
 }

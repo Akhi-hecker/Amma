@@ -3,15 +3,15 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, deleteDoc, updateDoc, addDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Trash2, Edit2, ShoppingBag, ChevronRight, X } from 'lucide-react';
 
 // --- Types ---
 interface BagItem {
-    id: string;
+    id: string; // can be 'guest_...' or firestore ID
     designName: string;
-    designImage: string; // Placeholder color or URL
+    designImage: string;
     serviceType: string;
     selections: {
         garment?: string;
@@ -28,176 +28,248 @@ interface BagItem {
     designId: string;
     price: number;
     quantity: number;
+    _isGuest?: boolean;
 }
-
-// --- Mock Data ---
 
 export default function ShoppingBagPage() {
     const router = useRouter();
-    const { user, isAuthenticated } = useAuth();
+    const { user, protectAction } = useAuth(); // Ensure protectAction is destructured
     const [mounted, setMounted] = useState(false);
     const [bagItems, setBagItems] = useState<BagItem[]>([]);
     const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
+    // --- 1. Migration Logic (Moved to global hook) ---
+    // See: hooks/useGuestMigration.ts
+
+    // --- 2. Data Fetching (User vs Guest) ---
     useEffect(() => {
         setMounted(true);
-        if (!user) return;
 
-        const draftsRef = collection(db, 'users', user.id, 'drafts');
-        const q = query(draftsRef, where('status', '==', 'draft'));
+        if (user) {
+            // --- Authenticated: Fetch from Firestore ---
+            const draftsRef = collection(db, 'users', user.id, 'drafts');
+            const q = query(draftsRef, where('status', '==', 'draft'));
 
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const items: BagItem[] = [];
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
+                const draftPromises = snapshot.docs.map(async (draftDoc) => {
+                    const data = draftDoc.data();
 
-            // We need to fetch details for each draft (Design, Fabric, Color)
-            // Ideally we'd use a robust data fetching strategy (Promise.all)
-            const draftPromises = snapshot.docs.map(async (draftDoc) => {
-                const data = draftDoc.data();
+                    // Defaults
+                    let designName = 'Unknown Design';
+                    let designImage = 'bg-gray-100';
+                    let fabricName = 'Unknown Fabric';
+                    let colorName = 'Unknown Color';
+                    let colorHex = '#ccc';
 
-                // Defaults
-                let designName = 'Unknown Design';
-                let designImage = 'bg-gray-100';
-                let fabricName = 'Unknown Fabric';
-                let colorName = 'Unknown Color';
-                let colorHex = '#ccc';
-
-                // Fetch Design
-                if (data.design_id) {
-                    const designSnap = await getDoc(doc(db, 'designs', data.design_id));
-                    if (designSnap.exists()) {
-                        const d = designSnap.data();
-                        designName = d.name || d.title;
-
-                        // Handle image logic same as elsewhere
-                        if (d.category === 'Floral') designImage = 'bg-rose-100';
-                        else if (d.category === 'Traditional') designImage = 'bg-amber-100';
-                        else designImage = 'bg-slate-100';
-                        if (d.image) designImage = d.image;
-                    }
-                }
-
-                // Fetch Fabric & Color (Logic Differentiated by Service)
-                if (data.service_type === 'send_your_fabric') {
-                    if (data.fabric_details) {
-                        fabricName = data.fabric_details.fabric_type || 'Custom Fabric';
-                        colorName = data.fabric_details.color || 'Custom Color';
-                        // Keep hex default or maybe set to neutral
-                    }
-                } else {
-                    // Standard Store Fabric Logic
-                    if (data.fabric_id) {
-                        const fabricSnap = await getDoc(doc(db, 'fabrics', data.fabric_id));
-                        if (fabricSnap.exists()) fabricName = fabricSnap.data().name;
-                    }
-                    if (data.color_id) {
-                        const colorSnap = await getDoc(doc(db, 'fabric_colors', data.color_id));
-                        if (colorSnap.exists()) {
-                            const c = colorSnap.data();
-                            colorName = c.name;
-                            colorHex = c.hex_code || '#ccc';
+                    // Fetch Design
+                    if (data.design_id) {
+                        const designSnap = await getDoc(doc(db, 'designs', data.design_id));
+                        if (designSnap.exists()) {
+                            const d = designSnap.data();
+                            designName = d.name || d.title;
+                            if (d.category === 'Floral') designImage = 'bg-rose-100';
+                            else if (d.category === 'Traditional') designImage = 'bg-amber-100';
+                            else designImage = 'bg-slate-100';
+                            if (d.image) designImage = d.image;
                         }
                     }
-                }
 
-                // Determine Service Type Label
-                let serviceTypeLabel = 'Embroidery Cloth Only';
-                if (data.service_type === 'embroidery_stitching') serviceTypeLabel = 'Custom Stitching';
-                else if (data.service_type === 'send_your_fabric') {
-                    serviceTypeLabel = 'Send Your Fabric';
-                    // Append sub-type
-                    if (data.fabric_details?.processing_type === 'embroidery_stitching') {
-                        serviceTypeLabel += ' (With Stitching)';
+                    // Fetch Fabric & Color (Logic Differentiated by Service)
+                    if (data.service_type === 'send_your_fabric') {
+                        if (data.fabric_details) {
+                            fabricName = data.fabric_details.fabric_type || 'Custom Fabric';
+                            colorName = data.fabric_details.color || 'Custom Color';
+                        }
                     } else {
-                        serviceTypeLabel += ' (Embroidery Only)';
+                        if (data.fabric_id) {
+                            const fabricSnap = await getDoc(doc(db, 'fabrics', data.fabric_id));
+                            if (fabricSnap.exists()) fabricName = fabricSnap.data().name;
+                        }
+                        if (data.color_id) {
+                            const colorSnap = await getDoc(doc(db, 'fabric_colors', data.color_id));
+                            if (colorSnap.exists()) {
+                                const c = colorSnap.data();
+                                colorName = c.name;
+                                colorHex = c.hex_code || '#ccc';
+                            }
+                        }
                     }
-                }
 
-                // Fetch Size Info
-                // Fetch Size Info
-                // Fetch Size Info
-                let sizeDisplay = '';
-
-                // Check if standard stitching OR send your fabric with stitching
-                let targetSizeId = null;
-
-                if (data.service_type === 'embroidery_stitching') {
-                    targetSizeId = data.standard_size_id;
-                    if (data.custom_measurements) sizeDisplay = 'Custom Size';
-                } else if (data.service_type === 'send_your_fabric') {
-                    if (data.fabric_details?.standard_size_id) {
-                        targetSizeId = data.fabric_details.standard_size_id;
-                    } else if (data.fabric_details?.custom_measurements) {
-                        sizeDisplay = 'Custom Size';
+                    // Determine Service Type Label
+                    let serviceTypeLabel = 'Embroidery Cloth Only';
+                    if (data.service_type === 'embroidery_stitching') serviceTypeLabel = 'Custom Stitching';
+                    else if (data.service_type === 'send_your_fabric') {
+                        serviceTypeLabel = 'Send Your Fabric';
+                        if (data.fabric_details?.processing_type === 'embroidery_stitching') {
+                            serviceTypeLabel += ' (With Stitching)';
+                        } else {
+                            serviceTypeLabel += ' (Embroidery Only)';
+                        }
                     }
-                }
 
-                if (targetSizeId) {
-                    const sizeSnap = await getDoc(doc(db, 'standard_sizes', targetSizeId));
-                    if (sizeSnap.exists()) {
-                        sizeDisplay = `Size: ${sizeSnap.data().label}`;
+                    // Fetch Size Info
+                    let sizeDisplay = '';
+                    let targetSizeId = null;
+
+                    if (data.service_type === 'embroidery_stitching') {
+                        targetSizeId = data.standard_size_id;
+                        if (data.custom_measurements) sizeDisplay = 'Custom ';
+                    } else if (data.service_type === 'send_your_fabric') {
+                        if (data.fabric_details?.standard_size_id) {
+                            targetSizeId = data.fabric_details.standard_size_id;
+                        } else if (data.fabric_details?.custom_measurements) {
+                            sizeDisplay = 'Custom Size';
+                        }
                     }
-                }
 
-                // Construct Item
-                return {
-                    id: draftDoc.id,
-                    designName,
-                    designImage,
-                    serviceType: serviceTypeLabel,
-                    selections: {
-                        fabric: fabricName,
-                        fabricId: data.fabric_id,
-                        color: colorName,
-                        colorId: data.color_id,
-                        colorHex: colorHex,
-                        length: data.custom_measurements?.length || 1,
-                        sizeDisplay: sizeDisplay
-                    },
-                    designId: data.design_id,
-                    price: data.estimated_price || 0,
-                    quantity: data.quantity || 1
-                } as BagItem;
+                    if (targetSizeId) {
+                        const sizeSnap = await getDoc(doc(db, 'standard_sizes', targetSizeId));
+                        if (sizeSnap.exists()) {
+                            sizeDisplay = `Size: ${sizeSnap.data().label}`;
+                        }
+                    }
+
+                    return {
+                        id: draftDoc.id,
+                        designName,
+                        designImage,
+                        serviceType: serviceTypeLabel,
+                        selections: {
+                            fabric: fabricName,
+                            fabricId: data.fabric_id,
+                            color: colorName,
+                            colorId: data.color_id,
+                            colorHex: colorHex,
+                            length: data.custom_measurements?.length || data.quantity, // fallback
+                            sizeDisplay
+                        },
+                        designId: data.design_id,
+                        price: data.estimated_price || 0,
+                        quantity: data.quantity || 1,
+                        _isGuest: false
+                    } as BagItem;
+                });
+
+                const resolvedItems = await Promise.all(draftPromises);
+                setBagItems(resolvedItems);
             });
 
-            const resolvedItems = await Promise.all(draftPromises);
-            setBagItems(resolvedItems);
-        });
+            return () => unsubscribe();
+        } else {
+            // --- Guest: Fetch from LocalStorage ---
+            const loadGuestItems = () => {
+                const guestBagJSON = localStorage.getItem('amma_guest_bag');
+                if (guestBagJSON) {
+                    try {
+                        const guestItems = JSON.parse(guestBagJSON);
+                        if (Array.isArray(guestItems)) {
+                            const mappedItems = guestItems.map((item: any) => {
+                                // Reconstruct BagItem from cached _displayDetails or raw data
+                                const details = item._displayDetails || {};
 
-        return () => unsubscribe();
+                                let serviceTypeLabel = 'Embroidery Cloth Only';
+                                if (item.service_type === 'embroidery_stitching') serviceTypeLabel = 'Custom Stitching';
+                                // ... simplified label logic for guest display
+
+                                return {
+                                    id: item.id,
+                                    designName: details.designName || 'Custom Design',
+                                    designImage: details.designImage || 'bg-gray-100',
+                                    serviceType: serviceTypeLabel,
+                                    selections: {
+                                        fabric: details.fabricName || 'Selected Fabric',
+                                        fabricId: item.fabric_id,
+                                        color: details.colorName || 'Selected Color',
+                                        colorId: item.color_id,
+                                        colorHex: details.colorHex || '#ccc',
+                                        length: details.length || 1,
+                                        sizeDisplay: details.size
+                                    },
+                                    designId: item.design_id,
+                                    price: item.estimated_price || 0,
+                                    quantity: item.quantity || 1,
+                                    _isGuest: true
+                                } as BagItem;
+                            });
+                            setBagItems(mappedItems);
+                        }
+                    } catch (e) {
+                        console.error("Error loading guest bag", e);
+                    }
+                } else {
+                    setBagItems([]);
+                }
+            };
+
+            loadGuestItems();
+            // Listen for custom event if in same tab
+            window.addEventListener('bagUpdated', loadGuestItems);
+            return () => window.removeEventListener('bagUpdated', loadGuestItems);
+        }
     }, [user]);
 
     const updateQuantity = async (id: string, newQuantity: number) => {
-        if (!user) return;
-        const itemRef = doc(db, 'users', user.id, 'drafts', id);
-        await updateDoc(itemRef, { quantity: newQuantity });
+        const item = bagItems.find(i => i.id === id);
+        if (!item) return;
+
+        if (user && !item._isGuest) {
+            const itemRef = doc(db, 'users', user.id, 'drafts', id);
+            await updateDoc(itemRef, { quantity: newQuantity });
+        } else {
+            // Guest Update
+            const guestBagJSON = localStorage.getItem('amma_guest_bag');
+            if (guestBagJSON) {
+                const guestItems = JSON.parse(guestBagJSON);
+                const updated = guestItems.map((gi: any) =>
+                    gi.id === id ? { ...gi, quantity: newQuantity } : gi
+                );
+                localStorage.setItem('amma_guest_bag', JSON.stringify(updated));
+                window.dispatchEvent(new Event('bagUpdated'));
+            }
+        }
     };
 
     const handleConfirmRemove = async () => {
-        if (itemToRemove && user) {
-            // Remove from Firestore
-            await deleteDoc(doc(db, 'users', user.id, 'drafts', itemToRemove));
-            setItemToRemove(null);
+        if (!itemToRemove) return;
+        const item = bagItems.find(i => i.id === itemToRemove);
+
+        if (item) {
+            if (user && !item._isGuest) {
+                await deleteDoc(doc(db, 'users', user.id, 'drafts', itemToRemove));
+            } else {
+                // Guest Remove
+                const guestBagJSON = localStorage.getItem('amma_guest_bag');
+                if (guestBagJSON) {
+                    const guestItems = JSON.parse(guestBagJSON);
+                    const updated = guestItems.filter((gi: any) => gi.id !== itemToRemove);
+                    localStorage.setItem('amma_guest_bag', JSON.stringify(updated));
+                    window.dispatchEvent(new Event('bagUpdated'));
+                }
+            }
         }
+        setItemToRemove(null);
     };
 
     const handleEdit = (id: string) => {
         const item = bagItems.find(i => i.id === id);
         if (item) {
             router.push({
-                pathname: '/embroidery-cloth-only',
+                pathname: '/embroidery-cloth-only', // Note: This might need dynamic routing based on service type
                 query: {
                     designId: item.designId,
                     fabricId: item.selections.fabricId,
                     colorId: item.selections.colorId,
-                    length: item.selections.length,
-                    editId: item.id // Pass the bag item ID to track it
+                    length: item.selections.length?.toString(),
+                    editId: item.id
                 }
             });
         }
     };
 
     const handleProceedToCheckout = () => {
-        router.push('/checkout'); // Placeholder route
+        protectAction(() => {
+            router.push('/checkout');
+        }, { action: 'checkout' });
     };
 
     // Calculations

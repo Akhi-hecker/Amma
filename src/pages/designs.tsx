@@ -140,32 +140,26 @@ export default function DesignsGallery() {
         e.preventDefault();
         e.stopPropagation();
 
-        protectAction(async () => {
-            if (!user) return;
+        // Optimistic Update
+        const isLiked = wishlist.includes(id);
+        const prevWishlist = [...wishlist];
+        const newWishlist = isLiked
+            ? wishlist.filter((itemId) => itemId !== id)
+            : [...wishlist, id];
 
-            // Optimistic Update
-            const isLiked = wishlist.includes(id);
-            const prevWishlist = [...wishlist];
-            const newWishlist = isLiked
-                ? wishlist.filter((itemId) => itemId !== id)
-                : [...wishlist, id];
+        setWishlist(newWishlist);
 
-            setWishlist(newWishlist);
-
+        if (user) {
+            // Firestore Sync for Logged-in Users
             try {
                 const wishlistDocRef = doc(db, 'users', user.id, 'wishlist', id);
 
                 if (isLiked) {
-                    // Unlike -> Delete doc
-                    await deleteDoc(wishlistDocRef);
+                    deleteDoc(wishlistDocRef);
                 } else {
-                    // Like -> Set doc (save design details for easier fetching in saved-designs page if we want, or just ID)
-                    // For now, let's just save a timestamp or minimal info.
-                    // Actually, saving design details makes 'Saved Designs' page listing much cheaper/faster (no N+1 reads).
-                    // So let's store the design snapshot.
                     const design = designs.find(d => d.id === id);
                     if (design) {
-                        await setDoc(wishlistDocRef, {
+                        setDoc(wishlistDocRef, {
                             ...design,
                             saved_at: new Date().toISOString()
                         });
@@ -177,7 +171,17 @@ export default function DesignsGallery() {
                 setWishlist(prevWishlist); // Revert
                 alert("Failed to update wishlist. Please try again.");
             }
-        }, { action: 'wishlist', designId: id });
+        } else {
+            // LocalStorage for Guests
+            try {
+                localStorage.setItem('user_wishlist', JSON.stringify(newWishlist));
+                if (!isLiked) {
+                    alert("Saved to your designs (Guest)");
+                }
+            } catch (e) {
+                console.error("Failed to save to local storage", e);
+            }
+        }
     };
 
     const handleCardClick = (design: Design) => {

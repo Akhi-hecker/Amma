@@ -88,25 +88,23 @@ const TopDesigns = () => {
         e.preventDefault();
         e.stopPropagation();
 
-        protectAction(async () => {
-            if (!user) return;
+        const isLiked = wishlist.includes(id);
+        const prevWishlist = [...wishlist];
+        const newWishlist = isLiked
+            ? wishlist.filter((itemId) => itemId !== id)
+            : [...wishlist, id];
 
-            const isLiked = wishlist.includes(id);
-            const prevWishlist = [...wishlist];
-            const newWishlist = isLiked
-                ? wishlist.filter((itemId) => itemId !== id)
-                : [...wishlist, id];
+        setWishlist(newWishlist);
 
-            setWishlist(newWishlist);
-
+        if (user) {
             try {
                 const wishlistDocRef = doc(db, 'users', user.id, 'wishlist', id);
                 if (isLiked) {
-                    await deleteDoc(wishlistDocRef);
+                    deleteDoc(wishlistDocRef);
                 } else {
                     const design = designs.find(d => d.id === id);
                     if (design) {
-                        await setDoc(wishlistDocRef, {
+                        setDoc(wishlistDocRef, {
                             ...design,
                             saved_at: new Date().toISOString()
                         });
@@ -116,7 +114,14 @@ const TopDesigns = () => {
                 console.error("Wishlist sync failed", err);
                 setWishlist(prevWishlist);
             }
-        }, { action: 'wishlist', designId: id });
+        } else {
+            // LocalStorage for Guests
+            try {
+                localStorage.setItem('user_wishlist', JSON.stringify(newWishlist));
+            } catch (e) {
+                console.error("Failed to save to local storage", e);
+            }
+        }
     };
 
     const handleSelectDesign = useCallback((design: Design) => {

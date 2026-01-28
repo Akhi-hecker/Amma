@@ -8,7 +8,7 @@ import DesignPreviewOverlay from '@/components/DesignPreviewOverlay';
 import { useAuth } from '@/context/AuthContext';
 import { Design } from '@/data/designs';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, getDoc } from 'firebase/firestore';
 
 // Helper to assign color based on category (Replica of designs.tsx logic)
 const getImageColor = (category: string) => {
@@ -36,84 +36,128 @@ export default function SavedDesigns() {
 
     useEffect(() => {
         const fetchSavedDesigns = async () => {
-            if (!isAuthenticated) {
-                setLoading(false);
-                return;
+            // User: Fetch from Firestore subcollection
+            if (user) {
+                try {
+                    const wishlistRef = collection(db, 'users', user.id, 'wishlist');
+                    const snapshot = await getDocs(wishlistRef);
+
+                    const mappedDesigns: Design[] = [];
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        if (data.id) {
+                            mappedDesigns.push({
+                                id: data.id,
+                                name: data.name,
+                                category: data.category,
+                                image: data.image || getImageColor(data.category),
+                                descriptor: data.descriptor || '',
+                                long_description: data.long_description,
+                                fabric_suitability: data.fabric_suitability,
+                                complexity: data.complexity,
+                                base_price: data.base_price,
+                                is_active: data.is_active
+                            } as Design);
+                        }
+                    });
+
+                    mappedDesigns.reverse();
+                    setSavedDesigns(mappedDesigns);
+                    setWishlist(mappedDesigns.map(d => d.id));
+                } catch (err) {
+                    console.error("Error fetching user wishlist:", err);
+                } finally {
+                    setLoading(false);
+                }
             }
-
-            if (!user) return;
-
-            try {
-                const wishlistRef = collection(db, 'users', user.id, 'wishlist');
-                const snapshot = await getDocs(wishlistRef);
-
-                const mappedDesigns: Design[] = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    // We stored the full design object + saved_at in designs.tsx
-                    // If migration script was run or if designs saved via new method, data should be there.
-                    // If data is missing (e.g. just ID from older migration?), we might need to fallback?
-                    // But for this task, we assume fresh start or standard data shape.
-                    if (data.id) {
-                        mappedDesigns.push({
-                            id: data.id,
-                            name: data.name,
-                            category: data.category,
-                            image: data.image || getImageColor(data.category), // storage logic might have saved image class
-                            descriptor: data.descriptor || '',
-                            long_description: data.long_description,
-                            fabric_suitability: data.fabric_suitability,
-                            complexity: data.complexity,
-                            base_price: data.base_price,
-                            is_active: data.is_active
-                        } as Design);
+            // Guest: Fetch from LocalStorage IDs + Firestore Design Details
+            else {
+                try {
+                    const localIds = JSON.parse(localStorage.getItem('user_wishlist') || '[]');
+                    if (localIds.length === 0) {
+                        setSavedDesigns([]);
+                        setWishlist([]);
+                        setLoading(false);
+                        return;
                     }
-                });
 
-                // Sort by saved date if available, else standard order
-                // Firestore queries can sort, but here we do in-mem since we just pull all
-                // Actually we didn't store timestamp in old mock migration, but new save does.
-                // Let's just reverse to show newest first if pushed in order?
-                // Or better, just render as is. Use simplistic reverse for now.
-                mappedDesigns.reverse();
+                    setWishlist(localIds);
 
-                setSavedDesigns(mappedDesigns);
-                setWishlist(mappedDesigns.map(d => d.id));
-            } catch (err) {
-                console.error("Error fetching saved designs:", err);
-            } finally {
-                setLoading(false);
+                    // Fetch details for each ID
+                    const designPromises = localIds.map((id: string) => getDoc(doc(db, 'designs', id)));
+                    const snapshots = await Promise.all(designPromises);
+
+                    const mappedDesigns: Design[] = [];
+                    snapshots.forEach(snap => {
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            mappedDesigns.push({
+                                id: snap.id,
+                                name: data.name,
+                                category: data.category,
+                                image: data.image || getImageColor(data.category),
+                                descriptor: data.short_description || '',
+                                long_description: data.long_description,
+                                fabric_suitability: data.fabric_suitability,
+                                complexity: data.complexity,
+                                base_price: data.base_price,
+                                is_active: data.is_active !== false
+                            } as Design);
+                        }
+                    });
+
+                    // Keep order of addition (though Promise.all preserves order of IDs, we reversed logic?)
+                    // If localIds acts as stack, map preserves stack order.
+                    // Let's just reverse to show latest first like user logic
+                    mappedDesigns.reverse();
+
+                    setSavedDesigns(mappedDesigns);
+
+                } catch (err) {
+                    console.error("Error fetching guest wishlist:", err);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
         fetchSavedDesigns();
-    }, [isAuthenticated, user]);
+    }, [user]);
 
 
     const toggleWishlist = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // On Saved Designs page, toggling always means "Remove"
         // Optimistic Update
         const previousDesigns = [...savedDesigns];
         setSavedDesigns(prev => prev.filter(d => d.id !== id));
         setWishlist(prev => prev.filter(wid => wid !== id));
 
-        protectAction(async () => {
-            if (!user) return;
-
+        if (user) {
+            protectAction(async () => {
+                try {
+                    const docRef = doc(db, 'users', user.id, 'wishlist', id);
+                    await deleteDoc(docRef);
+                } catch (err) {
+                    console.error("Remove failed", err);
+                    setSavedDesigns(previousDesigns);
+                    setWishlist(previousDesigns.map(d => d.id));
+                    alert("Failed to remove design.");
+                }
+            }, { action: 'wishlist', designId: id });
+        } else {
+            // Guest Remove
             try {
-                const docRef = doc(db, 'users', user.id, 'wishlist', id);
-                await deleteDoc(docRef);
+                const localIds = JSON.parse(localStorage.getItem('user_wishlist') || '[]');
+                const newIds = localIds.filter((wid: string) => wid !== id);
+                localStorage.setItem('user_wishlist', JSON.stringify(newIds));
             } catch (err) {
-                console.error("Remove failed", err);
-                // Revert
+                console.error("Guest remove failed", err);
                 setSavedDesigns(previousDesigns);
                 setWishlist(previousDesigns.map(d => d.id));
-                alert("Failed to remove design. Please try again.");
             }
-        }, { action: 'wishlist', designId: id });
+        }
     };
 
     const handleSelectDesign = (design: Design) => {

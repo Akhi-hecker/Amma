@@ -405,15 +405,9 @@ export default function EmbroideryCustomizationPage() {
         setIsLoading(true);
 
         try {
-            // Get User from Auth
-            if (!auth.currentUser) {
-                // Redirect or handle guest
-                router.push('/login?returnUrl=' + encodeURIComponent(router.asPath));
-                return;
-            }
-
             // Prepare Data for order_drafts
             const draftData: any = {
+                id: auth.currentUser ? undefined : `guest_${Date.now()}`,
                 service_type: 'embroidery_stitching',
                 design_id: selectedDesign.id,
                 garment_type_id: selectedGarment,
@@ -424,12 +418,31 @@ export default function EmbroideryCustomizationPage() {
                 estimated_price: priceBreakdown.total,
                 quantity: 1,
                 status: 'draft',
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                // Store minimal details for display in bag without refetching for guests
+                _displayDetails: {
+                    designName: selectedDesign.name,
+                    designImage: selectedDesign.image,
+                    fabricName: fabrics.find(f => f.id === selectedFabric)?.name,
+                    colorName: colors.find(c => c.id === selectedColor)?.name,
+                    colorHex: colors.find(c => c.id === selectedColor)?.hex_code,
+                    size: sizeMode === 'standard'
+                        ? standardSizes.find(s => s.id === selectedStandardSize)?.label
+                        : 'Custom Size'
+                }
             };
 
-            // Insert into Firestore
-            const draftsRef = collection(db, 'users', auth.currentUser.uid, 'drafts');
-            await addDoc(draftsRef, draftData);
+            if (auth.currentUser) {
+                // Insert into Firestore
+                const draftsRef = collection(db, 'users', auth.currentUser.uid, 'drafts');
+                const { _displayDetails, id, ...firestoreData } = draftData;
+                await addDoc(draftsRef, firestoreData);
+            } else {
+                // Guest Logic
+                const currentBag = JSON.parse(localStorage.getItem('amma_guest_bag') || '[]');
+                currentBag.push(draftData);
+                localStorage.setItem('amma_guest_bag', JSON.stringify(currentBag));
+            }
 
             window.dispatchEvent(new Event('bagUpdated')); // Optional: keep for legacy listeners
             alert("Added to Bag!");

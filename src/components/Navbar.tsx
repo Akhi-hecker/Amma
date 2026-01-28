@@ -16,21 +16,39 @@ const Navbar = () => {
     const router = useRouter();
     const isHomePage = router.pathname === '/';
 
-    // Listen for Firestore updates
+    // Listen for Firestore updates or LocalStorage changes
     useEffect(() => {
-        if (!user) {
-            setBagCount(0);
-            return;
+        // 1. Authenticated User: Listen to Firestore
+        if (user) {
+            const draftsRef = collection(db, 'users', user.id, 'drafts');
+            const q = query(draftsRef, where('status', '==', 'draft'));
+
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                setBagCount(snapshot.size);
+            });
+            return () => unsubscribe();
         }
 
-        const draftsRef = collection(db, 'users', user.id, 'drafts');
-        const q = query(draftsRef, where('status', '==', 'draft'));
+        // 2. Guest User: Listen to LocalStorage & Custom Events
+        else {
+            const updateGuestCount = () => {
+                const guestBag = JSON.parse(localStorage.getItem('amma_guest_bag') || '[]');
+                setBagCount(guestBag.length);
+            };
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setBagCount(snapshot.size);
-        });
+            // Initial check
+            updateGuestCount();
 
-        return () => unsubscribe();
+            // Listen for custom event (dispatched by add-to-bag handlers)
+            window.addEventListener('bagUpdated', updateGuestCount);
+            // Listen for storage event (cross-tab sync)
+            window.addEventListener('storage', updateGuestCount);
+
+            return () => {
+                window.removeEventListener('bagUpdated', updateGuestCount);
+                window.removeEventListener('storage', updateGuestCount);
+            };
+        }
     }, [user]);
 
     // Handle scroll effect
@@ -55,7 +73,7 @@ const Navbar = () => {
         { href: '/designs', label: 'Designs' },
         { href: '/contact', label: 'Custom Embroidery' },
         { href: '/ready-made', label: 'Ready-Made' },
-        { href: '/about', label: 'Our Story' },
+        { href: '/about', label: 'About AMMA' },
         // 'Contact' removed as per request (duplicate of Custom Embroidery)
     ];
 
@@ -111,14 +129,12 @@ const Navbar = () => {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4 md:space-x-6 relative z-50 justify-end">
-                        {isAuthenticated && (
-                            <Link href="/saved-designs" className={cn(
-                                "text-[#C9A14A] transition-colors hidden md:block",
-                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
-                            )} title="Saved Designs">
-                                <Heart size={20} strokeWidth={1.5} />
-                            </Link>
-                        )}
+                        <Link href="/saved-designs" className={cn(
+                            "text-[#C9A14A] transition-colors hidden md:block",
+                            (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                        )} title="Saved Designs">
+                            <Heart size={20} strokeWidth={1.5} />
+                        </Link>
                         <Link
                             href={isAuthenticated ? "/profile" : "/login"}
                             className={cn(
@@ -202,12 +218,10 @@ const Navbar = () => {
                                     <User size={20} />
                                     <span>{isAuthenticated ? "My Account" : "Login"}</span>
                                 </Link>
-                                {isAuthenticated && (
-                                    <Link href="/saved-designs" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-lg font-medium text-text-main/70">
-                                        <Heart size={20} />
-                                        <span>Saved Designs</span>
-                                    </Link>
-                                )}
+                                <Link href="/saved-designs" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-lg font-medium text-text-main/70">
+                                    <Heart size={20} />
+                                    <span>Saved Designs</span>
+                                </Link>
                             </motion.div>
                         </div>
                     </motion.div>

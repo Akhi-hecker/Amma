@@ -26,14 +26,14 @@ const Hero = () => {
                 {/* Content Container - Kept New Editorial Text */}
                 <div className="absolute inset-0 z-20 flex flex-col justify-center">
                     <div className="container mx-auto px-6 md:px-12">
-                        <div className="max-w-3xl">
+                        <div className="max-w-3xl mx-auto md:mx-0 text-center md:text-left">
 
                             {/* Eyebrow Label */}
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="flex items-center gap-3 mb-6"
+                                className="flex items-center justify-center md:justify-start gap-3 mb-6"
                             >
                                 <span className="h-[1px] w-12 bg-[#C9A14A]"></span>
                                 <span className="text-[#C9A14A] text-xs md:text-sm font-bold tracking-[0.2em] uppercase">
@@ -57,7 +57,7 @@ const Hero = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, duration: 0.8 }}
-                                className="text-gray-200 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-10"
+                                className="text-gray-200 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-10 mx-auto md:mx-0"
                             >
                                 Select a unique design. Choose your perfect fabric. <br className="hidden md:block" />
                                 We craft your personalized masterpiece with precision.
@@ -68,7 +68,7 @@ const Hero = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6, duration: 0.8 }}
-                                className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
+                                className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto justify-center md:justify-start"
                             >
                                 <Link
                                     href="/designs"
@@ -79,11 +79,11 @@ const Hero = () => {
                                 </Link>
 
                                 <Link
-                                    href="/contact"
+                                    href="/about"
                                     className="px-6 py-3 md:px-8 md:py-4 border border-white/30 text-white backdrop-blur-sm hover:bg-white/10 font-medium text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 w-auto md:min-w-[200px]"
                                 >
                                     <Play size={14} fill="currentColor" />
-                                    Custom Embroidery
+                                    About AMMA
                                 </Link>
                             </motion.div>
 

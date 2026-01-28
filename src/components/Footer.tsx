@@ -26,7 +26,7 @@ const Footer = () => {
                             <h4 className="text-xs font-bold text-[#C9A14A] tracking-wider uppercase mb-2">Explore</h4>
                             <FooterLink href="/designs">Browse Designs</FooterLink>
                             <FooterLink href="/how-it-works">How It Works</FooterLink>
-                            <FooterLink href="/about">Our Story</FooterLink>
+                            <FooterLink href="/about">About AMMA</FooterLink>
                         </div>
                         <div className="flex flex-col gap-4">
                             <h4 className="text-xs font-bold text-[#C9A14A] tracking-wider uppercase mb-2">Help</h4>

@@ -167,17 +167,9 @@ export default function OrderSummaryEmbroideryPage() {
         setIsLoading(true);
 
         try {
-            if (!user) {
-                // handle guest or redirect logic
-                router.push('/login?returnUrl=' + encodeURIComponent(router.asPath));
-                return;
-            }
-
-            // Prepare Data for order_drafts (subcollection of user or top level? Using user subcollection as per migration)
-            // wait, previously we used 'order_drafts' top level in Supabase.
-            // In My Orders migration we assumed `users/{uid}/drafts`. Let's stick to that.
-
+            // Prepare Data
             const draftData = {
+                id: user ? undefined : `guest_${Date.now()}`,
                 service_type: isStitching ? 'embroidery_stitching' : 'cloth_only',
                 design_id: selectedDesign?.id,
                 fabric_id: selectedFabric?.id,
@@ -187,13 +179,32 @@ export default function OrderSummaryEmbroideryPage() {
                 status: 'draft',
                 garment_type_id: isStitching ? (router.query.garmentId || null) : null,
                 fabric_length_id: !isStitching ? (lengthId || null) : null,
-                custom_measurements: !isStitching && !lengthId ? { length: selectedLength } : null,
-                address_id: selectedAddressId,
-                created_at: new Date().toISOString()
+                custom_measurements: !isStitching && !lengthId && sizeType === 'custom' ? { length: selectedLength } : null,
+                address_id: selectedAddressId || null,
+                created_at: new Date().toISOString(),
+                // Store minimal details for display in bag without refetching for guests
+                _displayDetails: {
+                    designName: selectedDesign?.name,
+                    designImage: selectedDesign?.image,
+                    fabricName: selectedFabric?.name,
+                    colorName: selectedColor?.name,
+                    colorHex: selectedColor?.hex_code,
+                    length: selectedLength,
+                    size: sizeDisplay
+                }
             };
 
-            const draftsRef = collection(db, 'users', user.uid, 'drafts');
-            await addDoc(draftsRef, draftData);
+            if (user) {
+                const draftsRef = collection(db, 'users', user.uid, 'drafts');
+                // Remove _displayDetails before saving to Firestore to keep it clean (optional, but good practice)
+                const { _displayDetails, id, ...firestoreData } = draftData;
+                await addDoc(draftsRef, firestoreData);
+            } else {
+                // Guest Logic
+                const currentBag = JSON.parse(localStorage.getItem('amma_guest_bag') || '[]');
+                currentBag.push(draftData);
+                localStorage.setItem('amma_guest_bag', JSON.stringify(currentBag));
+            }
 
             window.dispatchEvent(new Event('bagUpdated'));
 
