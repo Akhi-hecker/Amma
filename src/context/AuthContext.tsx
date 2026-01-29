@@ -13,6 +13,7 @@ export interface User {
     phone?: string;
     initials?: string;
     avatar_url?: string;
+    role?: 'admin' | 'user';
 }
 
 interface AuthContextType {
@@ -22,6 +23,7 @@ interface AuthContextType {
     logout: () => void;
     protectAction: (action: () => void, redirectMetadata?: any) => void;
     isAuthenticated: boolean;
+    isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 name: profileData.full_name || firebaseUser.displayName || '',
                 phone: profileData.phone || '',
                 avatar_url: profileData.avatar_url || firebaseUser.photoURL || '',
-                initials: (profileData.full_name || firebaseUser.displayName || firebaseUser.email || 'A').charAt(0).toUpperCase()
+                initials: (profileData.full_name || firebaseUser.displayName || firebaseUser.email || 'A').charAt(0).toUpperCase(),
+                role: profileData.role || 'user'
             };
 
             setUser(userData);
@@ -162,7 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             login,
             logout,
             protectAction,
-            isAuthenticated: !!user
+            isAuthenticated: !!user,
+            isAdmin: user?.role === 'admin'
         }}>
             {children}
             <AuthModal

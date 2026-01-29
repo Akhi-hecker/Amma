@@ -15,12 +15,8 @@ import { ref, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebas
 import { useAuth } from '@/context/AuthContext';
 
 // ============================================
-// ADMIN EMAILS - Only these users can access CMS
+// ADMIN EMAILS - DEPRECATED: Role-based access now used
 // ============================================
-const ADMIN_EMAILS = [
-    'kallabharath2004@gmail.com',
-    'akhil2209.yt@gmail.com'
-];
 
 // ============================================
 // TYPES
@@ -101,12 +97,12 @@ const EMPTY_DESIGN: Omit<Design, 'id'> = {
 // MAIN CMS COMPONENT
 // ============================================
 export default function CMSPage() {
-    const { user, isLoading, isAuthenticated } = useAuth();
+    const { user, isLoading, isAuthenticated, isAdmin } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'designs' | 'content' | 'media' | 'orders' | 'settings'>('designs');
 
     // Check if user is an admin
-    const isAdmin = true; // user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+    // const isAdmin = true; <-- Removed hardcoded override
 
     const tabs = [
         { id: 'designs', label: 'Designs', icon: Palette },

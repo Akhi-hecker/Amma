@@ -8,15 +8,8 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 
-// Admin emails - same list as in CMS page
-const ADMIN_EMAILS = [
-    'kallabharath2004@gmail.com',
-    'akhil2209.yt@gmail.com'
-];
-
 const Navbar = () => {
-    const { user, isAuthenticated } = useAuth();
-    const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+    const { user, isAuthenticated, isAdmin } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [bagCount, setBagCount] = useState(0);
