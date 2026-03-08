@@ -30,6 +30,7 @@ interface BagItem {
         garmentId?: string;
         standardSizeId?: string;
         customMeasurements?: any;
+        garmentName?: string;
     };
     designId: string;
     price: number;
@@ -106,6 +107,14 @@ export default function ShoppingBagPage() {
                         }
                     }
 
+
+                    // Fetch Garment Name
+                    let garmentName = '';
+                    if (data.garment_type_id) {
+                        const garmentSnap = await getDoc(doc(db, 'garment_types', data.garment_type_id));
+                        if (garmentSnap.exists()) garmentName = garmentSnap.data().name;
+                    }
+
                     // Determine Service Type Label
                     let serviceTypeLabel = 'Embroidery Cloth Only';
                     if (data.service_type === 'embroidery_stitching') serviceTypeLabel = 'Custom Stitching';
@@ -124,7 +133,7 @@ export default function ShoppingBagPage() {
 
                     if (data.service_type === 'embroidery_stitching') {
                         targetSizeId = data.standard_size_id;
-                        if (data.custom_measurements) sizeDisplay = 'Custom ';
+                        if (data.custom_measurements) sizeDisplay = 'Custom';
                     } else if (data.service_type === 'send_your_fabric') {
                         if (data.fabric_details?.standard_size_id) {
                             targetSizeId = data.fabric_details.standard_size_id;
@@ -155,6 +164,7 @@ export default function ShoppingBagPage() {
                             length: data.custom_measurements?.length || data.quantity, // fallback
                             sizeDisplay,
                             garmentId: data.garment_type_id,
+                            garmentName,
                             standardSizeId: data.standard_size_id,
                             customMeasurements: data.custom_measurements
                         },
@@ -201,6 +211,7 @@ export default function ShoppingBagPage() {
                                         length: details.length || 1,
                                         sizeDisplay: details.size,
                                         garmentId: item.garment_type_id,
+                                        garmentName: details.garmentName,
                                         standardSizeId: item.standard_size_id,
                                         customMeasurements: item.custom_measurements
                                     },
@@ -330,14 +341,19 @@ export default function ShoppingBagPage() {
 
                 <div className="px-4 space-y-6 max-w-lg mx-auto">
 
-                    <div className="text-center mb-8">
-                        <h1 className="font-serif text-3xl text-[#1C1C1C]">Shopping Bag</h1>
+                    <div className="text-center mb-14 mt-4">
+                        <h1 className="text-3xl font-serif font-light text-[#1C1C1C] mb-4 tracking-wide">
+                            Shopping Bag
+                        </h1>
+                        <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">
+                            Review Your Items
+                        </p>
                     </div>
                     <AnimatePresence mode='popLayout'>
                         {bagItems.length > 0 ? (
                             <>
                                 {/* --- Bag Items List --- */}
-                                <div className="space-y-4">
+                                <div className="space-y-6">
                                     {bagItems.map((item) => (
                                         <motion.div
                                             key={item.id}
@@ -345,31 +361,37 @@ export default function ShoppingBagPage() {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, x: -20 }}
-                                            className="bg-white rounded-xl p-3 shadow-sm border border-[#E8E6E0] relative overflow-hidden"
+                                            className="bg-white rounded-none p-4 shadow-none border border-[#E8E6E0] relative overflow-hidden transition-all duration-300 hover:border-[#1C1C1C]/30"
                                         >
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-4">
                                                 {/* Thumbnail */}
-                                                <div className="w-20 h-24 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
+                                                <div className="w-20 h-28 bg-[#F9F7F3] rounded-none flex-shrink-0 relative overflow-hidden">
                                                     <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
-                                                    <div className="absolute inset-0 flex items-center justify-center text-[#999] text-[10px]">
+                                                    <div className="absolute inset-0 flex items-center justify-center text-[#999] text-[9px] uppercase tracking-[0.2em]">
                                                         IMG
                                                     </div>
                                                 </div>
 
                                                 {/* Details */}
-                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                                     <div>
-                                                        <h3 className="font-serif text-[15px] text-[#1C1C1C] leading-snug truncate">
+                                                        <h3 className="font-serif text-[16px] text-[#1C1C1C] leading-snug truncate tracking-wide mb-1">
                                                             {item.designName}
                                                         </h3>
-                                                        <p className="text-[11px] text-[#777] uppercase tracking-wide mb-1">
+                                                        <p className="text-[9px] text-[#999] uppercase tracking-[0.2em] font-medium mb-2">
                                                             {item.serviceType}
                                                         </p>
-                                                        <div className="flex flex-wrap gap-2 text-xs text-[#5A5751]">
+                                                        <div className="flex flex-wrap gap-2 text-[11px] text-[#5A5751] uppercase tracking-wide">
+                                                            {item.selections.garmentName && (
+                                                                <>
+                                                                    <span className="font-medium text-[#1C1C1C]">{item.selections.garmentName}</span>
+                                                                    <span className="text-[#E8E6E0]">•</span>
+                                                                </>
+                                                            )}
                                                             <span>{item.selections.fabric}</span>
                                                             <span className="text-[#E8E6E0]">•</span>
                                                             <span className="flex items-center gap-1">
-                                                                <span className="w-2 h-2 rounded-full border border-black/10" style={{ backgroundColor: item.selections.colorHex }} />
+                                                                <span className="w-3 h-3 rounded-none border border-[#E8E6E0]" style={{ backgroundColor: item.selections.colorHex }} />
                                                                 {item.selections.color}
                                                             </span>
                                                             {item.selections.sizeDisplay && (
@@ -383,17 +405,17 @@ export default function ShoppingBagPage() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex justify-between items-end mt-2">
-                                                        <span className="font-medium text-[#1C1C1C]">
+                                                    <div className="flex justify-between items-end mt-4">
+                                                        <span className="font-serif text-[16px] text-[#1C1C1C] tracking-wide">
                                                             ₹{(item.price * item.quantity).toLocaleString()}
                                                         </span>
 
                                                         {/* Actions Row (Mobile Friendly) */}
-                                                        <div className="flex items-center gap-3">
+                                                        <div className="flex items-center gap-4">
                                                             <select
                                                                 value={item.quantity}
                                                                 onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                                                                className="text-xs font-medium bg-[#F9F7F3] border border-[#E8E6E0] rounded px-1.5 py-0.5 outline-none active:bg-white transition-colors"
+                                                                className="text-[10px] font-medium bg-[#F9F7F3] border border-[#E8E6E0] rounded-none px-2 py-1 outline-none active:bg-white transition-colors cursor-pointer uppercase tracking-[0.1em]"
                                                             >
                                                                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                                                                     <option key={n} value={n}>{n}</option>
@@ -402,14 +424,14 @@ export default function ShoppingBagPage() {
                                                             <div className="w-px h-3 bg-[#E8E6E0]" />
                                                             <button
                                                                 onClick={() => handleEdit(item.id)}
-                                                                className="text-xs font-medium text-[#C9A14A] active:text-[#B89240] py-1"
+                                                                className="text-[9px] uppercase tracking-[0.1em] font-medium text-[#999] hover:text-[#1C1C1C] transition-colors py-1"
                                                             >
                                                                 Edit
                                                             </button>
                                                             <div className="w-px h-3 bg-[#E8E6E0]" />
                                                             <button
                                                                 onClick={() => setItemToRemove(item.id)}
-                                                                className="text-xs font-medium text-[#999] active:text-red-500 transition-colors py-1"
+                                                                className="text-[9px] uppercase tracking-[0.1em] font-medium text-[#999] hover:text-red-500 transition-colors py-1"
                                                             >
                                                                 Remove
                                                             </button>
@@ -422,28 +444,28 @@ export default function ShoppingBagPage() {
                                 </div>
 
                                 {/* --- Order Summary --- */}
-                                <div className="bg-white rounded-xl p-5 border border-[#E8E6E0]">
-                                    <h3 className="font-serif text-lg text-[#1C1C1C] mb-4">Order Summary</h3>
-                                    <div className="space-y-3 text-sm">
-                                        <div className="flex justify-between text-[#5A5751]">
+                                <div className="bg-white rounded-none p-6 shadow-none border border-[#E8E6E0] mt-8">
+                                    <h3 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C] border-b border-[#E8E6E0] pb-4 mb-4">Order Summary</h3>
+                                    <div className="space-y-4 text-[11px] tracking-wide text-[#5A5751] uppercase">
+                                        <div className="flex justify-between">
                                             <span>Subtotal ({bagItems.length} items)</span>
                                             <span>₹{subtotal.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between text-[#5A5751]">
+                                        <div className="flex justify-between">
                                             <span>Est. Delivery</span>
-                                            <span className="text-[#1C1C1C]">5-7 Days</span>
+                                            <span className="text-[#1C1C1C] font-medium">5-7 Days</span>
                                         </div>
-                                        <div className="h-px bg-[#E8E6E0] my-2" />
-                                        <div className="flex justify-between items-end">
-                                            <span className="font-medium text-[#1C1C1C]">Total</span>
-                                            <span className="font-serif text-xl text-[#C9A14A] font-medium">
+                                        <div className="h-px bg-[#E8E6E0] my-4" />
+                                        <div className="flex justify-between items-center bg-[#F9F7F3] -mx-6 -mb-6 p-6 mt-6 border-t border-[#E8E6E0]">
+                                            <span className="font-serif text-xl text-[#1C1C1C] tracking-wide capitalize">Total</span>
+                                            <span className="font-serif text-2xl text-[#1C1C1C] tracking-wide">
                                                 ₹{total.toLocaleString()}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-[#999] mt-2">
-                                            Tax included. Shipping calculated at checkout.
-                                        </p>
                                     </div>
+                                    <p className="text-[9px] uppercase tracking-[0.1em] text-center text-[#999] leading-relaxed mt-10">
+                                        Tax included. Shipping calculated at checkout.
+                                    </p>
                                 </div>
                             </>
                         ) : (
@@ -453,16 +475,16 @@ export default function ShoppingBagPage() {
                                 animate={{ opacity: 1 }}
                                 className="flex flex-col items-center justify-center py-20 text-center"
                             >
-                                <div className="w-16 h-16 bg-[#F0EEE6] rounded-full flex items-center justify-center mb-4 text-[#C9A14A]">
-                                    <ShoppingBag size={28} strokeWidth={1.5} />
+                                <div className="w-16 h-16 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] flex items-center justify-center mb-8 text-[#1C1C1C]">
+                                    <ShoppingBag size={24} strokeWidth={1.5} />
                                 </div>
-                                <h2 className="font-serif text-xl text-[#1C1C1C] mb-2">Your bag is empty</h2>
-                                <p className="text-sm text-[#777] mb-8 max-w-[200px]">
+                                <h2 className="font-serif text-2xl tracking-wide text-[#1C1C1C] mb-4">Your bag is empty</h2>
+                                <p className="text-[11px] uppercase tracking-wide text-[#777] mb-10 max-w-[200px] leading-relaxed">
                                     Looks like you haven't added any beautiful embroidery yet.
                                 </p>
                                 <button
                                     onClick={() => router.push('/designs')}
-                                    className="px-8 py-3 bg-[#C9A14A] text-white rounded-full font-medium shadow-lg shadow-[#C9A14A]/20 active:scale-95 transition-transform"
+                                    className="px-8 py-4 bg-[#1C1C1C] text-white rounded-none text-[10px] uppercase tracking-[0.2em] font-medium hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] transition-all duration-300"
                                 >
                                     Browse Designs
                                 </button>
@@ -474,28 +496,28 @@ export default function ShoppingBagPage() {
 
             {/* --- Sticky Bottom Bar (Only if items exist) --- */}
             {bagItems.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50">
-                    <div className="max-w-lg mx-auto flex flex-col gap-3">
-                        <div className="flex justify-between items-end mb-1">
-                            <span className="text-xs text-[#777] mb-1">Total Payable</span>
-                            <span className="font-serif text-2xl text-[#1C1C1C]">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-8 safe-area-pb z-50">
+                    <div className="max-w-lg mx-auto flex flex-col gap-4">
+                        <div className="flex justify-between items-end mb-2 border-b border-[#E8E6E0] pb-2">
+                            <span className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999]">Total Payable</span>
+                            <span className="font-serif text-2xl text-[#1C1C1C] tracking-wide">
                                 ₹{total.toLocaleString()}
                             </span>
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-4">
                             <button
                                 onClick={() => router.push('/designs')}
-                                className="flex-1 py-3.5 rounded-xl font-medium text-sm text-[#C9A14A] border border-[#C9A14A] active:bg-[#C9A14A]/5 transition-colors"
+                                className="flex-1 py-4 rounded-none font-medium text-[9px] tracking-[0.2em] uppercase text-[#1C1C1C] border border-[#1C1C1C] hover:bg-[#F9F7F3] transition-colors"
                             >
                                 Continue Browsing
                             </button>
                             <button
                                 onClick={handleProceedToCheckout}
-                                className="flex-[2] py-3.5 rounded-xl font-medium text-sm text-white bg-[#C9A14A] shadow-lg shadow-[#C9A14A]/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                className="flex-[2] py-4 rounded-none font-medium text-[10px] tracking-[0.2em] uppercase text-white bg-[#1C1C1C] hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] transition-all duration-300 flex items-center justify-center gap-2 border border-[#1C1C1C]"
                             >
                                 <span>Proceed to Checkout</span>
-                                <ChevronRight size={16} />
+                                <ChevronRight size={14} strokeWidth={2} />
                             </button>
                         </div>
                     </div>
@@ -510,29 +532,29 @@ export default function ShoppingBagPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                             onClick={() => setItemToRemove(null)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm relative z-10"
+                            className="bg-white rounded-none shadow-2xl p-8 w-full max-w-sm relative z-10 border border-[#E8E6E0]"
                         >
-                            <h3 className="font-serif text-lg text-[#1C1C1C] mb-2">Remove Item?</h3>
-                            <p className="text-sm text-[#5A5751] mb-6">
+                            <h3 className="font-serif text-xl text-[#1C1C1C] tracking-wide mb-3">Remove Item?</h3>
+                            <p className="text-[11px] uppercase tracking-wide text-[#777] leading-relaxed mb-8">
                                 Are you sure you want to remove this item from your bag?
                             </p>
-                            <div className="flex gap-3">
+                            <div className="flex gap-4">
                                 <button
                                     onClick={() => setItemToRemove(null)}
-                                    className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#1C1C1C] bg-gray-100 hover:bg-gray-200"
+                                    className="flex-1 py-3 rounded-none text-[9px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C] border border-[#E8E6E0] hover:bg-[#F9F7F3] transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleConfirmRemove}
-                                    className="flex-1 py-2.5 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                                    className="flex-1 py-3 rounded-none text-[9px] uppercase tracking-[0.2em] font-medium text-white bg-red-600 hover:bg-red-700 transition-colors shadow-none"
                                 >
                                     Remove
                                 </button>

@@ -66,20 +66,20 @@ export default function UpdatePasswordPage() {
             </Head>
 
             {/* --- Top Bar --- */}
-            <header className="w-full bg-[#F9F7F3] h-[72px] flex items-center px-4 justify-center">
-                <h1 className="text-xl font-serif text-[#1C1C1C]">
+            <header className="w-full bg-[#F9F7F3] h-[90px] flex items-center px-4 pt-6 sticky top-0 z-10 justify-center">
+                <h1 className="text-3xl font-serif font-light text-[#1C1C1C] tracking-wide relative top-1">
                     Set New Password
                 </h1>
             </header>
 
-            <main className="max-w-md mx-auto px-6 py-4">
-                <div className="mb-10 mt-4">
-                    <p className="text-[#5A5751] text-sm font-sans tracking-wide leading-relaxed text-center">
+            <main className="max-w-md mx-auto px-6 py-8">
+                <div className="mb-12 mt-4 text-center">
+                    <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium leading-relaxed max-w-sm mx-auto">
                         Please enter a new password for your account.
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="relative">
                         <Input
                             label="New Password"
@@ -93,9 +93,9 @@ export default function UpdatePasswordPage() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3.5 text-[#999] p-1"
+                            className="absolute right-0 top-3 text-[#999] p-1.5 hover:text-[#1C1C1C] transition-colors"
                         >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={18} strokeWidth={1.5} /> : <Eye size={18} strokeWidth={1.5} />}
                         </button>
                     </div>
 
@@ -110,30 +110,29 @@ export default function UpdatePasswordPage() {
                     />
 
                     {password && confirmPassword && password !== confirmPassword && (
-                        <p className="text-red-500 text-xs ml-1">Passwords do not match</p>
+                        <p className="text-red-500 text-[10px] uppercase tracking-[0.1em] font-medium mt-1">Passwords do not match</p>
                     )}
 
-                    <div className="pt-2">
-                        <motion.button
-                            whileTap={{ scale: 0.98 }}
+                    <div className="pt-4">
+                        <button
                             disabled={!password || password.length < 6 || password !== confirmPassword || isSubmitting}
                             type="submit"
                             className={`
-                                w-full py-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all
+                                w-full py-4 rounded-none font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-all duration-300 border
                                 ${password && password === confirmPassword && !isSubmitting
-                                    ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/20'
-                                    : 'bg-[#E8E6E0] text-[#999] cursor-not-allowed'}
+                                    ? 'bg-[#1C1C1C] border-[#1C1C1C] text-white hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)]'
+                                    : 'bg-transparent border-[#E8E6E0] text-[#999] cursor-not-allowed'}
                             `}
                         >
                             {isSubmitting ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                <span className="flex items-center gap-3">
+                                    <div className="w-3.5 h-3.5 border border-white/30 border-t-white rounded-full animate-spin" />
                                     Updating...
                                 </span>
                             ) : (
                                 "Update Password"
                             )}
-                        </motion.button>
+                        </button>
                     </div>
                 </form>
             </main>
@@ -154,10 +153,10 @@ function Input({ label, ...props }: InputProps) {
         <div className="relative">
             <label
                 className={`
-                    absolute left-4 px-1 transition-all duration-200 pointer-events-none z-10
+                    absolute left-0 px-0 transition-all duration-300 pointer-events-none z-10 bg-transparent font-medium tracking-[0.2em] uppercase
                     ${(isFocused || hasValue)
-                        ? '-top-2 text-[10px] bg-white text-[#C9A14A] font-medium'
-                        : 'top-3.5 text-sm text-[#999]'}
+                        ? '-top-6 text-[9px] text-[#1C1C1C]'
+                        : 'top-3.5 text-[10px] text-[#999]'}
                 `}
             >
                 {label}
@@ -174,25 +173,11 @@ function Input({ label, ...props }: InputProps) {
                     props.onBlur?.(e);
                 }}
                 className={`
-                    w-full bg-white border rounded-xl px-4 py-3.5 text-[#1C1C1C] outline-none transition-all
-                    ${(isFocused || hasValue) ? 'border-[#C9A14A] ring-1 ring-[#C9A14A]/10' : 'border-[#E8E6E0]'}
-                    placeholder:text-transparent
+                    w-full bg-transparent border-0 border-b-2 rounded-none px-0 py-3 pr-10 text-[#1C1C1C] text-sm outline-none transition-all placeholder:text-transparent
+                    ${(isFocused || hasValue) ? 'border-[#1C1C1C]' : 'border-[#E8E6E0]'}
                 `}
                 placeholder={label}
             />
-
-            <AnimatePresence>
-                {hasValue && !isFocused && props.type !== 'password' && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        className="absolute right-3 top-3.5 text-[#C9A14A]"
-                    >
-                        <Check size={18} strokeWidth={2.5} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

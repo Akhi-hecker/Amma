@@ -180,9 +180,9 @@ export default function SavedDesigns() {
             {/* Page Header */}
             <div className="min-h-screen bg-[#F9F7F3] pt-[84px] md:pt-[96px] pb-24 px-2.5 sm:px-4 lg:px-8 font-sans">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">Saved Designs</h1>
-                        <p className="text-[#555555] text-sm">Your personal collection</p>
+                    <div className="text-center mb-12">
+                        <h1 className="font-serif text-4xl font-light text-[#1C1C1C] mb-4 tracking-wide">Saved Designs</h1>
+                        <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">Your personal collection</p>
                     </div>
 
                     {/* Content */}
@@ -212,18 +212,18 @@ export default function SavedDesigns() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex flex-col items-center justify-center py-32 text-center"
                             >
-                                <div className="w-16 h-16 bg-[#F0EFEC] rounded-full flex items-center justify-center mb-6">
-                                    <Heart size={24} className="text-[#999999]" />
+                                <div className="w-16 h-16 bg-transparent border border-[#E8E6E0] rounded-full flex items-center justify-center mb-6">
+                                    <Heart size={20} className="text-[#1C1C1C] opacity-40" strokeWidth={1.5} />
                                 </div>
-                                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">
-                                    You haven’t saved any designs yet.
+                                <h3 className="font-serif text-2xl font-light text-[#1C1C1C] mb-3 tracking-wide">
+                                    No designs saved yet
                                 </h3>
-                                <p className="text-[#555555] text-sm max-w-xs mx-auto mb-8 font-light">
+                                <p className="text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto mb-10 leading-relaxed">
                                     Save your favorite embroidery patterns to view them here later.
                                 </p>
                                 <button
                                     onClick={() => router.push('/designs')}
-                                    className="px-8 py-3 bg-[#C9A14A] text-white text-sm font-semibold uppercase tracking-wider rounded shadow-md hover:bg-[#B08D40] transition-colors flex items-center gap-2"
+                                    className="px-8 py-4 bg-[#1C1C1C] text-white text-[11px] font-medium uppercase tracking-[0.2em] rounded-none shadow-none hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] transition-all duration-300 flex items-center gap-3"
                                 >
                                     Browse Designs
                                     <ArrowRight size={16} />

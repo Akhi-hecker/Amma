@@ -138,12 +138,12 @@ const TopDesigns = () => {
             <div className="container mx-auto px-4 md:px-8 max-w-[1400px]">
 
                 {/* Centered Header */}
-                <div className="text-center mb-16 md:mb-24">
+                <div className="text-center mb-20 md:mb-28">
                     <motion.span
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-[#C9A14A] text-xs font-bold tracking-[0.2em] uppercase mb-4 block"
+                        className="text-[#C9A14A] text-[10px] font-medium tracking-[0.3em] uppercase mb-6 block"
                     >
                         Curated Collection
                     </motion.span>
@@ -152,9 +152,9 @@ const TopDesigns = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1, duration: 0.7 }}
-                        className="text-4xl md:text-6xl font-serif text-[#1C1C1C] leading-[1.1]"
+                        className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#1C1C1C] leading-[1.1] tracking-wide"
                     >
-                        Trending <span className="italic text-gray-400 font-light">Embroideries</span>
+                        Trending <span className="italic text-gray-400 font-light pr-2">Embroideries</span>
                     </motion.h2>
                 </div>
 
@@ -198,13 +198,13 @@ const TopDesigns = () => {
                 </motion.div>
 
                 {/* Premium Centered CTA */}
-                <div className="text-center">
+                <div className="text-center mt-8">
                     <Link
                         href="/designs"
-                        className="group inline-flex items-center gap-3 px-8 py-4 border border-[#1C1C1C]/20 hover:border-[#1C1C1C] text-[#1C1C1C] font-semibold text-sm tracking-[0.1em] uppercase transition-all duration-300 hover:bg-[#1C1C1C] hover:text-white"
+                        className="group inline-flex items-center gap-4 px-10 py-4 border border-[#1C1C1C]/20 hover:border-[#1C1C1C] text-[#1C1C1C] font-medium text-[11px] tracking-[0.2em] uppercase transition-all duration-500 hover:bg-[#1C1C1C] hover:text-white"
                     >
                         Explore All Collection
-                        <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform duration-300" />
+                        <ArrowRight size={16} className="transform group-hover:translate-x-2 transition-transform duration-500" />
                     </Link>
                 </div>
 

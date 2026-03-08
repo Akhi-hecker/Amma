@@ -76,8 +76,14 @@ export default function OrderDetailPage() {
             setFetchLoading(true);
 
             try {
-                const docRef = doc(db, 'users', user.id, 'orders', orderId as string);
-                const docSnap = await getDoc(docRef);
+                let docRef = doc(db, 'users', user.id, 'orders', orderId as string);
+                let docSnap = await getDoc(docRef);
+
+                // Fallback: Check global orders collection
+                if (!docSnap.exists()) {
+                    docRef = doc(db, 'orders', orderId as string);
+                    docSnap = await getDoc(docRef);
+                }
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -89,14 +95,29 @@ export default function OrderDetailPage() {
                         total: data.total_amount || 0,
                         status: data.status || 'Order Confirmed',
                         paymentMethod: data.payment_method || 'Online',
-                        items: data.items || [],
-                        address: data.address ? {
+                        items: (data.items || []).map((item: any) => ({
+                            id: item.id,
+                            name: item.name || item.designName || 'Custom Item',
+                            service: item.service || item.serviceType || 'Embroidery',
+                            desc: item.desc,
+                            qty: item.qty || item.quantity || 1,
+                            isFabric: item.isFabric,
+                            image: item.image || item.designImage,
+                            price: item.price
+                        })),
+                        address: data.shipping_address ? {
+                            name: data.shipping_address.fullName,
+                            line1: data.shipping_address.addressLine1,
+                            city: data.shipping_address.city,
+                            state: data.shipping_address.state,
+                            pincode: data.shipping_address.pincode
+                        } : (data.address ? {
                             name: data.address.full_name || user.name || 'User',
                             line1: data.address.address_line1 || '',
                             city: data.address.city || '',
                             state: data.address.state || '',
                             pincode: data.address.pincode || ''
-                        } : undefined,
+                        } : undefined),
                         tracking: data.tracking
                     };
                     setOrder(fetchedOrder);
@@ -147,7 +168,7 @@ export default function OrderDetailPage() {
 
             {/* --- Local Header (Scrolls with page) --- */}
             <header className="w-full bg-[#F9F7F3] h-[90px] flex items-center px-4 pt-6">
-                <h1 className="flex-1 text-center text-2xl font-serif text-[#1C1C1C]">
+                <h1 className="flex-1 text-center text-3xl font-serif font-light text-[#1C1C1C] tracking-wide">
                     Order Details
                 </h1>
             </header>
@@ -162,24 +183,24 @@ export default function OrderDetailPage() {
                 <main className="max-w-md mx-auto px-4 py-6 space-y-6">
 
                     {/* --- Order Summary Header --- */}
-                    <div className="bg-white rounded-xl p-5 border border-[#E8E6E0] shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
+                    <div className="bg-white rounded-none p-6 border border-[#E8E6E0] shadow-none">
+                        <div className="flex justify-between items-start mb-6">
                             <div>
-                                <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Order ID</p>
+                                <p className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999] mb-2">Order ID</p>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-[#1C1C1C] text-sm tracking-wide">{order.order_number || order.id.substring(0, 8).toUpperCase()}</span>
+                                    <span className="font-medium text-[#1C1C1C] text-sm font-mono tracking-wider">{order.order_number || order.id.substring(0, 8).toUpperCase()}</span>
                                     {/* Copy Logic would go here */}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Total</p>
-                                <p className="font-serif font-medium text-[#1C1C1C]">₹{order.total.toLocaleString()}</p>
+                                <p className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999] mb-2">Total</p>
+                                <p className="font-serif font-light text-xl text-[#1C1C1C]">₹{order.total.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-[#5A5751] pt-3 border-t border-[#E8E6E0] border-dashed">
+                        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-[#5A5751] pt-4 border-t border-[#E8E6E0] border-dashed">
                             {order.address ? (
                                 <>
-                                    <MapPin size={14} className="text-[#999]" />
+                                    <MapPin size={14} strokeWidth={1.5} className="text-[#999]" />
                                     <span>{order.address.name}, {order.address.city}</span>
                                 </>
                             ) : (
@@ -189,13 +210,13 @@ export default function OrderDetailPage() {
                     </div>
 
                     {/* --- Tracking Timeline --- */}
-                    <section className="bg-white rounded-xl p-6 border border-[#E8E6E0] shadow-sm">
-                        <h2 className="font-serif text-lg text-[#1C1C1C] mb-6">Order Status</h2>
+                    <section className="bg-white rounded-none p-8 border border-[#E8E6E0] shadow-none">
+                        <h2 className="font-serif text-2xl font-light text-[#1C1C1C] mb-8 tracking-wide">Order Status</h2>
                         <div className="relative">
                             {/* Vertical Line - Centered for 24px (w-6) marker */}
                             <div className="absolute left-[11.5px] top-4 bottom-4 w-[1px] bg-[#E8E6E0] z-0" />
 
-                            <div className="space-y-8">
+                            <div className="space-y-10">
                                 {TRACKING_STEPS.map((step, idx) => {
                                     const isCompleted = idx < currentStepIndex;
                                     const isCurrent = idx === currentStepIndex;
@@ -205,29 +226,29 @@ export default function OrderDetailPage() {
                                         <div key={idx} className="relative flex items-start gap-4">
                                             {/* Icon/Dot */}
                                             <div className={`
-                                                relative z-10 w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300 ring-4 ring-white
-                                                ${isCompleted || isCurrent ? 'bg-[#C9A14A] text-white' : 'bg-[#E8E6E0] text-gray-400'}
+                                                relative z-10 w-6 h-6 rounded-none flex items-center justify-center transition-colors duration-300 ring-4 ring-white
+                                                ${isCompleted || isCurrent ? 'bg-[#1C1C1C] text-white' : 'bg-[#E8E6E0] text-transparent'}
                                             `}>
                                                 {isCurrent ? (
-                                                    <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
+                                                    <div className="w-2.5 h-2.5 bg-white rounded-none animate-pulse" />
                                                 ) : (
                                                     <span className="text-[10px] font-bold">
-                                                        {isCompleted ? <CheckCircle size={14} /> : idx + 1}
+                                                        {isCompleted ? <CheckCircle size={14} strokeWidth={1.5} /> : ''}
                                                     </span>
                                                 )}
                                             </div>
 
                                             {/* Text */}
                                             <div className={`pt-0.5 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
-                                                <h4 className={`text-sm font-medium ${isCurrent ? 'text-[#C9A14A]' : 'text-[#1C1C1C]'}`}>
+                                                <h4 className={`text-[11px] uppercase tracking-[0.1em] font-medium ${isCurrent ? 'text-[#1C1C1C]' : 'text-[#5A5751]'}`}>
                                                     {step.title}
                                                 </h4>
                                                 {isCurrent && (
-                                                    <p className="text-xs text-[#777] mt-0.5">We are currently working on this step.</p>
+                                                    <p className="text-[10px] text-[#999] mt-1 italic">We are currently working on this step.</p>
                                                 )}
                                                 {step.title === 'Shipped' && isCompleted && order.tracking && (
-                                                    <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100 text-xs">
-                                                        <p className="text-[#5A5751] mb-1">Courier: <span className="font-medium text-[#1C1C1C]">{order.tracking.courier}</span></p>
+                                                    <div className="mt-3 p-4 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] text-[10px] uppercase tracking-[0.1em]">
+                                                        <p className="text-[#5A5751] mb-2">Courier: <span className="font-medium text-[#1C1C1C]">{order.tracking.courier}</span></p>
                                                         <p className="text-[#5A5751]">Tracking: <span className="font-medium text-[#1C1C1C]">{order.tracking.number}</span></p>
                                                     </div>
                                                 )}
@@ -240,22 +261,22 @@ export default function OrderDetailPage() {
                     </section>
 
                     {/* --- Order Items (Compact) --- */}
-                    <div className="bg-white rounded-xl overflow-hidden border border-[#E8E6E0]">
-                        <div className="px-5 py-3 border-b border-[#E8E6E0] bg-gray-50/50">
-                            <h3 className="text-xs font-semibold text-[#5A5751] uppercase tracking-wide">Items Ordered</h3>
+                    <div className="bg-white rounded-none overflow-hidden border border-[#E8E6E0]">
+                        <div className="px-6 py-4 border-b border-[#E8E6E0] bg-[#F9F7F3]">
+                            <h3 className="text-[9px] font-medium text-[#1C1C1C] uppercase tracking-[0.2em]">Items Ordered</h3>
                         </div>
                         <div className="p-2">
                             {order.items.map((item, index) => (
-                                <div key={item.id || index} className="flex gap-3 p-3 border-b border-[#E8E6E0] last:border-0 hover:bg-gray-50 transition-colors">
-                                    <div className={`w-12 h-14 ${item.image || 'bg-gray-200'} rounded flex-shrink-0 opacity-80`} />
-                                    <div className="flex-1 min-w-0">
+                                <div key={item.id || index} className="flex gap-4 p-4 border-b border-[#E8E6E0] last:border-0 hover:bg-[#F9F7F3] transition-colors">
+                                    <div className={`w-14 h-16 ${item.image || 'bg-[#E8E6E0]'} rounded-none flex-shrink-0 opacity-80`} />
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
                                         <p className="text-sm font-medium text-[#1C1C1C]">{item.name}</p>
-                                        <p className="text-[10px] text-[#777] uppercase tracking-wide mt-0.5">{item.service}</p>
-                                        <p className="text-xs text-[#5A5751] mt-1">
+                                        <p className="text-[9px] text-[#999] uppercase tracking-[0.2em] mt-1">{item.service}</p>
+                                        <p className="text-[10px] text-[#5A5751] mt-2">
                                             {item.isFabric ? `${item.qty}m` : `Qty: ${item.qty}`}
                                         </p>
                                     </div>
-                                    <div className="text-xs font-medium text-[#1C1C1C]">
+                                    <div className="text-sm font-medium text-[#1C1C1C] flex items-center">
                                         ₹{item.price?.toLocaleString()}
                                     </div>
                                 </div>
@@ -267,18 +288,18 @@ export default function OrderDetailPage() {
             )}
 
             {/* --- Detail Page Actions --- */}
-            <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-[#E8E6E0] pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
-                <div className="max-w-md mx-auto grid grid-cols-2 gap-3">
-                    <button className="flex items-center justify-center gap-2 py-3.5 rounded-xl border border-[#E8E6E0] text-[#5A5751] font-medium text-xs hover:bg-gray-50 active:scale-[0.98] transition-all">
-                        <FileText size={16} />
+            <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-[#E8E6E0] pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-none z-50">
+                <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
+                    <button className="flex items-center justify-center gap-2 py-4 rounded-none border border-[#E8E6E0] text-[#1C1C1C] font-medium text-[10px] uppercase tracking-[0.2em] hover:bg-[#F9F7F3] active:scale-[0.98] transition-all">
+                        <FileText size={16} strokeWidth={1.5} />
                         Invoice
                     </button>
-                    <button className="flex items-center justify-center gap-2 py-3.5 rounded-xl border border-[#E8E6E0] text-[#5A5751] font-medium text-xs hover:bg-gray-50 active:scale-[0.98] transition-all">
-                        <MessageCircle size={16} />
+                    <button className="flex items-center justify-center gap-2 py-4 rounded-none border border-[#E8E6E0] text-[#1C1C1C] font-medium text-[10px] uppercase tracking-[0.2em] hover:bg-[#F9F7F3] active:scale-[0.98] transition-all">
+                        <MessageCircle size={16} strokeWidth={1.5} />
                         Support
                     </button>
                     {order && order.status === 'Shipped' && (
-                        <button className="col-span-2 py-3.5 rounded-xl bg-[#C9A14A] text-white font-medium text-sm shadow-lg shadow-[#C9A14A]/30 active:scale-[0.98] transition-all">
+                        <button className="col-span-2 py-4 rounded-none bg-[#1C1C1C] text-white font-medium text-[11px] tracking-[0.2em] uppercase shadow-none hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] hover:bg-black active:scale-[0.98] transition-all">
                             Track Shipment
                         </button>
                     )}

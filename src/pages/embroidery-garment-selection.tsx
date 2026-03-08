@@ -484,11 +484,11 @@ export default function EmbroideryCustomizationPage() {
             <div className="max-w-md mx-auto px-4 pb-20 space-y-12">
 
                 {/* Header */}
-                <div className="text-center pt-2">
-                    <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">
+                <div className="mb-14 mt-4 text-center">
+                    <h1 className="text-3xl font-serif font-light text-[#1C1C1C] mb-4 tracking-wide">
                         Customize Product
                     </h1>
-                    <p className="text-[#5A5751]">
+                    <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">
                         Embroidery & Stitching Service
                     </p>
                 </div>
@@ -496,23 +496,25 @@ export default function EmbroideryCustomizationPage() {
                 {/* Step 1: Design Details */}
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 border border-gray-100"
+                    className="bg-white rounded-none p-4 shadow-none flex items-center gap-4 border border-[#E8E6E0]"
                 >
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden relative">
+                    <div className="w-16 h-16 bg-[#F9F7F3] rounded-none flex-shrink-0 overflow-hidden relative">
                         <div className={`absolute inset-0 ${selectedDesign?.image || 'bg-gray-200'}`} />
                     </div>
                     <div>
-                        <p className="text-[10px] uppercase tracking-wider text-[#999] font-medium mb-0.5">SELECTED DESIGN</p>
-                        <h3 className="font-serif text-lg text-[#C9A14A]">{selectedDesign?.name}</h3>
-                        <p className="text-sm text-[#5A5751]">{selectedDesign?.category}</p>
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-[#999] font-medium mb-1">SELECTED DESIGN</p>
+                        <h3 className="font-serif text-lg text-[#1C1C1C] tracking-wide">{selectedDesign?.name}</h3>
+                        <p className="text-[10px] text-[#5A5751] uppercase tracking-[0.1em] mt-0.5">{selectedDesign?.category}</p>
                     </div>
                 </motion.div>
 
                 {/* Step 2: Garment Selection */}
                 <section>
-                    <div className="flex items-baseline justify-between mb-4">
-                        <h2 className="font-serif text-xl">1. Choose Garment</h2>
-                        {isStep1Complete && <Check size={18} className="text-[#C9A14A]" />}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C]">
+                            1. Choose Garment
+                        </h2>
+                        {isStep1Complete && <Check size={14} className="text-[#C9A14A]" />}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {garmentTypes.map((type) => {
@@ -528,22 +530,22 @@ export default function EmbroideryCustomizationPage() {
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => handleGarmentSelect(type.id)}
                                     className={`
-                                        relative flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200 bg-white
-                                        ${isSelected ? 'border-[#C9A14A] bg-[#C9A14A]/5 shadow-sm' : 'border-transparent shadow-sm hover:border-gray-200'}
+                                        relative flex flex-col items-center justify-center p-6 rounded-none border transition-all duration-300 bg-white
+                                        ${isSelected ? 'border-[#C9A14A] shadow-[0_10px_30px_-10px_rgba(201,161,74,0.1)]' : 'border-[#E8E6E0] hover:border-[#C9A14A]/50'}
                                     `}
                                 >
-                                    <div className={`mb-3 p-3 rounded-full ${isSelected ? 'bg-[#C9A14A]/10 text-[#C9A14A]' : 'bg-[#F9F7F3] text-[#777]'} `}>
+                                    <div className={`mb-4 p-4 rounded-none transition-colors duration-300 ${isSelected ? 'text-[#C9A14A]' : 'text-[#999] group-hover:text-[#C9A14A]'} `}>
                                         <Icon size={24} strokeWidth={1.5} />
                                     </div>
-                                    <span className={`text-sm font-medium ${isSelected ? 'text-[#1C1C1C]' : 'text-[#555]'} `}>
+                                    <span className={`text-[10px] uppercase tracking-[0.1em] font-medium text-center ${isSelected ? 'text-[#1C1C1C]' : 'text-[#555]'} `}>
                                         {type.name}
                                     </span>
-                                    <span className="text-xs text-[#999] mt-1">
+                                    <span className="text-[11px] font-medium tracking-wide text-[#1C1C1C] mt-2">
                                         ₹{type.base_stitching_price}
                                     </span>
                                     {isSelected && (
-                                        <div className="absolute top-2 right-2 bg-[#C9A14A] text-white rounded-full p-0.5">
-                                            <Check size={12} strokeWidth={3} />
+                                        <div className="absolute top-3 right-3 text-[#C9A14A]">
+                                            <Check size={14} strokeWidth={2} />
                                         </div>
                                     )}
                                 </motion.button>
@@ -554,9 +556,11 @@ export default function EmbroideryCustomizationPage() {
 
                 {/* Step 3: Fabric Selection */}
                 <section className={`transition-opacity duration-500 ${!isStep1Complete ? 'opacity-40 pointer-events-none grayscale' : ''} `}>
-                    <div className="flex items-baseline justify-between mb-4">
-                        <h2 className="font-serif text-xl">2. Choose Fabric</h2>
-                        {isStep2Complete && <Check size={18} className="text-[#C9A14A]" />}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C]">
+                            2. Choose Fabric
+                        </h2>
+                        {isStep2Complete && <Check size={14} className="text-[#C9A14A]" />}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {fabrics.map((fabric) => (
@@ -565,12 +569,12 @@ export default function EmbroideryCustomizationPage() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleFabricSelect(fabric.id)}
                                 className={`
-                                    relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 bg-white
-                                    ${selectedFabric === fabric.id ? 'border-[#C9A14A] shadow-md ring-1 ring-[#C9A14A]/20' : 'border-transparent shadow-sm hover:border-gray-200'}
+                                    relative p-4 rounded-none border cursor-pointer transition-all duration-300 bg-white
+                                    ${selectedFabric === fabric.id ? 'border-[#C9A14A] shadow-[0_10px_30px_-10px_rgba(201,161,74,0.1)]' : 'border-[#E8E6E0] hover:border-[#C9A14A]/50'}
                                 `}
                             >
                                 <div
-                                    className="h-24 w-full rounded-md mb-3 border border-black/5 relative overflow-hidden"
+                                    className="h-24 w-full rounded-none mb-4 border border-[#1C1C1C]/5 relative overflow-hidden"
                                     style={{
                                         backgroundColor: fabric.color,
                                     }}
@@ -580,12 +584,12 @@ export default function EmbroideryCustomizationPage() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                                 </div>
 
-                                <h3 className="font-medium text-sm text-[#1C1C1C]">{fabric.name}</h3>
-                                <p className="text-xs text-[#777] mt-1 line-clamp-2">{fabric.description}</p>
-                                <p className="text-xs font-serif text-[#C9A14A] mt-2">₹{fabric.price_per_meter}/m</p>
+                                <h3 className="font-medium text-xs tracking-wide text-[#1C1C1C] uppercase">{fabric.name}</h3>
+                                <p className="text-[10px] text-[#777] mt-1.5 line-clamp-2 leading-relaxed">{fabric.description}</p>
+                                <p className="text-[11px] font-medium tracking-wide text-[#1C1C1C] mt-3">₹{fabric.price_per_meter}/m</p>
                                 {selectedFabric === fabric.id && (
-                                    <div className="absolute top-2 right-2 bg-[#C9A14A] text-white rounded-full p-0.5">
-                                        <Check size={12} strokeWidth={3} />
+                                    <div className="absolute top-3 right-3 text-[#1C1C1C]">
+                                        <Check size={14} strokeWidth={2} />
                                     </div>
                                 )}
                             </motion.div>
@@ -595,9 +599,11 @@ export default function EmbroideryCustomizationPage() {
 
                 {/* Step 4: Color Selection */}
                 <section className={`transition-opacity duration-500 ${!isStep2Complete ? 'opacity-40 pointer-events-none grayscale' : ''} `}>
-                    <div className="flex items-baseline justify-between mb-4">
-                        <h2 className="font-serif text-xl">3. Choose Color</h2>
-                        {isStep3Complete && <Check size={18} className="text-[#C9A14A]" />}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C]">
+                            3. Choose Color
+                        </h2>
+                        {isStep3Complete && <Check size={14} className="text-[#C9A14A]" />}
                     </div>
                     <div className="grid grid-cols-5 gap-4">
                         {colors.map((color) => (
@@ -606,23 +612,23 @@ export default function EmbroideryCustomizationPage() {
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => handleColorSelect(color.id)}
                                 className={`
-                                    aspect-square rounded-full relative focus:outline-none transition-all duration-300 shadow-sm
-                                    ${selectedColor === color.id ? 'ring-2 ring-offset-2 ring-[#C9A14A] scale-105 shadow-md' : 'hover:scale-110 hover:shadow-md'}
+                                    aspect-square rounded-none relative focus:outline-none transition-all duration-300
+                                    ${selectedColor === color.id ? 'ring-1 ring-offset-4 ring-[#C9A14A] scale-95 shadow-[0_10px_30px_-10px_rgba(201,161,74,0.2)]' : 'hover:scale-105 shadow-sm border border-[#E8E6E0] hover:border-[#C9A14A]/50'}
                                 `}
                                 style={{ backgroundColor: color.hex_code }}
                                 aria-label={color.name}
                             >
                                 {selectedColor === color.id && (
-                                    <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md">
-                                        <Check size={16} strokeWidth={3} />
+                                    <span className="absolute inset-0 flex items-center justify-center text-white mix-blend-difference">
+                                        <Check size={16} strokeWidth={2} />
                                     </span>
                                 )}
                             </motion.button>
                         ))}
                     </div>
-                    <div className="h-6 mt-3 text-center">
+                    <div className="h-6 mt-4 text-center">
                         {selectedColor && (
-                            <span className="text-xs text-[#777] font-medium animate-pulse">
+                            <span className="text-[9px] uppercase tracking-[0.2em] text-[#1C1C1C] font-medium">
                                 {colors.find(c => c.id === selectedColor)?.name}
                             </span>
                         )}
@@ -631,22 +637,24 @@ export default function EmbroideryCustomizationPage() {
 
                 {/* Step 5: Size & Measurements */}
                 <section className={`transition-opacity duration-500 ${!isStep3Complete ? 'opacity-40 pointer-events-none grayscale' : ''} `}>
-                    <div className="flex items-baseline justify-between mb-4">
-                        <h2 className="font-serif text-xl">4. Size & Fit</h2>
-                        {isStep4Complete && <Check size={18} className="text-[#C9A14A]" />}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C]">
+                            4. Size & Fit
+                        </h2>
+                        {isStep4Complete && <Check size={14} className="text-[#C9A14A]" />}
                     </div>
 
-                    <div className="flex bg-white p-1 rounded-xl border border-gray-200 mb-6 w-fit mx-auto shadow-sm">
+                    <div className="flex bg-white p-1 rounded-none border border-[#E8E6E0] mb-8 w-fit mx-auto shadow-none">
                         <button
                             onClick={() => setSizeMode('standard')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${sizeMode === 'standard' ? 'bg-[#1C1C1C] text-white shadow-md' : 'text-[#777] hover:bg-gray-50'
+                            className={`px-6 py-2 rounded-none text-[10px] uppercase tracking-[0.1em] font-medium transition-all ${sizeMode === 'standard' ? 'bg-[#C9A14A] text-white' : 'text-[#777] hover:bg-[#C9A14A]/10 hover:text-[#C9A14A]'
                                 } `}
                         >
                             Standard Size
                         </button>
                         <button
                             onClick={() => setSizeMode('custom')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${sizeMode === 'custom' ? 'bg-[#1C1C1C] text-white shadow-md' : 'text-[#777] hover:bg-gray-50'
+                            className={`px-8 py-2 rounded-none text-[10px] uppercase tracking-[0.1em] font-medium transition-all ${sizeMode === 'custom' ? 'bg-[#C9A14A] text-white' : 'text-[#777] hover:bg-[#C9A14A]/10 hover:text-[#C9A14A]'
                                 } `}
                         >
                             Custom
@@ -660,16 +668,16 @@ export default function EmbroideryCustomizationPage() {
                                     key={size.id}
                                     onClick={() => handleSizeSelect(size.id)}
                                     className={`
-                                        py-3 rounded-lg border text-sm font-medium transition-all flex flex-col items-center justify-center
+                                        py-4 rounded-none border text-[10px] uppercase tracking-[0.1em] font-medium transition-all flex flex-col items-center justify-center
                                         ${selectedStandardSize === size.id
-                                            ? 'border-[#C9A14A] bg-[#C9A14A]/5 text-[#C9A14A] shadow-sm'
-                                            : 'border-gray-200 bg-white text-[#555] hover:border-gray-300 hover:shadow-sm'
+                                            ? 'border-[#C9A14A] bg-[#C9A14A] text-white shadow-[0_10px_30px_-10px_rgba(201,161,74,0.2)]'
+                                            : 'border-[#E8E6E0] bg-white text-[#555] hover:border-[#C9A14A]/50'
                                         }
                                     `}
                                 >
                                     <span>{size.label}</span>
                                     {size.extra_price > 0 && (
-                                        <span className="text-[10px] text-[#999]">+₹{size.extra_price}</span>
+                                        <span className={`text-[9px] uppercase tracking-[0.1em] mt-1 ${selectedStandardSize === size.id ? 'text-white/70' : 'text-[#999]'}`}>+₹{size.extra_price}</span>
                                     )}
                                 </button>
                             ))}
@@ -677,58 +685,58 @@ export default function EmbroideryCustomizationPage() {
                     )}
 
                     {sizeMode === 'custom' && (
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-5 shadow-sm">
-                            <h3 className="font-medium text-[#1C1C1C] text-sm">Body Measurements</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white p-6 rounded-none border border-[#E8E6E0] space-y-8 shadow-none">
+                            <h3 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C]">Body Measurements</h3>
+                            <div className="grid grid-cols-2 gap-5">
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Chest (in)</label>
-                                    <input type="number" value={customMeasurements.chest} onChange={(e) => handleCustomChange('chest', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="32" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Chest (in)</label>
+                                    <input type="number" value={customMeasurements.chest} onChange={(e) => handleCustomChange('chest', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="32" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Waist (in)</label>
-                                    <input type="number" value={customMeasurements.waist} onChange={(e) => handleCustomChange('waist', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="28" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Waist (in)</label>
+                                    <input type="number" value={customMeasurements.waist} onChange={(e) => handleCustomChange('waist', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="28" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Hips (in)</label>
-                                    <input type="number" value={customMeasurements.hips} onChange={(e) => handleCustomChange('hips', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="36" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Hips (in)</label>
+                                    <input type="number" value={customMeasurements.hips} onChange={(e) => handleCustomChange('hips', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="36" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Shoulder (in)</label>
-                                    <input type="number" value={customMeasurements.shoulder} onChange={(e) => handleCustomChange('shoulder', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="14" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Shoulder (in)</label>
+                                    <input type="number" value={customMeasurements.shoulder} onChange={(e) => handleCustomChange('shoulder', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="14" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Sleeve Length (in)</label>
-                                    <input type="number" value={customMeasurements.sleeveLength} onChange={(e) => handleCustomChange('sleeveLength', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="5" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Sleeve Length (in)</label>
+                                    <input type="number" value={customMeasurements.sleeveLength} onChange={(e) => handleCustomChange('sleeveLength', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="5" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Arm Hole (in)</label>
-                                    <input type="number" value={customMeasurements.armHole} onChange={(e) => handleCustomChange('armHole', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="16" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Arm Hole (in)</label>
+                                    <input type="number" value={customMeasurements.armHole} onChange={(e) => handleCustomChange('armHole', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="16" />
                                 </div>
                             </div>
 
-                            <h3 className="font-medium text-[#1C1C1C] text-sm pt-2 border-t border-gray-100">Neck & Fit</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                            <h3 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#1C1C1C] pt-6 border-t border-[#E8E6E0]">Neck & Fit</h3>
+                            <div className="grid grid-cols-2 gap-5">
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Front Neck Depth (in)</label>
-                                    <input type="number" value={customMeasurements.frontNeckDepth} onChange={(e) => handleCustomChange('frontNeckDepth', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="7" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Front Neck Depth (in)</label>
+                                    <input type="number" value={customMeasurements.frontNeckDepth} onChange={(e) => handleCustomChange('frontNeckDepth', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="7" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Back Neck Depth (in)</label>
-                                    <input type="number" value={customMeasurements.backNeckDepth} onChange={(e) => handleCustomChange('backNeckDepth', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="8" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Back Neck Depth (in)</label>
+                                    <input type="number" value={customMeasurements.backNeckDepth} onChange={(e) => handleCustomChange('backNeckDepth', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="8" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Full Length (in)</label>
-                                    <input type="number" value={customMeasurements.length} onChange={(e) => handleCustomChange('length', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="40" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Full Length (in)</label>
+                                    <input type="number" value={customMeasurements.length} onChange={(e) => handleCustomChange('length', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="40" />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-[#777] mb-1 block">Inseam (Bottoms) (in)</label>
-                                    <input type="number" value={customMeasurements.inseam} onChange={(e) => handleCustomChange('inseam', e.target.value)} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="30" />
+                                    <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Inseam (Bottoms) (in)</label>
+                                    <input type="number" value={customMeasurements.inseam} onChange={(e) => handleCustomChange('inseam', e.target.value)} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all" placeholder="30" />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="text-xs text-[#777] mb-1 block">Notes / Special Instructions</label>
-                                <textarea value={customMeasurements.notes} onChange={(e) => handleCustomChange('notes', e.target.value)} rows={3} className="w-full p-2.5 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A] outline-none text-sm transition-all" placeholder="Any specific requirements regarding fit, buttons, lining etc..." />
+                                <label className="text-[10px] uppercase tracking-[0.1em] text-[#777] mb-2 block font-medium">Notes / Special Instructions</label>
+                                <textarea value={customMeasurements.notes} onChange={(e) => handleCustomChange('notes', e.target.value)} rows={3} className="w-full p-3 bg-[#F9F7F3] rounded-none border border-transparent focus:border-[#C9A14A] focus:bg-white outline-none text-sm transition-all resize-none" placeholder="Any specific requirements regarding fit, buttons, lining etc..." />
                             </div>
                         </div>
                     )}
@@ -739,39 +747,39 @@ export default function EmbroideryCustomizationPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3"
+                        className="bg-white rounded-none p-6 shadow-none border border-[#E8E6E0] space-y-4"
                     >
-                        <h3 className="font-serif text-lg text-[#1C1C1C] mb-2 border-b border-gray-100 pb-2">Estimated Price</h3>
+                        <h3 className="font-serif text-2xl font-light text-[#1C1C1C] mb-4 border-b border-[#E8E6E0] pb-4">Estimated Price</h3>
 
-                        <div className="flex justify-between text-sm text-[#555]">
+                        <div className="flex justify-between text-[11px] tracking-wide text-[#5A5751] uppercase">
                             <span>Embroidery Design ({selectedDesign?.complexity || 'Standard'})</span>
                             <span>₹{priceBreakdown.embroideryCost.toFixed(2)}</span>
                         </div>
 
-                        <div className="flex justify-between text-sm text-[#555]">
+                        <div className="flex justify-between text-[11px] tracking-wide text-[#5A5751] uppercase">
                             <span>Stitching Service</span>
                             <span>₹{priceBreakdown.stitchingCost.toFixed(2)}</span>
                         </div>
 
                         {priceBreakdown.fabricCost > 0 && (
-                            <div className="flex justify-between text-sm text-[#555]">
+                            <div className="flex justify-between text-[11px] tracking-wide text-[#5A5751] uppercase">
                                 <span>Fabric Cost ({garmentTypes.find(g => g.id === selectedGarment)?.default_fabric_consumption}m)</span>
                                 <span>₹{priceBreakdown.fabricCost.toFixed(2)}</span>
                             </div>
                         )}
 
                         {priceBreakdown.sizeExtra > 0 && (
-                            <div className="flex justify-between text-sm text-[#555]">
+                            <div className="flex justify-between text-[11px] tracking-wide text-[#5A5751] uppercase">
                                 <span>Size Adjustment</span>
                                 <span>₹{priceBreakdown.sizeExtra.toFixed(2)}</span>
                             </div>
                         )}
 
-                        <div className="flex justify-between font-serif text-lg text-[#C9A14A] pt-2 border-t border-gray-100 mt-2">
+                        <div className="flex justify-between font-serif text-xl text-[#1C1C1C] pt-4 border-t border-[#E8E6E0] mt-4">
                             <span>Total Estimate</span>
                             <span>₹{priceBreakdown.total.toFixed(2)}</span>
                         </div>
-                        <p className="text-[10px] text-gray-400 italic mt-1">
+                        <p className="text-[9px] uppercase tracking-[0.1em] text-[#999] mt-2 leading-relaxed">
                             *Final price may vary slightly based on specific customization requests.
                         </p>
                     </motion.div>
@@ -779,26 +787,26 @@ export default function EmbroideryCustomizationPage() {
 
             </div>
 
-            {/* Sticky Bottom Bar - Enhanced with Glassmorphism */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#E8E6E0] p-4 pb-8 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-all">
-                <div className="max-w-md mx-auto flex items-center gap-4">
-                    <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-0.5">Total Estimate</p>
-                        <p className="font-serif text-xl text-[#1C1C1C]">₹{priceBreakdown.total.toFixed(2)}</p>
+            {/* Sticky Bottom Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-8 safe-area-pb z-50">
+                <div className="max-w-md mx-auto flex items-center justify-between gap-6">
+                    <div>
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-[#999] font-medium mb-1">Total Estimate</p>
+                        <p className="font-serif text-2xl text-[#1C1C1C] tracking-wide">₹{priceBreakdown.total.toFixed(2)}</p>
                     </div>
                     <button
                         onClick={handleContinue}
                         disabled={!canAddToBag}
                         className={`
-                            flex-1 py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300
+                            px-8 py-4 rounded-none font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all duration-300
                             ${canAddToBag
-                                ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:bg-[#B89240] transform active:scale-[0.98]'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'bg-[#1C1C1C] text-white hover:bg-[#C9A14A] hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.3)] transition-colors border border-transparent hover:border-[#C9A14A]'
+                                : 'bg-[#E8E6E0] text-[#999] cursor-not-allowed border border-[#E8E6E0]'
                             }
                         `}
                     >
                         <span>Continue</span>
-                        <ChevronRight size={18} />
+                        <ChevronRight size={14} strokeWidth={2} />
                     </button>
                 </div>
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, Smartphone, Camera, Save } from 'lucide-react';
+import { ChevronLeft, User, Smartphone, Camera, Save } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { db, auth } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -75,81 +75,70 @@ export default function EditProfilePage() {
             </Head>
 
             {/* --- Top Bar --- */}
-            <header className="w-full bg-[#F9F7F3] h-[72px] flex items-center px-4 justify-between fixed top-0 z-10 transition-all duration-300">
-                <button
-                    onClick={() => router.back()}
-                    className="p-2 -ml-2 text-[#1C1C1C] active:opacity-70 flex items-center gap-1"
-                >
-                    <ArrowLeft size={24} strokeWidth={1.5} />
-                    <span className="text-sm font-medium">Done</span>
-                </button>
-                <h1 className="text-xl font-serif text-[#1C1C1C]">
-                    Edit Profile
-                </h1>
-                <div className="w-16"></div>
+            <header className="w-full bg-[#F9F7F3] h-[90px] flex items-center px-4 pt-6 sticky top-0 z-10">
+
+                <div className="flex-1 text-center">
+                    <h1 className="text-3xl font-serif font-light text-[#1C1C1C] tracking-wide relative top-1">
+                        Edit Profile
+                    </h1>
+                </div>
             </header>
 
             <main className="max-w-md mx-auto px-6 py-4 mt-8">
 
                 {/* Avatar Placeholder */}
-                <div className="flex flex-col items-center mb-8">
-                    <div className="relative w-24 h-24 rounded-full bg-[#1C1C1C] text-white flex items-center justify-center font-serif text-4xl mb-3 shadow-md">
+                <div className="flex flex-col items-center mb-16">
+                    <div className="relative w-28 h-28 rounded-none bg-[#1C1C1C] text-white flex items-center justify-center font-serif text-5xl shadow-none">
                         {name ? name[0].toUpperCase() : 'U'}
-                        <button className="absolute bottom-0 right-0 p-2 bg-[#C9A14A] rounded-full text-white shadow-sm border border-white">
-                            <Camera size={14} />
+                        <button className="absolute -bottom-3 -right-3 p-3 bg-[#F9F7F3] hover:bg-white transition-colors text-[#1C1C1C] rounded-none border border-[#E8E6E0]">
+                            <Camera size={16} strokeWidth={1.5} />
                         </button>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-[#5A5751] mb-2 pl-1">Full Name</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-white border border-[#E8E6E0] rounded-xl px-4 py-3.5 pl-11 text-[#1C1C1C] outline-none focus:border-[#C9A14A] transition-all placeholder:text-gray-300"
-                                placeholder="Enter your full name"
-                                required
-                            />
-                            <User className="absolute left-4 top-3.5 text-[#999]" size={20} />
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-12">
+                    <div className="relative group">
+                        <label className="absolute -top-5 left-0 text-[9px] uppercase tracking-[0.1em] text-[#1C1C1C] font-medium pointer-events-none transition-all">
+                            Full Name
+                        </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-transparent border-b border-[#E8E6E0] rounded-none px-0 py-3 text-[#1C1C1C] outline-none hover:border-[#CCCCCC] focus:border-[#1C1C1C] transition-all duration-300 placeholder:text-transparent"
+                            placeholder="Full Name"
+                            required
+                        />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-[#5A5751] mb-2 pl-1">Phone Number</label>
-                        <div className="relative">
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full bg-white border border-[#E8E6E0] rounded-xl px-4 py-3.5 pl-11 text-[#1C1C1C] outline-none focus:border-[#C9A14A] transition-all placeholder:text-gray-300"
-                                placeholder="Enter phone number"
-                            />
-                            <Smartphone className="absolute left-4 top-3.5 text-[#999]" size={20} />
-                        </div>
+                    <div className="relative group">
+                        <label className="absolute -top-5 left-0 text-[9px] uppercase tracking-[0.1em] text-[#1C1C1C] font-medium pointer-events-none transition-all">
+                            Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full bg-transparent border-b border-[#E8E6E0] rounded-none px-0 py-3 text-[#1C1C1C] outline-none hover:border-[#CCCCCC] focus:border-[#1C1C1C] transition-all duration-300 placeholder:text-transparent"
+                            placeholder="Phone Number"
+                        />
                     </div>
 
-                    <div className="pt-6">
-                        <motion.button
-                            whileTap={{ scale: 0.98 }}
+                    <div className="pt-8">
+                        <button
                             disabled={isSubmitting}
                             type="submit"
-                            className="w-full py-4 rounded-xl bg-[#C9A14A] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#C9A14A]/20"
+                            className="w-full py-4 rounded-none bg-[#1C1C1C] text-white font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all duration-300 hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] border border-[#1C1C1C]"
                         >
                             {isSubmitting ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                <span className="flex items-center gap-3">
+                                    <div className="w-3.5 h-3.5 border border-white/30 border-t-white rounded-full animate-spin" />
                                     Saving...
                                 </span>
                             ) : (
-                                <span className="flex items-center gap-2">
-                                    <Save size={18} />
-                                    Save Changes
-                                </span>
+                                "Save Changes"
                             )}
-                        </motion.button>
+                        </button>
                     </div>
                 </form>
             </main>

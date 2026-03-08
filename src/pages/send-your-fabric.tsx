@@ -346,12 +346,12 @@ export default function SendYourFabricPage() {
                         initial="hidden"
                         animate="visible"
                         variants={fadeInUp}
-                        className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4 items-center relative overflow-hidden group"
+                        className="bg-white rounded-none p-4 shadow-none border border-[#E8E6E0] flex gap-4 items-center relative overflow-hidden group"
                     >
-                        {/* Abstract BG Decoration */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#C9A14A]/5 rounded-full blur-2xl -mr-10 -mt-10" />
+                        {/* Abstract BG Decoration - hidden for starker look */}
+                        {/* <div className="absolute top-0 right-0 w-32 h-32 bg-[#C9A14A]/5 rounded-none blur-2xl -mr-10 -mt-10" /> */}
 
-                        <div className="w-20 h-24 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden relative shadow-inner">
+                        <div className="w-20 h-24 bg-gray-50 rounded-none flex-shrink-0 overflow-hidden relative border border-[#E8E6E0]">
                             <div className={`absolute inset-0 ${selectedDesign.image} bg-cover bg-center`} />
                         </div>
                         <div className="flex-1 relative z-10">
@@ -381,11 +381,11 @@ export default function SendYourFabricPage() {
                         {/* Embroidery Only */}
                         <div
                             onClick={() => setFormData(prev => ({ ...prev, processing_type: 'embroidery_only' }))}
-                            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative overflow-hidden ${formData.processing_type === 'embroidery_only' ? 'border-[#C9A14A] bg-white shadow-md' : 'border-gray-100 bg-white/50 hover:border-gray-200'}`}
+                            className={`p-5 rounded-none border-[1.5px] cursor-pointer transition-all relative overflow-hidden ${formData.processing_type === 'embroidery_only' ? 'border-[#C9A14A] bg-white shadow-none' : 'border-[#E8E6E0] bg-white hover:border-[#C9A14A]/50'}`}
                         >
                             {formData.processing_type === 'embroidery_only' && <div className="absolute top-3 right-3 text-[#C9A14A]"><Check size={16} /></div>}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${formData.processing_type === 'embroidery_only' ? 'bg-[#FFFBF2] text-[#C9A14A]' : 'bg-gray-100 text-gray-400'}`}>
-                                <Sparkles size={20} />
+                            <div className={`w-10 h-10 rounded-none flex items-center justify-center mb-3 ${formData.processing_type === 'embroidery_only' ? 'bg-[#F9F7F3] border border-[#C9A14A] text-[#C9A14A]' : 'bg-gray-50 border border-transparent text-[#999]'}`}>
+                                <Sparkles size={20} className="stroke-[1.5]" />
                             </div>
                             <h3 className="font-serif text-base text-[#1C1C1C] mb-1">Embroidery Only</h3>
                             <p className="text-xs text-[#555] leading-relaxed">We will embroider your fabric and send it back to you.</p>
@@ -394,11 +394,11 @@ export default function SendYourFabricPage() {
                         {/* Embroidery + Stitching */}
                         <div
                             onClick={() => setFormData(prev => ({ ...prev, processing_type: 'embroidery_stitching' }))}
-                            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative overflow-hidden ${formData.processing_type === 'embroidery_stitching' ? 'border-[#C9A14A] bg-white shadow-md' : 'border-gray-100 bg-white/50 hover:border-gray-200'}`}
+                            className={`p-5 rounded-none border-[1.5px] cursor-pointer transition-all relative overflow-hidden ${formData.processing_type === 'embroidery_stitching' ? 'border-[#C9A14A] bg-white shadow-none' : 'border-[#E8E6E0] bg-white hover:border-[#C9A14A]/50'}`}
                         >
                             {formData.processing_type === 'embroidery_stitching' && <div className="absolute top-3 right-3 text-[#C9A14A]"><Check size={16} /></div>}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${formData.processing_type === 'embroidery_stitching' ? 'bg-[#FFFBF2] text-[#C9A14A]' : 'bg-gray-100 text-gray-400'}`}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            <div className={`w-10 h-10 rounded-none flex items-center justify-center mb-3 ${formData.processing_type === 'embroidery_stitching' ? 'bg-[#F9F7F3] border border-[#C9A14A] text-[#C9A14A]' : 'bg-gray-50 border border-transparent text-[#999]'}`}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                             </div>
                             <h3 className="font-serif text-base text-[#1C1C1C] mb-1">With Stitching</h3>
                             <p className="text-xs text-[#555] leading-relaxed">Full garment stitching according to your measurements.</p>
@@ -421,19 +421,19 @@ export default function SendYourFabricPage() {
                                 <h2 className="font-serif text-lg text-[#1C1C1C]">Select Size</h2>
                             </div>
 
-                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <div className="bg-white rounded-none p-6 shadow-none border border-[#E8E6E0]">
 
                                 {/* Mode Toggle */}
-                                <div className="flex bg-gray-50 p-1 rounded-xl mb-6">
+                                <div className="flex bg-gray-50 border border-[#E8E6E0] p-1 rounded-none mb-6">
                                     {['standard', 'custom'].map((m) => (
                                         <button
                                             key={m}
                                             onClick={() => setSizeMode(m as any)}
                                             className={`
-                                                flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300
+                                                flex-1 py-2 rounded-none text-xs tracking-wider uppercase font-semibold transition-all duration-300
                                                 ${sizeMode === m
-                                                    ? 'bg-white text-[#1C1C1C] shadow-sm'
-                                                    : 'text-gray-400 hover:text-gray-600'}
+                                                    ? 'bg-white text-[#C9A14A] shadow-none border border-[#C9A14A]'
+                                                    : 'text-gray-400 hover:text-[#C9A14A] border border-transparent'}
                                             `}
                                         >
                                             {m === 'standard' ? 'Standard Size' : 'Custom Measurements'}
@@ -455,10 +455,10 @@ export default function SendYourFabricPage() {
                                                         key={size.id}
                                                         onClick={() => setSelectedSizeId(size.id)}
                                                         className={`
-                                                            py-3 rounded-xl text-sm font-medium border transition-all relative overflow-hidden group
+                                                            py-3 rounded-none text-[10px] font-bold tracking-widest uppercase border transition-all relative overflow-hidden group
                                                             ${selectedSizeId === size.id
-                                                                ? 'bg-[#1C1C1C] text-white border-[#1C1C1C] shadow-lg shadow-black/10'
-                                                                : 'bg-white text-gray-600 border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                                                ? 'bg-[#C9A14A] text-white border-[#C9A14A] shadow-none'
+                                                                : 'bg-white text-[#1C1C1C] border-[#E8E6E0] hover:border-[#C9A14A]/50 hover:bg-[#F9F7F3]'
                                                             }
                                                         `}
                                                     >
@@ -497,8 +497,8 @@ export default function SendYourFabricPage() {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <div className="flex gap-2 p-3 bg-gray-50 rounded-lg border border-dashed border-gray-200 mt-2">
-                                                <p className="text-[10px] text-[#777] italic">Our tailors review every measurement for the perfect fit.</p>
+                                            <div className="flex gap-2 p-3 bg-gray-50 rounded-none border border-[#E8E6E0] mt-2">
+                                                <p className="text-[10px] text-[#555]">Our tailors review every measurement for the perfect fit.</p>
                                             </div>
                                         </motion.div>
                                     )}
@@ -520,7 +520,7 @@ export default function SendYourFabricPage() {
                         <h2 className="font-serif text-lg text-[#1C1C1C]">Fabric Details</h2>
                     </div>
 
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
+                    <div className="bg-white rounded-none p-6 shadow-none border border-[#E8E6E0] space-y-5">
                         {/* Fabric Type */}
                         <div>
                             <label className="text-xs font-bold text-[#555] mb-2 uppercase tracking-wide flex items-center gap-1">
@@ -532,15 +532,15 @@ export default function SendYourFabricPage() {
                                 value={formData.fabric_type}
                                 onChange={handleFabricChange}
                                 placeholder="What material are you sending?"
-                                className="w-full p-3 border-b-2 border-gray-100 bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors placeholder:font-normal"
+                                className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors placeholder:font-normal placeholder:text-transparent"
                             />
                             {/* Suggestions */}
-                            <div className="flex flex-wrap gap-2 mt-3">
+                            <div className="flex flex-wrap gap-2 mt-4">
                                 {FABRIC_SUGGESTIONS.map(fabric => (
                                     <button
                                         key={fabric}
                                         onClick={() => handleSuggestionClick(fabric)}
-                                        className={`text-[10px] px-2.5 py-1 rounded-full border transition-all ${formData.fabric_type === fabric ? 'bg-[#1C1C1C] text-white border-[#1C1C1C]' : 'bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-300'}`}
+                                        className={`text-[10px] px-3 py-1.5 rounded-none border uppercase tracking-wider transition-all ${formData.fabric_type === fabric ? 'bg-[#C9A14A] text-white border-[#C9A14A]' : 'bg-transparent text-[#555] border-[#E8E6E0] hover:border-[#C9A14A]/50'}`}
                                     >
                                         {fabric}
                                     </button>
@@ -561,12 +561,12 @@ export default function SendYourFabricPage() {
                                     value={formData.color}
                                     onChange={handleFabricChange}
                                     placeholder="e.g. Red"
-                                    className="w-full p-3 border-b-2 border-gray-100 bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors"
+                                    className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors placeholder:text-transparent"
                                 />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-[#555] mb-2 uppercase tracking-wide flex items-center gap-1">
-                                    <Ruler size={14} /> Length
+                                    <Ruler size={14} className="stroke-[1.5]" /> Length
                                 </label>
                                 <input
                                     type="text"
@@ -574,7 +574,7 @@ export default function SendYourFabricPage() {
                                     value={formData.length}
                                     onChange={handleFabricChange}
                                     placeholder="e.g. 2.5m"
-                                    className="w-full p-3 border-b-2 border-gray-100 bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors"
+                                    className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors placeholder:text-transparent"
                                 />
                             </div>
                         </div>
@@ -589,7 +589,7 @@ export default function SendYourFabricPage() {
                                 value={formData.notes}
                                 onChange={handleFabricChange}
                                 placeholder="Any special care instructions?"
-                                className="w-full p-3 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] resize-none"
+                                className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm font-medium focus:border-[#C9A14A] outline-none transition-colors placeholder:text-[#999] resize-none"
                             />
                         </div>
                     </div>
@@ -613,9 +613,9 @@ export default function SendYourFabricPage() {
                     </div>
 
                     {selectedAddress ? (
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4 relative overflow-hidden">
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#C9A14A]" />
-                            <div className="mt-1 p-2 bg-[#F9F7F3] rounded-full text-[#C9A14A]">
+                        <div className="bg-white rounded-none p-5 shadow-none border border-[#1C1C1C]/20 flex items-start gap-4 relative overflow-hidden">
+                            <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#1C1C1C]" />
+                            <div className="mt-1 p-2 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] text-[#1C1C1C]">
                                 <Truck size={20} />
                             </div>
                             <div>
@@ -629,13 +629,13 @@ export default function SendYourFabricPage() {
                     ) : (
                         <button
                             onClick={() => setShowAddressModal(true)}
-                            className="w-full bg-white border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#C9A14A] hover:bg-[#FFFBF2] transition-all group duration-300"
+                            className="w-full bg-[#F9F7F3] border border-[#E8E6E0] rounded-none p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#C9A14A]/50 transition-all group duration-300"
                         >
-                            <div className="w-12 h-12 rounded-full bg-[#F9F7F3] group-hover:bg-[#C9A14A]/10 flex items-center justify-center text-[#999] group-hover:text-[#C9A14A] mb-3 transition-colors">
-                                <Plus size={24} />
+                            <div className="w-12 h-12 rounded-none bg-white border border-[#E8E6E0] group-hover:border-[#C9A14A]/30 flex items-center justify-center text-[#999] group-hover:text-[#C9A14A] mb-3 transition-colors">
+                                <Plus size={24} strokeWidth={1.5} />
                             </div>
-                            <p className="font-medium text-[#1C1C1C]">Add Pickup Address</p>
-                            <p className="text-xs text-[#777] mt-1">We'll pick up from this location</p>
+                            <p className="font-medium text-[#1C1C1C] text-[10px] uppercase tracking-widest">Add Pickup Address</p>
+                            <p className="text-xs text-[#777] mt-1 font-serif italic">We'll pick up from this location</p>
                         </button>
                     )}
                 </motion.section>
@@ -648,10 +648,10 @@ export default function SendYourFabricPage() {
                         onClick={handleSubmit}
                         disabled={!isFormValid || isSubmitting}
                         className={`
-                            w-full py-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300
+                            w-full py-4 rounded-none font-medium text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300
                             ${!isFormValid
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]'
+                                ? 'bg-[#F0F0F0] text-[#999] border border-[#E8E6E0] cursor-not-allowed'
+                                : 'bg-[#1C1C1C] text-white hover:bg-[#C9A14A] border border-[#1C1C1C] hover:border-[#C9A14A] transition-colors active:scale-[0.98]'
                             }
                         `}
                     >
@@ -659,8 +659,8 @@ export default function SendYourFabricPage() {
                             <Loader2 className="animate-spin" size={20} />
                         ) : (
                             <>
-                                <span className="tracking-wide uppercase text-xs font-bold">Add to Bag</span>
-                                <ChevronRight size={18} />
+                                <span>Add to Bag</span>
+                                <ChevronRight size={14} />
                             </>
                         )}
                     </button>
@@ -679,14 +679,16 @@ export default function SendYourFabricPage() {
                         onClick={() => setShowAddressModal(false)}
                     >
                         <motion.div
-                            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="bg-white w-full max-h-[90vh] sm:max-w-md rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl"
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="bg-white w-full max-h-[90vh] sm:max-w-md rounded-none sm:rounded-none flex flex-col overflow-hidden shadow-none border sm:border-[#E8E6E0]"
                             onClick={e => e.stopPropagation()}
                         >
-                            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                            <div className="p-5 border-b border-[#E8E6E0] flex items-center justify-between bg-white sticky top-0 z-10">
                                 <h3 className="font-serif text-xl">Select Address</h3>
-                                <button onClick={() => setShowAddressModal(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+                                <button onClick={() => setShowAddressModal(false)} className="w-8 h-8 rounded-none border border-[#E8E6E0] flex items-center justify-center text-[#1C1C1C] hover:bg-gray-50 transition-colors">&times;</button>
                             </div>
 
                             <div className="p-5 overflow-y-auto flex-1 space-y-8">
@@ -697,10 +699,10 @@ export default function SendYourFabricPage() {
                                             <div
                                                 key={addr.id}
                                                 onClick={() => { setSelectedAddressId(addr.id); setShowAddressModal(false); }}
-                                                className={`p-4 rounded-xl border-2 cursor-pointer flex items-start gap-4 transition-all ${selectedAddressId === addr.id ? 'border-[#C9A14A] bg-[#FFFBF2]' : 'border-gray-100 hover:border-gray-200'}`}
+                                                className={`p-4 rounded-none border cursor-pointer flex items-start gap-4 transition-all ${selectedAddressId === addr.id ? 'border-[#C9A14A] bg-[#F9F7F3]' : 'border-[#E8E6E0] hover:border-[#C9A14A]/50'}`}
                                             >
-                                                <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center flex-shrink-0 ${selectedAddressId === addr.id ? 'border-[#C9A14A]' : 'border-gray-300'}`}>
-                                                    {selectedAddressId === addr.id && <div className="w-2.5 h-2.5 rounded-full bg-[#C9A14A]" />}
+                                                <div className={`w-5 h-5 rounded-none border mt-0.5 flex items-center justify-center flex-shrink-0 ${selectedAddressId === addr.id ? 'border-[#C9A14A]' : 'border-[#E8E6E0]'}`}>
+                                                    {selectedAddressId === addr.id && <div className="w-3 h-3 bg-[#C9A14A]" />}
                                                 </div>
                                                 <div>
                                                     <p className="font-serif text-[#1C1C1C]">{addr.full_name}</p>
@@ -714,19 +716,19 @@ export default function SendYourFabricPage() {
 
                                 {/* Add New Form */}
                                 <div>
-                                    <p className="text-xs font-bold text-[#999] uppercase tracking-wide mb-4">Add New Location</p>
+                                    <p className="text-[10px] font-bold text-[#1C1C1C] uppercase tracking-[0.1em] mb-4">Add New Location</p>
                                     <div className="space-y-4">
-                                        <input name="full_name" placeholder="Contact Name" value={newAddress.full_name} onChange={handleNewAddressChange} className="w-full p-4 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] transition-all placeholder:text-gray-400" />
-                                        <input name="phone" placeholder="Phone Number" value={newAddress.phone} onChange={handleNewAddressChange} className="w-full p-4 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] transition-all placeholder:text-gray-400" />
-                                        <input name="address_line1" placeholder="Address (House No, Street)" value={newAddress.address_line1} onChange={handleNewAddressChange} className="w-full p-4 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] transition-all placeholder:text-gray-400" />
+                                        <input name="full_name" placeholder="Contact Name" value={newAddress.full_name} onChange={handleNewAddressChange} className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm outline-none focus:border-[#C9A14A] transition-colors placeholder:text-[#999]" />
+                                        <input name="phone" placeholder="Phone Number" value={newAddress.phone} onChange={handleNewAddressChange} className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm outline-none focus:border-[#C9A14A] transition-colors placeholder:text-[#999]" />
+                                        <input name="address_line1" placeholder="Address (House No, Street)" value={newAddress.address_line1} onChange={handleNewAddressChange} className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm outline-none focus:border-[#C9A14A] transition-colors placeholder:text-[#999]" />
                                         <div className="grid grid-cols-2 gap-4">
-                                            <input name="city" placeholder="City" value={newAddress.city} onChange={handleNewAddressChange} className="w-full p-4 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] transition-all placeholder:text-gray-400" />
-                                            <input name="pincode" placeholder="Pincode" value={newAddress.pincode} onChange={handleNewAddressChange} className="w-full p-4 rounded-xl bg-gray-50 border-none text-sm outline-none focus:ring-1 focus:ring-[#C9A14A] transition-all placeholder:text-gray-400" />
+                                            <input name="city" placeholder="City" value={newAddress.city} onChange={handleNewAddressChange} className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm outline-none focus:border-[#C9A14A] transition-colors placeholder:text-[#999]" />
+                                            <input name="pincode" placeholder="Pincode" value={newAddress.pincode} onChange={handleNewAddressChange} className="w-full py-3 border-b border-[#E8E6E0] bg-transparent text-sm outline-none focus:border-[#C9A14A] transition-colors placeholder:text-[#999]" />
                                         </div>
                                         <button
                                             onClick={handleSaveAddress}
                                             disabled={!newAddress.full_name || !newAddress.phone || !newAddress.address_line1 || isAddingAddress}
-                                            className="w-full py-4 rounded-xl bg-[#1C1C1C] text-white font-medium text-sm disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
+                                            className="w-full py-4 mt-4 rounded-none bg-[#1C1C1C] text-white font-medium text-[10px] tracking-widest uppercase disabled:bg-[#F0F0F0] disabled:text-[#999] transition-colors"
                                         >
                                             {isAddingAddress ? 'Saving...' : 'Save Address'}
                                         </button>

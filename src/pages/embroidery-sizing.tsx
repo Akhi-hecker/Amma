@@ -112,8 +112,8 @@ export default function EmbroiderySizing() {
                 </div>
 
                 {/* Summary Card */}
-                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden relative">
+                <div className="bg-white rounded-none p-4 shadow-none border border-[#E8E6E0] flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] flex-shrink-0 overflow-hidden relative">
                         <div className="absolute inset-0 flex items-center justify-center text-gray-300">
                             <Ruler size={20} />
                         </div>
@@ -131,16 +131,16 @@ export default function EmbroiderySizing() {
 
                 {/* Mode Toggle */}
                 <div>
-                    <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex bg-[#F9F7F3] p-1 rounded-none shadow-none border border-[#E8E6E0]">
                         {['standard', 'custom'].map((m) => (
                             <button
                                 key={m}
                                 onClick={() => setMode(m as any)}
                                 className={`
-                                    flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-300
+                                    flex-1 py-2.5 rounded-none text-[10px] tracking-widest uppercase font-bold transition-all duration-300
                                     ${mode === m
-                                        ? 'bg-[#1C1C1C] text-white shadow-md'
-                                        : 'text-[#777] hover:bg-gray-50'}
+                                        ? 'bg-[#1C1C1C] text-white shadow-none'
+                                        : 'text-[#555] hover:bg-white'}
                                 `}
                             >
                                 {m === 'standard' ? 'Standard Size' : 'Custom Measurements'}
@@ -172,15 +172,15 @@ export default function EmbroiderySizing() {
                                             key={size}
                                             onClick={() => setSelectedSize(size)}
                                             className={`
-                                                relative h-14 rounded-lg border flex items-center justify-center font-medium transition-all duration-200
+                                                relative h-14 rounded-none border flex items-center justify-center font-bold text-xs uppercase tracking-widest transition-all duration-200
                                                 ${isSelected
-                                                    ? 'border-[#C9A14A] bg-[#C9A14A]/5 text-[#1C1C1C] shadow-sm'
-                                                    : 'border-gray-200 bg-white text-[#555] hover:border-gray-300'}
+                                                    ? 'border-[#1C1C1C] bg-[#1C1C1C] text-white shadow-none'
+                                                    : 'border-[#E8E6E0] bg-[#F9F7F3] text-[#555] hover:border-[#1C1C1C]/40'}
                                             `}
                                         >
                                             {size}
                                             {isSelected && (
-                                                <div className="absolute top-1 right-1 text-[#C9A14A]">
+                                                <div className="absolute top-1 right-1 text-white">
                                                     <Check size={12} strokeWidth={3} />
                                                 </div>
                                             )}
@@ -189,9 +189,9 @@ export default function EmbroiderySizing() {
                                 })}
                             </div>
 
-                            <div className="flex gap-2 p-3 bg-[#F9F7F3] rounded-lg border border-[#E8E6E0]">
-                                <Info size={16} className="text-[#999] flex-shrink-0 mt-0.5" />
-                                <p className="text-xs text-[#777]">Standard sizes are based on general body measurements. For a perfect fit, we recommend custom measurements.</p>
+                            <div className="flex gap-3 p-4 bg-[#F9F7F3] rounded-none border border-[#E8E6E0]">
+                                <Info size={16} className="text-[#1C1C1C] flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-[#555] leading-relaxed">Standard sizes are based on general body measurements. For a perfect fit, we recommend custom measurements.</p>
                             </div>
 
                         </motion.div>
@@ -221,15 +221,15 @@ export default function EmbroiderySizing() {
                                             value={(measurements as any)[key]}
                                             onChange={(e) => handleMeasurementChange(key, e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-white border border-gray-200 rounded-lg h-12 px-3 text-[#1C1C1C] focus:border-[#C9A14A] focus:ring-1 focus:ring-[#C9A14A] outline-none transition-all"
+                                            className="w-full bg-transparent border-b border-[#E8E6E0] h-12 px-0 text-[#1C1C1C] focus:border-[#1C1C1C] outline-none transition-all placeholder:text-[#999]"
                                         />
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="flex gap-2 p-3 bg-white rounded-lg border border-dashed border-[#C9A14A]/30">
-                                <Scissors size={16} className="text-[#C9A14A] flex-shrink-0 mt-0.5" />
-                                <p className="text-xs text-[#777]">Our master tailors review every measurement to ensure your garment fits you perfectly.</p>
+                            <div className="flex gap-3 p-4 bg-[#F9F7F3] rounded-none border border-[#E8E6E0]">
+                                <Scissors size={16} className="text-[#1C1C1C] flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-[#555] leading-relaxed">Our master tailors review every measurement to ensure your garment fits you perfectly.</p>
                             </div>
                         </motion.div>
                     )}
@@ -238,16 +238,16 @@ export default function EmbroiderySizing() {
             </div>
 
             {/* Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-none z-50">
                 <div className="max-w-md mx-auto">
                     <button
                         onClick={handleContinue}
                         disabled={!canContinue}
                         className={`
-                            w-full py-4 rounded-xl font-medium text-base text-center transition-all duration-300
+                            w-full py-4 rounded-none font-bold text-[10px] tracking-widest uppercase text-center transition-all duration-300
                             ${canContinue
-                                ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:bg-[#B89240] active:scale-[0.99]'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                                ? 'bg-[#1C1C1C] text-white shadow-none hover:bg-[#333] active:scale-[0.99]'
+                                : 'bg-[#F0F0F0] text-[#999] cursor-not-allowed border border-[#E8E6E0]'}
                         `}
                     >
                         Continue

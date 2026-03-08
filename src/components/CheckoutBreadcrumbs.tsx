@@ -87,7 +87,7 @@ export default function CheckoutBreadcrumbs({
 
                                 {/* Link Wrapper */}
                                 {isClickable && step.path ? (
-                                    <Link href={step.path} className="group flex items-center gap-2 outline-none">
+                                    <Link href={step.path} className="group flex flex-col items-center gap-2 outline-none">
                                         <StepContent
                                             step={step}
                                             isCompleted={isCompleted}
@@ -95,7 +95,7 @@ export default function CheckoutBreadcrumbs({
                                         />
                                     </Link>
                                 ) : (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-col items-center gap-2">
                                         <StepContent
                                             step={step}
                                             isCompleted={isCompleted}
@@ -105,13 +105,9 @@ export default function CheckoutBreadcrumbs({
                                 )}
                             </div>
 
-                            {/* Chevron Separator */}
+                            {/* Separator */}
                             {index < steps.length - 1 && (
-                                <ChevronRight
-                                    size={16}
-                                    className={`mx-2 sm:mx-4 ${isCompleted ? 'text-[#C9A14A]' : 'text-gray-300'}`}
-                                    strokeWidth={isCompleted ? 2 : 1.5}
-                                />
+                                <div className={`mx-2 sm:mx-4 w-6 sm:w-10 h-[1px] mb-5 ${isCompleted ? 'bg-[#1C1C1C]' : 'bg-[#E8E6E0]'}`} />
                             )}
                         </li>
                     );
@@ -123,24 +119,21 @@ export default function CheckoutBreadcrumbs({
 
 function StepContent({ step, isCompleted, isCurrent }: { step: any, isCompleted: boolean, isCurrent: boolean }) {
     return (
-        <>
+        <div className="flex flex-col items-center gap-2">
             <div className={`
-                flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all duration-300
-                ${isCompleted ? 'bg-[#C9A14A] text-white' : ''}
-                ${isCurrent ? 'bg-[#1C1C1C] text-white scale-110 shadow-md' : ''}
-                ${!isCompleted && !isCurrent ? 'bg-gray-100 text-gray-400' : ''}
+                flex items-center justify-center w-4 h-4 rounded-none transition-all duration-300 ring-2 ring-offset-2
+                ${isCompleted ? 'bg-[#1C1C1C] text-white ring-transparent' : ''}
+                ${isCurrent ? 'bg-[#1C1C1C] text-transparent ring-[#1C1C1C]/20 ring-offset-[#F9F7F3]' : ''}
+                ${!isCompleted && !isCurrent ? 'bg-transparent border border-[#E8E6E0] ring-transparent' : ''}
             `}>
-                {isCompleted ? <Check size={12} strokeWidth={3} /> : (isCurrent ? <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> : '')}
-                {!isCompleted && !isCurrent && <span className="opacity-0">.</span>}
+                {isCompleted ? <Check size={10} strokeWidth={2.5} /> : (isCurrent ? <div className="w-1.5 h-1.5 bg-white rounded-none animate-pulse" /> : null)}
             </div>
             <span className={`
-                text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-300
-                ${isCompleted ? 'text-[#1C1C1C] group-hover:text-[#C9A14A]' : ''}
-                ${isCurrent ? 'text-[#1C1C1C] font-semibold' : ''}
-                ${!isCompleted && !isCurrent ? 'text-gray-400' : ''}
+                text-[9px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300
+                ${isCompleted || isCurrent ? 'text-[#1C1C1C]' : 'text-[#999]'}
             `}>
                 {step.label}
             </span>
-        </>
+        </div>
     );
 }

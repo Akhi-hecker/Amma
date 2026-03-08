@@ -128,9 +128,9 @@ export default function EmbroideryFabricSelection() {
                 </div>
 
                 {/* Summary Card */}
-                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden relative">
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                <div className="bg-white rounded-none p-4 shadow-none border border-[#E8E6E0] flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] flex-shrink-0 overflow-hidden relative">
+                        <div className="absolute inset-0 flex items-center justify-center text-[#1C1C1C]">
                             <Grid size={20} />
                         </div>
                     </div>
@@ -159,26 +159,26 @@ export default function EmbroideryFabricSelection() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setSelectedFabric(fabric.id)}
                                 className={`
-                                    relative flex flex-col p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 bg-white
+                                    relative flex flex-col p-4 rounded-none border-[1.5px] cursor-pointer transition-all duration-200 bg-white
                                     ${isSelected
-                                        ? 'border-[#C9A14A] shadow-soft'
-                                        : 'border-transparent shadow-card hover:border-gray-200'}
+                                        ? 'border-[#1C1C1C] shadow-none'
+                                        : 'border-[#E8E6E0] shadow-none hover:border-[#1C1C1C]/40'}
                                 `}
                             >
                                 {/* Fabric Texture Placeholder */}
                                 <div
-                                    className="aspect-square w-full rounded-lg mb-3 shadow-inner"
+                                    className="aspect-square w-full rounded-none mb-4 shadow-none border border-[#E8E6E0]"
                                     style={{ backgroundColor: fabric.color }}
                                 />
 
                                 <h3 className="text-sm font-semibold text-[#1C1C1C] mb-0.5">{fabric.name}</h3>
                                 <p className="text-[11px] text-[#777] leading-snug line-clamp-2">{fabric.note}</p>
-                                <p className="text-xs font-serif text-[#C9A14A] mt-2">₹{fabric.pricePerMeter}/m</p>
+                                <p className="text-xs font-serif text-[#1C1C1C] mt-2 font-bold">₹{fabric.pricePerMeter}/m</p>
 
                                 {/* Selection Indicators */}
                                 {isSelected && (
-                                    <div className="absolute top-2 right-2 flex items-center justify-center w-5 h-5 bg-[#C9A14A] rounded-full text-white shadow-sm">
-                                        <Check size={12} strokeWidth={3} />
+                                    <div className="absolute top-3 right-3 flex items-center justify-center text-[#1C1C1C]">
+                                        <Check size={16} strokeWidth={2.5} />
                                     </div>
                                 )}
                             </motion.div>
@@ -187,8 +187,8 @@ export default function EmbroideryFabricSelection() {
                 </motion.div>
 
                 {/* Subtle Helper */}
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-[#F9F7F3] border border-[#E8E6E0] mt-4">
-                    <Info size={16} className="text-[#999] mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-3 p-4 rounded-none bg-[#F9F7F3] border border-[#E8E6E0] mt-4">
+                    <Info size={16} className="text-[#1C1C1C] mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-[#888] italic">
                         Fabric suitability varies slightly by garment choice. Our experts personally review every selection.
                     </p>
@@ -197,16 +197,16 @@ export default function EmbroideryFabricSelection() {
             </div>
 
             {/* Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-none z-50">
                 <div className="max-w-md mx-auto">
                     <button
                         onClick={handleContinue}
                         disabled={!selectedFabric}
                         className={`
-                            w-full py-4 rounded-xl font-medium text-base text-center transition-all duration-300
+                            w-full py-4 rounded-none font-bold text-[10px] tracking-widest uppercase text-center transition-all duration-300
                             ${selectedFabric
-                                ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:bg-[#B89240] active:scale-[0.99]'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                                ? 'bg-[#1C1C1C] text-white shadow-none hover:bg-[#333] active:scale-[0.99]'
+                                : 'bg-[#F0F0F0] text-[#999] cursor-not-allowed border border-[#E8E6E0]'}
                         `}
                     >
                         Continue

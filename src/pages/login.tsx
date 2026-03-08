@@ -107,21 +107,21 @@ export default function LoginPage() {
             </Head>
 
             {/* --- Top Bar --- */}
-            <header className="w-full bg-[#F9F7F3] h-[72px] flex items-center px-4">
-                <h1 className="flex-1 text-center text-xl font-serif text-[#1C1C1C]">
+            <header className="w-full bg-[#F9F7F3] h-[90px] flex items-center px-4 pt-6 sticky top-0 z-10 justify-center">
+                <h1 className="text-3xl font-serif font-light text-[#1C1C1C] tracking-wide relative top-1">
                     Login
                 </h1>
             </header>
 
-            <main className="max-w-md mx-auto px-6 py-4">
-                <div className="mb-10 mt-4">
-                    <h2 className="text-2xl font-serif text-[#1C1C1C] mb-2">Welcome Back</h2>
-                    <p className="text-[#5A5751] text-sm font-sans tracking-wide">
-                        Please sign in to continue to your account.
+            <main className="max-w-md mx-auto px-6 py-8">
+                <div className="mb-14 mt-4 text-center">
+                    <h2 className="text-3xl font-serif font-light text-[#1C1C1C] mb-4 tracking-wide">Welcome Back</h2>
+                    <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">
+                        Please sign in to continue
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-10">
                     <Input
                         label="Mobile Number or Email"
                         name="identifier"
@@ -146,53 +146,51 @@ export default function LoginPage() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3.5 text-[#999] p-1"
+                            className="absolute right-0 top-3 text-[#999] hover:text-[#1C1C1C] transition-colors p-1"
                         >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-4">
                         <button
                             type="button"
                             onClick={() => router.push('/forgot-password')}
-                            className="text-xs text-[#999] font-medium hover:text-[#C9A14A] transition-colors"
+                            className="text-[9px] uppercase tracking-[0.2em] text-[#999] hover:text-[#1C1C1C] transition-colors font-medium border-b border-transparent hover:border-[#1C1C1C] pb-0.5"
                         >
                             Forgot password?
                         </button>
                     </div>
 
                     <div className="pt-2">
-                        <motion.button
-                            whileTap={{ scale: 0.98 }}
+                        <button
                             disabled={!isFormValid || isSubmitting}
                             type="submit"
                             className={`
-                                w-full py-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all
+                                w-full py-4 rounded-none font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-all duration-300 border
                                 ${isFormValid && !isSubmitting
-                                    ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/20'
-                                    : 'bg-[#E8E6E0] text-[#999] cursor-not-allowed'}
+                                    ? 'bg-[#1C1C1C] border-[#1C1C1C] text-white hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)]'
+                                    : 'bg-transparent border-[#E8E6E0] text-[#999] cursor-not-allowed'}
                             `}
                         >
                             {isSubmitting ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                <span className="flex items-center gap-3">
+                                    <div className="w-3.5 h-3.5 border border-white/30 border-t-white rounded-full animate-spin" />
                                     Signing in...
                                 </span>
                             ) : (
                                 "Login"
                             )}
-                        </motion.button>
+                        </button>
                     </div>
                 </form>
 
-                {/* --- Social Login --- */}
-                <div className="mt-12">
+                <div className="mt-14">
                     <div className="relative flex items-center justify-center mb-8">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-[#E8E6E0]"></div>
+                            <div className="w-full h-[1px] bg-[#E8E6E0]"></div>
                         </div>
-                        <span className="relative px-4 bg-[#F9F7F3] text-[10px] uppercase tracking-widest text-[#BBB] font-medium">
+                        <span className="relative px-6 bg-[#F9F7F3] text-[9px] uppercase tracking-[0.2em] text-[#999] font-medium">
                             Or continue with
                         </span>
                     </div>
@@ -200,9 +198,9 @@ export default function LoginPage() {
                     <div className="flex justify-center">
                         <button
                             onClick={handleGoogleLogin}
-                            className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl border border-[#E8E6E0] bg-white text-[#5A5751] text-xs font-medium active:bg-gray-50 transition-colors w-full"
+                            className="flex items-center justify-center gap-3 py-4 px-6 rounded-none border border-[#E8E6E0] bg-transparent hover:bg-white hover:border-[#1C1C1C] text-[#1C1C1C] text-[11px] uppercase tracking-[0.2em] font-medium transition-all duration-300 w-full"
                         >
-                            <Chrome size={14} />
+                            <Chrome size={14} strokeWidth={1.5} />
                             Google
                         </button>
                     </div>
@@ -212,9 +210,9 @@ export default function LoginPage() {
                 <div className="mt-12 text-center pb-10">
                     <button
                         onClick={() => router.push('/signup')}
-                        className="text-sm text-[#777] font-medium transition-colors"
+                        className="text-[10px] uppercase tracking-[0.1em] text-[#999] font-medium transition-colors hover:text-[#1C1C1C]"
                     >
-                        Don’t have an account? <span className="text-[#C9A14A]">Sign up</span>
+                        Don’t have an account? <span className="text-[#1C1C1C] font-semibold border-b border-[#1C1C1C] pb-0.5 ml-1">Sign up</span>
                     </button>
                 </div>
             </main>
@@ -232,13 +230,13 @@ function Input({ label, ...props }: InputProps) {
     const hasValue = props.value && String(props.value).length > 0;
 
     return (
-        <div className="relative">
+        <div className="relative group mt-2">
             <label
                 className={`
-                    absolute left-4 px-1 transition-all duration-200 pointer-events-none z-10
+                    absolute left-0 transition-all duration-300 pointer-events-none z-10
                     ${(isFocused || hasValue)
-                        ? '-top-2 text-[10px] bg-white text-[#C9A14A] font-medium'
-                        : 'top-3.5 text-sm text-[#999]'}
+                        ? '-top-5 text-[9px] uppercase tracking-[0.1em] text-[#1C1C1C] font-medium'
+                        : 'top-3 text-sm tracking-wide text-[#999] font-light'}
                 `}
             >
                 {label}
@@ -255,8 +253,8 @@ function Input({ label, ...props }: InputProps) {
                     props.onBlur?.(e);
                 }}
                 className={`
-                    w-full bg-white border rounded-xl px-4 py-3.5 text-[#1C1C1C] outline-none transition-all
-                    ${(isFocused || hasValue) ? 'border-[#C9A14A] ring-1 ring-[#C9A14A]/10' : 'border-[#E8E6E0]'}
+                    w-full bg-transparent border-b rounded-none px-0 py-3 text-[#1C1C1C] outline-none transition-all duration-300
+                    ${(isFocused || hasValue) ? 'border-[#1C1C1C]' : 'border-[#E8E6E0] hover:border-[#CCCCCC]'}
                     placeholder:text-transparent
                 `}
                 placeholder={label}
@@ -268,9 +266,9 @@ function Input({ label, ...props }: InputProps) {
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.5 }}
-                        className="absolute right-3 top-3.5 text-[#C9A14A]"
+                        className="absolute right-0 top-3 text-[#1C1C1C]"
                     >
-                        <Check size={18} strokeWidth={2.5} />
+                        <Check size={16} strokeWidth={1.5} />
                     </motion.div>
                 )}
             </AnimatePresence>

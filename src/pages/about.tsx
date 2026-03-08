@@ -102,7 +102,7 @@ export default function AboutPage() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
-                        className="relative h-[400px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl"
+                        className="relative h-[400px] md:h-[600px] w-full rounded-none overflow-hidden border border-[#E8E6E0] shadow-none"
                     >
                         <Image
                             src="/images/about-artisan.png"
@@ -159,7 +159,7 @@ export default function AboutPage() {
                                 transition={{ delay: idx * 0.1 }}
                                 className="group cursor-pointer flex flex-col min-w-[280px] md:min-w-0 snap-center"
                             >
-                                <div className="relative h-[350px] md:h-[300px] mb-6 overflow-hidden rounded-2xl md:rounded-xl bg-gray-100 shadow-md md:shadow-none">
+                                <div className="relative h-[350px] md:h-[300px] mb-6 overflow-hidden rounded-none border border-[#E8E6E0] bg-[#F9F7F3] shadow-none">
                                     <Image
                                         src={item.image}
                                         alt={item.title}
@@ -189,7 +189,7 @@ export default function AboutPage() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
-                            className="relative h-[500px] md:h-[700px] w-full rounded-tr-[50px] rounded-bl-[50px] md:rounded-tr-[100px] md:rounded-bl-[100px] overflow-hidden shadow-2xl"
+                            className="relative h-[500px] md:h-[700px] w-full rounded-none overflow-hidden border border-[#E8E6E0] shadow-none"
                         >
                             <Image
                                 src="/images/about-masterpiece.png"
@@ -198,7 +198,7 @@ export default function AboutPage() {
                                 className="object-cover"
                             />
                             {/* Floating details card */}
-                            <div className="absolute bottom-4 left-4 right-4 md:right-auto md:bottom-8 md:left-8 bg-white/95 backdrop-blur-md p-5 md:p-6 shadow-lg rounded-xl md:rounded-2xl border border-white/50">
+                            <div className="absolute bottom-4 left-4 right-4 md:right-auto md:bottom-8 md:left-8 bg-white/95 backdrop-blur-md p-5 md:p-6 shadow-none rounded-none border border-[#E8E6E0]">
                                 <p className="font-serif text-lg md:text-xl mb-1">The Royal Emerald</p>
                                 <p className="text-[#8B6D36] text-[10px] md:text-xs uppercase tracking-widest font-bold">Signature Collection</p>
                             </div>
@@ -270,7 +270,7 @@ export default function AboutPage() {
                                 transition={{ delay: idx * 0.15 }}
                                 className="relative z-10 flex flex-col items-center text-center group bg-[#F9F7F3] py-4"
                             >
-                                <div className="w-20 h-20 rounded-full bg-white border border-[#E8E6E0] flex items-center justify-center font-serif text-2xl text-[#C9A14A] shadow-sm mb-6 group-hover:border-[#C9A14A] group-hover:scale-110 transition-all duration-300 relative z-10">
+                                <div className="w-20 h-20 rounded-none bg-white border border-[#E8E6E0] flex items-center justify-center font-serif text-2xl text-[#1C1C1C] shadow-none mb-6 group-hover:border-[#1C1C1C]/40 transition-all duration-300 relative z-10">
                                     {item.step}
                                 </div>
                                 <h3 className="font-serif text-xl mb-3 bg-[#F9F7F3] px-2">{item.title}</h3>

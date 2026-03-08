@@ -42,15 +42,13 @@ const QuickLinkItem = ({
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group ${!isLast ? 'border-b border-[#F0EFEC]' : ''}`}
+            className={`w-full flex items-center justify-between py-5 px-6 hover:bg-[#F9F7F3] transition-colors bg-white group ${!isLast ? 'border-b border-[#E8E6E0]' : ''}`}
         >
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#F9F7F3] flex items-center justify-center text-[#C9A14A] group-hover:bg-[#F0EFEC] transition-colors">
-                    <Icon size={20} strokeWidth={1.5} />
-                </div>
-                <span className="text-[#1C1C1C] font-medium text-[15px]">{label}</span>
+                <Icon size={18} strokeWidth={1.5} className="text-[#1C1C1C] opacity-60 group-hover:opacity-100 transition-opacity" />
+                <span className="text-[#1C1C1C] font-medium text-[11px] tracking-[0.15em] uppercase">{label}</span>
             </div>
-            <ChevronRight size={18} className="text-[#999999]" />
+            <ChevronRight size={16} className="text-[#1C1C1C] opacity-20 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />
         </button>
     );
 };
@@ -71,13 +69,13 @@ const SettingItem = ({
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${!isLast ? 'border-b border-[#F0EFEC]' : ''}`}
+            className={`w-full flex items-center justify-between py-5 px-6 hover:bg-[#F9F7F3] transition-colors bg-white group ${!isLast ? 'border-b border-[#E8E6E0]' : ''}`}
         >
-            <div className="flex items-center gap-3">
-                <Icon size={20} strokeWidth={1.5} className={isDestructive ? "text-red-500" : "text-[#555555]"} />
-                <span className={`font-medium text-[15px] ${isDestructive ? "text-red-500" : "text-[#1C1C1C]"}`}>{label}</span>
+            <div className="flex items-center gap-4">
+                <Icon size={18} strokeWidth={1.5} className={isDestructive ? "text-red-500/60 group-hover:text-red-500 transition-colors" : "text-[#1C1C1C] opacity-60 group-hover:opacity-100 transition-opacity"} />
+                <span className={`font-medium text-[11px] tracking-[0.15em] uppercase ${isDestructive ? "text-red-500" : "text-[#1C1C1C]"}`}>{label}</span>
             </div>
-            {!isDestructive && <ChevronRight size={18} className="text-[#999999]" />}
+            {!isDestructive && <ChevronRight size={16} className="text-[#1C1C1C] opacity-20 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />}
         </button>
     );
 };
@@ -112,25 +110,25 @@ export default function Profile() {
             {/* Page Header */}
             <div className="min-h-screen bg-[#F9F7F3] pt-[84px] md:pt-[96px] pb-12 font-sans">
                 <div className="max-w-md mx-auto px-4 space-y-8">
-                    <div className="text-center mb-6">
-                        <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">My Account</h1>
-                        <p className="text-[#555555] text-sm">Manage your profile & preferences</p>
+                    <div className="text-center mb-10">
+                        <h1 className="font-serif text-4xl font-light text-[#1C1C1C] mb-4 tracking-wide">My Account</h1>
+                        <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">Manage your profile</p>
                     </div>
 
                     {/* Profile Card */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl shadow-sm border border-[#F0EFEC] overflow-hidden"
+                        className="bg-white rounded-none border border-[#E8E6E0] overflow-hidden"
                     >
-                        <div className="p-6">
+                        <div className="p-8">
                             <div className="flex items-start justify-between mb-4">
-                                <div className="w-16 h-16 rounded-full bg-[#1C1C1C] text-white flex items-center justify-center font-serif text-2xl overflow-hidden">
+                                <div className="w-20 h-20 rounded-none bg-[#1C1C1C] text-white flex items-center justify-center font-serif text-3xl overflow-hidden self-start">
                                     {displayUser.avatar_url ? (
                                         <img
                                             src={displayUser.avatar_url}
                                             alt={displayUser.name || 'User'}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover scale-105"
                                             referrerPolicy="no-referrer"
                                         />
                                     ) : (
@@ -139,36 +137,36 @@ export default function Profile() {
                                 </div>
                                 <button
                                     onClick={() => router.push('/edit-profile')}
-                                    className="text-[#C9A14A] text-sm font-medium hover:text-[#B08D40] transition-colors flex items-center gap-1"
+                                    className="text-[#999] hover:text-[#1C1C1C] text-[10px] font-medium uppercase tracking-[0.2em] transition-colors flex items-center gap-2 group border border-transparent hover:border-[#1C1C1C]/20 px-3 py-1.5"
                                 >
                                     Edit
-                                    <Edit2 size={14} />
+                                    <Edit2 size={12} className="group-hover:translate-x-0.5 transition-transform" />
                                 </button>
                             </div>
 
-                            <h2 className="font-serif text-2xl text-[#1C1C1C] mb-2">{displayUser.name}</h2>
+                            <h2 className="font-serif text-3xl text-[#1C1C1C] mb-4 tracking-wide">{displayUser.name}</h2>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-[#555555] text-sm">
-                                    <Smartphone size={16} />
-                                    <span>{displayUser.phone || 'No phone'}</span>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 text-[#999] text-[11px] uppercase tracking-widest font-medium">
+                                    <Smartphone size={14} className="text-[#1C1C1C]/40" />
+                                    <span className="text-[#1C1C1C]/80">{displayUser.phone || 'No phone'}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-[#555555] text-sm">
-                                    <Mail size={16} />
-                                    <span>{displayUser.email || 'No email'}</span>
+                                <div className="flex items-center gap-4 text-[#999] text-[11px] uppercase tracking-widest font-medium">
+                                    <Mail size={14} className="text-[#1C1C1C]/40" />
+                                    <span className="text-[#1C1C1C]/80 lowercase">{displayUser.email || 'No email'}</span>
                                 </div>
                             </div>
                         </div>
                     </motion.div>
 
-                    {/* Primary Quick Links - My Activity */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
+                        className="mt-12"
                     >
-                        <h3 className="text-xs font-bold text-[#999999] uppercase tracking-widest mb-3 pl-1">My Activity</h3>
-                        <div className="bg-white rounded-xl shadow-sm border border-[#F0EFEC] overflow-hidden">
+                        <h3 className="text-[10px] font-semibold text-[#999] uppercase tracking-[0.3em] mb-4 pl-1">My Activity</h3>
+                        <div className="rounded-none border-t border-l border-r border-[#E8E6E0] overflow-hidden">
                             <QuickLinkItem
                                 icon={Package}
                                 label="My Orders"
@@ -187,34 +185,34 @@ export default function Profile() {
                             <QuickLinkItem
                                 icon={HelpCircle}
                                 label="Help & Support"
-                                onClick={() => { }}
+                                onClick={() => router.push('/help-support')}
                                 isLast
                             />
                         </div>
                     </motion.div>
 
-                    {/* Secondary Actions - Account Settings */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
+                        className="mt-8"
                     >
-                        <h3 className="text-xs font-bold text-[#999999] uppercase tracking-widest mb-3 pl-1">Account Settings</h3>
-                        <div className="bg-white rounded-xl shadow-sm border border-[#F0EFEC] overflow-hidden">
+                        <h3 className="text-[10px] font-semibold text-[#999] uppercase tracking-[0.3em] mb-4 pl-1">Account Settings</h3>
+                        <div className="rounded-none border-t border-l border-r border-[#E8E6E0] overflow-hidden">
                             <SettingItem
                                 icon={Bell}
                                 label="Notifications"
-                                onClick={() => { }}
+                                onClick={() => router.push('/notifications')}
                             />
                             <SettingItem
                                 icon={Shield}
                                 label="Privacy & Policies"
-                                onClick={() => { }}
+                                onClick={() => router.push('/privacy-policy')}
                             />
                             <SettingItem
                                 icon={Lock}
                                 label="Password & Security"
-                                onClick={() => router.push('/update-password')}
+                                onClick={() => router.push('/password-security')}
                             />
                             <SettingItem
                                 icon={LogOut}
@@ -227,7 +225,7 @@ export default function Profile() {
                     </motion.div>
 
                     {/* App Version Info (Optional footer filler) */}
-                    <div className="text-center text-[#999999] text-xs pt-4">
+                    <div className="text-center text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium pt-8">
                         <p>Amma Embroidery App v1.0.0</p>
                     </div>
                 </div>

@@ -160,8 +160,11 @@ export default function DesignsGallery() {
                 } else {
                     const design = designs.find(d => d.id === id);
                     if (design) {
+                        // Sanitize design object to remove undefined values (which Firestore rejects)
+                        const designToSave = JSON.parse(JSON.stringify(design));
+
                         setDoc(wishlistDocRef, {
-                            ...design,
+                            ...designToSave,
                             saved_at: new Date().toISOString()
                         });
                         alert("Saved to your designs");
@@ -322,7 +325,7 @@ export default function DesignsGallery() {
                                             className={`
                                                 w-16 h-16 sm:w-20 sm:h-20 rounded-full ${style.color}
                                                 flex items-center justify-center overflow-visible transition-all duration-300 relative
-                                                ${isActive ? 'outline outline-2 outline-[#C9A14A] outline-offset-[4px]' : 'border border-transparent hover:border-[#C9A14A]'}
+                                                ${isActive ? 'outline outline-1 outline-[#1C1C1C] outline-offset-[4px]' : 'border border-transparent hover:border-[#1C1C1C]'}
                                             `}
                                         >
                                             {/* Fabric Texture Placeholder */}
@@ -337,7 +340,7 @@ export default function DesignsGallery() {
                                         <span
                                             className={`
                                                 text-xs sm:text-sm font-medium transition-colors duration-300
-                                                ${isActive ? 'text-[#C9A14A] font-semibold' : 'text-[#555555] group-hover:text-[#1C1C1C]'}
+                                                ${isActive ? 'text-[#1C1C1C] font-semibold' : 'text-[#555555] group-hover:text-[#1C1C1C]'}
                                             `}
                                         >
                                             {style.label}
@@ -377,7 +380,7 @@ export default function DesignsGallery() {
                             <p className="text-[#555555] font-serif text-lg">No designs found.</p>
                             <button
                                 onClick={() => setSelectedCategory('All')}
-                                className="mt-4 text-[#C9A14A] underline text-sm"
+                                className="mt-4 text-[#1C1C1C] underline text-[10px] uppercase tracking-widest font-medium"
                             >
                                 View All Designs
                             </button>
@@ -400,25 +403,25 @@ export default function DesignsGallery() {
             </AnimatePresence>
 
             {/* Mobile Utility Bar (Sticky Bottom) */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 pb-safe z-50 sm:hidden shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] py-2 pb-safe z-50 sm:hidden shadow-none">
                 <div className="flex justify-around items-center">
                     <button
                         onClick={() => setActiveTab('filter')}
-                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'filter' ? 'text-[#C9A14A]' : 'text-[#999999]'}`}
+                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'filter' ? 'text-[#1C1C1C]' : 'text-[#999999]'}`}
                     >
                         <Filter size={20} />
                         <span className="text-[10px] font-medium uppercase tracking-wide">Filter</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('styles')}
-                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'styles' ? 'text-[#C9A14A]' : 'text-[#999999]'}`}
+                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'styles' ? 'text-[#1C1C1C]' : 'text-[#999999]'}`}
                     >
                         <Grid size={20} />
                         <span className="text-[10px] font-medium uppercase tracking-wide">Styles</span>
                     </button>
                     <button
                         onClick={() => router.push('/saved-designs')}
-                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'saved' ? 'text-[#C9A14A]' : 'text-[#999999]'}`}
+                        className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'saved' ? 'text-[#1C1C1C]' : 'text-[#999999]'}`}
                     >
                         <Bookmark size={20} />
                         <span className="text-[10px] font-medium uppercase tracking-wide">Saved ({wishlist.length})</span>

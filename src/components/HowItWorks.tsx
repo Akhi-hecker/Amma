@@ -19,7 +19,7 @@ const HowItWorks = () => {
                     <motion.span
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="text-[#C9A14A] text-xs font-bold tracking-[0.25em] uppercase mb-4 block"
+                        className="text-[#C9A14A] text-[10px] font-semibold tracking-[0.3em] uppercase mb-6 block"
                     >
                         Process
                     </motion.span>
@@ -28,10 +28,10 @@ const HowItWorks = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="text-3xl md:text-5xl font-serif text-[#1C1C1C]"
+                        className="text-4xl md:text-5xl font-serif text-[#1C1C1C] tracking-wide"
                     >
                         Your Custom Outfit <br className="md:hidden" />
-                        <span className="italic font-normal text-gray-400">in 5 simple steps</span>
+                        <span className="italic font-light text-gray-400">in 5 simple steps</span>
                     </motion.h2>
                 </div>
 
@@ -50,12 +50,12 @@ const HowItWorks = () => {
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1, duration: 0.5 }}
-                                className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white border border-[#E6E3DE] flex items-center justify-center shrink-0 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] group-hover:border-[#C9A14A] group-hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.3)] transition-all duration-500 relative z-10"
+                                className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-[#F9F7F3] border-[1.5px] border-[#E8E6E0] flex items-center justify-center shrink-0 shadow-none group-hover:border-[#1C1C1C] transition-all duration-500 relative z-10"
                             >
-                                <step.icon strokeWidth={1.2} className="w-5 h-5 md:w-8 md:h-8 text-[#1C1C1C] group-hover:text-[#C9A14A] transition-colors duration-500" />
+                                <step.icon strokeWidth={1.2} className="w-5 h-5 md:w-8 md:h-8 text-[#1C1C1C] transition-colors duration-500" />
 
                                 {/* Small Badge Number */}
-                                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 rounded-full bg-[#1C1C1C] text-white text-[8px] md:text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                                <div className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#1C1C1C] text-white text-[8px] md:text-[10px] font-bold flex items-center justify-center border-2 border-[#F9F7F3]">
                                     {step.id}
                                 </div>
                             </motion.div>
@@ -68,7 +68,7 @@ const HowItWorks = () => {
                                 transition={{ delay: idx * 0.1 + 0.2 }}
                                 className="flex-1 w-full"
                             >
-                                <h3 className="text-[9px] md:text-lg font-serif text-[#1C1C1C] group-hover:text-[#C9A14A] transition-colors duration-300 leading-tight">
+                                <h3 className="text-[9px] md:text-lg font-serif text-[#1C1C1C] font-semibold transition-colors duration-300 leading-tight">
                                     {step.title}
                                 </h3>
                             </motion.div>

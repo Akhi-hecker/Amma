@@ -153,30 +153,29 @@ export default function MyOrdersPage() {
             </Head>
 
             {/* Page Header */}
-            <div className="pt-4 pb-6 px-4">
+            <div className="pt-4 pb-12 px-2.5 sm:px-4 lg:px-8">
                 <div className="text-center">
-                    <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">My Orders</h1>
-                    <p className="text-[#555555] text-sm">Track your past orders and pending requests.</p>
+                    <h1 className="font-serif text-4xl font-light text-[#1C1C1C] mb-4 tracking-wide">My Orders</h1>
+                    <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium">Track your past orders and pending requests.</p>
                 </div>
             </div>
 
             <main className="max-w-md mx-auto px-4 space-y-8">
-
                 {loadingData ? (
                     <div className="flex justify-center py-20">
                         <div className="animate-spin w-8 h-8 border-2 border-[#C9A14A] border-t-transparent rounded-full"></div>
                     </div>
                 ) : hasNoData ? (
                     // Empty State
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="w-16 h-16 rounded-full bg-white shadow-sm border border-[#E8E6E0] flex items-center justify-center mb-4 text-[#C9A14A]/50">
-                            <Package size={24} />
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <div className="w-16 h-16 bg-transparent border border-[#E8E6E0] rounded-none flex items-center justify-center mx-auto mb-6 text-[#1C1C1C] opacity-40">
+                            <Package size={20} strokeWidth={1.5} />
                         </div>
-                        <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">No orders yet</h3>
-                        <p className="text-sm text-[#777] mb-6">Start your custom journey with a beautiful design.</p>
+                        <h3 className="font-serif text-2xl font-light text-[#1C1C1C] mb-3 tracking-wide">No orders yet</h3>
+                        <p className="text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto mb-10 leading-relaxed">Start your custom journey with a beautiful design.</p>
                         <button
                             onClick={() => router.push('/designs')}
-                            className="bg-[#C9A14A] text-white px-6 py-3 rounded-xl text-sm font-medium shadow-lg shadow-[#C9A14A]/20 hover:bg-[#B89240] transition-colors"
+                            className="bg-[#1C1C1C] text-white px-8 py-4 rounded-none text-[11px] font-medium uppercase tracking-[0.2em] shadow-none hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] hover:bg-black transition-all duration-300"
                         >
                             Browse Designs
                         </button>
@@ -186,32 +185,32 @@ export default function MyOrdersPage() {
                         {/* Drafts Section */}
                         {drafts.length > 0 && (
                             <section>
-                                <h2 className="font-serif text-lg mb-3 text-[#1C1C1C] flex items-center gap-2">
-                                    <Clock size={16} className="text-[#C9A14A]" />
+                                <h2 className="font-serif text-2xl font-light mb-6 text-[#1C1C1C] flex items-center gap-3 tracking-wide">
+                                    <Clock size={20} strokeWidth={1.5} className="text-[#1C1C1C]/40" />
                                     Pending Requests
                                 </h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {drafts.map((draft, idx) => (
                                         <motion.div
                                             key={draft.id}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: idx * 0.05 }}
-                                            className="bg-white rounded-xl p-4 border border-[#E8E6E0] shadow-sm relative overflow-hidden"
+                                            className="bg-white rounded-none p-6 border border-[#E8E6E0] shadow-none relative overflow-hidden"
                                         >
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#C9A14A] bg-[#FFFBF2] px-2 py-0.5 rounded-full border border-[#FDEBC2]">
+                                                    <span className="text-[9px] uppercase font-medium tracking-[0.2em] text-[#C9A14A] bg-[#FFFBF2] px-3 py-1.5 rounded-none border border-[#FDEBC2]">
                                                         Needs Action
                                                     </span>
-                                                    <h3 className="font-medium text-[#1C1C1C] text-sm mt-2 capitalize">{draft.service_type?.replace(/_/g, ' ')}</h3>
+                                                    <h3 className="font-serif text-lg font-light tracking-wide text-[#1C1C1C] mt-4 capitalize">{draft.service_type?.replace(/_/g, ' ')}</h3>
                                                 </div>
-                                                <span className="text-xs text-[#999]">{formatDate(draft.created_at)}</span>
+                                                <span className="text-[10px] uppercase tracking-[0.1em] text-[#999]">{formatDate(draft.created_at)}</span>
                                             </div>
-                                            <div className="flex items-center justify-between mt-4">
-                                                <p className="text-xs text-[#777]">In Bag</p>
-                                                <Link href="/shopping-bag" className="text-sm font-medium text-[#C9A14A] flex items-center gap-1 hover:underline">
-                                                    Complete Order <ChevronRight size={14} />
+                                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#E8E6E0]">
+                                                <p className="text-[10px] uppercase font-medium tracking-[0.2em] text-[#999]">In Bag</p>
+                                                <Link href="/shopping-bag" className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#1C1C1C] flex items-center gap-2 hover:opacity-70 transition-opacity">
+                                                    Complete Order <ChevronRight size={14} strokeWidth={1.5} />
                                                 </Link>
                                             </div>
                                         </motion.div>
@@ -223,11 +222,11 @@ export default function MyOrdersPage() {
                         {/* Confirmed Orders Section */}
                         {orders.length > 0 && (
                             <section>
-                                <h2 className="font-serif text-lg mb-3 text-[#1C1C1C] flex items-center gap-2">
-                                    <CheckCircle size={16} className="text-[#C9A14A]" />
+                                <h2 className="font-serif text-2xl font-light mb-6 text-[#1C1C1C] flex items-center gap-3 tracking-wide">
+                                    <CheckCircle size={20} strokeWidth={1.5} className="text-[#1C1C1C]/40" />
                                     Order History
                                 </h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {orders.map((order, idx) => (
                                         <motion.div
                                             key={order.id}
@@ -235,31 +234,31 @@ export default function MyOrdersPage() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: idx * 0.05 }}
                                             onClick={() => router.push(`/my-orders/${order.id}`)}
-                                            className="bg-white rounded-xl p-5 border border-[#E8E6E0] shadow-sm hover:border-[#d4d1c9] active:bg-gray-50 transition-all cursor-pointer group"
+                                            className="bg-white rounded-none p-6 border border-[#E8E6E0] shadow-none hover:border-[#CCCCCC] transition-colors cursor-pointer group"
                                         >
-                                            <div className="flex justify-between items-start mb-4">
+                                            <div className="flex justify-between items-start mb-6">
                                                 <div>
-                                                    <p className="text-[10px] uppercase tracking-wider text-[#999] mb-1">Order ID</p>
-                                                    <p className="font-medium text-[#1C1C1C] text-sm font-mono">{order.order_number}</p>
+                                                    <p className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999] mb-2">Order ID</p>
+                                                    <p className="font-medium text-[#1C1C1C] text-sm font-mono tracking-wider">{order.order_number}</p>
                                                 </div>
-                                                <div className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold tracking-wide border ${getStatusStyle(order.status)}`}>
+                                                <div className={`px-3 py-1.5 rounded-none text-[9px] uppercase font-medium tracking-[0.2em] border ${getStatusStyle(order.status)}`}>
                                                     {order.status}
                                                 </div>
                                             </div>
 
-                                            <div className="flex justify-between items-end">
+                                            <div className="flex justify-between items-end pt-4 border-t border-[#E8E6E0]">
                                                 <div>
-                                                    <p className="text-xs text-[#777] mb-1 flex items-center gap-1">
-                                                        <Calendar size={12} /> {formatDate(order.created_at)}
+                                                    <p className="text-[10px] uppercase tracking-[0.1em] text-[#999] mb-2 flex items-center gap-2">
+                                                        <Calendar size={12} strokeWidth={1.5} /> {formatDate(order.created_at)}
                                                     </p>
-                                                    <p className="text-sm text-[#5A5751] flex items-center gap-1">
-                                                        <Package size={12} />
+                                                    <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#1C1C1C] flex items-center gap-2">
+                                                        <Package size={12} strokeWidth={1.5} />
                                                         {Array.isArray(order.items) ? order.items.length : 0} Items
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-1 text-[#1C1C1C]">
-                                                    <span className="font-serif font-medium">₹{order.total_amount?.toLocaleString('en-IN') || 0}</span>
-                                                    <ChevronRight size={16} className="text-[#CCC] group-hover:text-[#C9A14A] transition-colors" />
+                                                <div className="flex items-center gap-2 text-[#1C1C1C]">
+                                                    <span className="font-serif font-light text-lg">₹{order.total_amount?.toLocaleString('en-IN') || 0}</span>
+                                                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#CCC] group-hover:text-[#1C1C1C] transition-colors" />
                                                 </div>
                                             </div>
                                         </motion.div>

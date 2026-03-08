@@ -49,13 +49,13 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-white w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[85vh] sm:rounded-2xl shadow-2xl overflow-hidden relative flex flex-col sm:flex-row absolute bottom-0 sm:relative"
+                className="bg-white w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[85vh] sm:rounded-none shadow-2xl overflow-hidden relative flex flex-col sm:flex-row absolute bottom-0 sm:relative border border-[#1C1C1C]/10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button - Floats on top for both mobile and desktop */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 sm:right-auto sm:left-4 z-20 p-2 bg-black/10 hover:bg-black/20 text-white rounded-full backdrop-blur-md transition-colors"
+                    className="absolute top-4 right-4 sm:right-auto sm:left-4 z-20 p-2 bg-black/10 hover:bg-black/20 text-white rounded-none border border-white/20 backdrop-blur-md transition-colors"
                 >
                     <X size={24} />
                 </button>
@@ -84,14 +84,14 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                     </div>
 
                     {/* Mobile Info Section - Moved Inside Scroll */}
-                    <div className="bg-white -mt-6 rounded-t-3xl relative z-10 px-6 pt-8 pb-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                    <div className="bg-white -mt-6 rounded-none border-t border-[#1C1C1C]/10 relative z-10 px-6 pt-8 pb-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                         {/* Pagination Dots */}
                         <div className="flex justify-center gap-2 mb-6">
                             {views.map((view) => (
                                 <div
                                     key={view.id}
-                                    className={`h-1.5 rounded-full transition-all duration-300 ${activeView === view.id
-                                        ? 'bg-[#C9A14A] w-6'
+                                    className={`h-1.5 rounded-none transition-all duration-300 ${activeView === view.id
+                                        ? 'bg-[#1C1C1C] w-6'
                                         : 'bg-gray-200 w-1.5'
                                         }`}
                                 />
@@ -146,7 +146,7 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                         {/* CTA Button */}
                         <button
                             onClick={() => onSelect(design)}
-                            className="w-full bg-[#C9A14A] text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-[#C9A14A]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                            className="w-full bg-[#1C1C1C] text-white py-4 rounded-none font-medium uppercase tracking-widest text-[10px] shadow-none active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                         >
                             <span>Choose This Design</span>
                             <ArrowRight size={18} />
@@ -165,7 +165,7 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                         </div>
 
                         {/* View Label Badge */}
-                        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-sm shadow-sm">
+                        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-none border border-[#E8E6E0] shadow-none">
                             <span className="text-[10px] uppercase tracking-wider font-semibold text-[#1C1C1C]">
                                 {views[activeView].label}
                             </span>
@@ -179,8 +179,8 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                                 key={view.id}
                                 onClick={() => setActiveView(view.id)}
                                 className={`
-                                    relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden transition-all duration-200
-                                    ${activeView === view.id ? 'ring-2 ring-[#C9A14A] ring-offset-2' : 'opacity-60 hover:opacity-100'}
+                                    relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-none overflow-hidden transition-all duration-200
+                                    ${activeView === view.id ? 'ring-1 ring-[#1C1C1C] ring-offset-1' : 'opacity-60 hover:opacity-100'}
                                     ${view.image}
                                 `}
                             >
@@ -208,7 +208,7 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                                 </div>
                                 <button
                                     onClick={(e) => toggleWishlist(e, design.id)}
-                                    className="p-3 hover:bg-gray-50 rounded-full transition-colors group"
+                                    className="p-3 hover:bg-gray-50 rounded-none border border-transparent hover:border-[#E8E6E0] transition-colors group"
                                 >
                                     <Heart
                                         size={24}
@@ -231,11 +231,11 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
 
                         {/* Details Grid (Mock) */}
                         <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-[#F9F7F3] p-3 rounded-lg">
+                            <div className="bg-[#F9F7F3] border border-[#E8E6E0] p-3 rounded-none">
                                 <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Fabric Suitability</span>
                                 <span className="block text-sm text-[#1C1C1C] font-medium">{design.fabric_suitability || 'Universal'}</span>
                             </div>
-                            <div className="bg-[#F9F7F3] p-3 rounded-lg">
+                            <div className="bg-[#F9F7F3] border border-[#E8E6E0] p-3 rounded-none">
                                 <span className="block text-[10px] uppercase text-[#999] tracking-wider mb-1">Complexity</span>
                                 <span className="block text-sm text-[#1C1C1C] font-medium">{design.complexity || 'Standard'}</span>
                             </div>
@@ -246,12 +246,12 @@ export default function DesignPreviewOverlay({ design, onClose, onSelect, wishli
                     <div className="mt-auto pt-6 border-t border-gray-100">
                         <button
                             onClick={() => onSelect(design)}
-                            className="w-full bg-[#C9A14A] hover:bg-[#b08d40] text-white py-4 px-6 rounded-lg
+                            className="w-full bg-[#1C1C1C] hover:bg-[#333] text-white py-4 px-6 rounded-none
                                      flex items-center justify-center gap-3 transition-all duration-300
-                                     shadow-[0_4px_14px_rgba(201,161,74,0.3)] hover:shadow-[0_6px_20px_rgba(201,161,74,0.4)]
+                                     shadow-none
                                      transform active:scale-[0.98]"
                         >
-                            <span className="font-medium tracking-wide">Choose This Design</span>
+                            <span className="font-medium uppercase tracking-widest text-[10px]">Choose This Design</span>
                             <ArrowRight size={18} />
                         </button>
                         <p className="text-center mt-3 text-[10px] text-[#999999]">
@@ -318,7 +318,7 @@ function ZoomableImage({ view, designCategory }: { view: any, designCategory: st
 
             {/* Label Overlay */}
             {!isZoomed && (
-                <div className="absolute bottom-8 sm:bottom-3 left-3 bg-white/50 backdrop-blur-sm px-2 py-1 rounded text-[10px] uppercase font-semibold text-black/80 pointer-events-none">
+                <div className="absolute bottom-8 sm:bottom-3 left-3 bg-white/50 backdrop-blur-sm px-2 py-1 rounded-none border border-[#1C1C1C]/10 text-[10px] uppercase font-semibold text-black/80 pointer-events-none">
                     {view.label}
                 </div>
             )}

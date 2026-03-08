@@ -206,73 +206,73 @@ export default function SavedAddresses() {
             <div className="min-h-screen bg-[#F9F7F3] pt-[84px] pb-24 px-4 lg:px-8 font-sans">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center justify-between mb-12">
                         <div>
-                            <h1 className="font-serif text-3xl text-[#1C1C1C] mb-1">My Addresses</h1>
-                            <p className="text-[#555555] text-sm">Manage your pickup and delivery locations.</p>
+                            <h1 className="font-serif text-4xl font-light text-[#1C1C1C] mb-2 tracking-wide">My Addresses</h1>
+                            <p className="text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium">Manage your locations</p>
                         </div>
                         <button
                             onClick={() => { resetForm(); setIsFormOpen(true); }}
-                            className="bg-[#C9A14A] text-white p-3 rounded-full hover:bg-[#B08D40] shadow-lg transition-transform active:scale-95"
+                            className="bg-[#1C1C1C] text-white p-4 rounded-none hover:bg-black transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center group"
                         >
-                            <Plus size={24} />
+                            <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" strokeWidth={1.5} />
                         </button>
                     </div>
 
                     {/* Address List */}
                     <div className="space-y-4">
                         {addresses.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                <div className="w-16 h-16 bg-[#F9F7F3] rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <MapPin className="text-[#C9A14A]" size={24} />
+                            <div className="text-center py-20 bg-transparent border border-[#E8E6E0] rounded-none">
+                                <div className="w-16 h-16 bg-transparent border border-[#E8E6E0] rounded-none flex items-center justify-center mx-auto mb-6">
+                                    <MapPin className="text-[#1C1C1C] opacity-40" strokeWidth={1.5} size={20} />
                                 </div>
-                                <h3 className="text-[#1C1C1C] font-serif text-lg mb-2">No addresses saved</h3>
-                                <p className="text-[#999] text-sm max-w-xs mx-auto">Add a new address for faster checkout.</p>
+                                <h3 className="font-serif text-2xl font-light text-[#1C1C1C] mb-3 tracking-wide">No addresses saved</h3>
+                                <p className="text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto leading-relaxed">Add a new address for faster checkout.</p>
                             </div>
                         ) : (
                             addresses.map((addr) => (
-                                <div key={addr.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative group">
+                                <div key={addr.id} className="bg-white p-6 rounded-none shadow-none border border-[#E8E6E0] relative group hover:border-[#CCCCCC] transition-colors">
                                     {/* Default Badge */}
                                     {addr.is_default && (
-                                        <span className="absolute top-5 right-5 bg-[#F9F7F3] text-[#C9A14A] text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                                        <span className="absolute top-6 right-6 bg-[#F9F7F3] text-[#1C1C1C] text-[9px] uppercase tracking-[0.2em] font-medium px-3 py-1.5 rounded-none border border-[#E8E6E0]">
                                             Default
                                         </span>
                                     )}
 
-                                    <div className="flex items-start gap-3 mb-3">
+                                    <div className="flex items-start gap-4 mb-4 mt-1">
                                         <div className="mt-1">
-                                            {addr.address_type === 'pickup' ? <Briefcase size={18} className="text-[#555]" /> : <Home size={18} className="text-[#555]" />}
+                                            {addr.address_type === 'pickup' ? <Briefcase size={18} strokeWidth={1.5} className="text-[#1C1C1C]/60" /> : <Home size={18} strokeWidth={1.5} className="text-[#1C1C1C]/60" />}
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold text-[#1C1C1C] text-sm flex items-center gap-2">
+                                            <h4 className="font-medium text-[#1C1C1C] text-sm flex items-center gap-3 tracking-wide">
                                                 {addr.full_name}
-                                                <span className="text-[#999] font-normal text-xs border border-gray-200 px-1 rounded uppercase">{addr.address_type}</span>
+                                                <span className="text-[#999] font-medium text-[9px] border border-[#E8E6E0] px-2 py-0.5 tracking-[0.1em] rounded-none uppercase">{addr.address_type}</span>
                                             </h4>
-                                            <p className="text-[#555] text-sm">{addr.phone}</p>
+                                            <p className="text-[#999] text-[10px] uppercase tracking-[0.1em] font-medium mt-1">{addr.phone}</p>
                                         </div>
                                     </div>
 
-                                    <div className="pl-8 mb-4">
-                                        <p className="text-[#555] text-sm leading-relaxed">
+                                    <div className="pl-8 mb-6 ml-0.5">
+                                        <p className="text-[#555] text-sm leading-relaxed font-light">
                                             {addr.address_line1}, {addr.address_line2 && `${addr.address_line2}, `}
-                                            {addr.city}, {addr.state} - {addr.pincode}
+                                            {addr.city}, {addr.state} - <span className="font-medium">{addr.pincode}</span>
                                         </p>
-                                        {addr.landmark && <p className="text-[#999] text-xs mt-1">Landmark: {addr.landmark}</p>}
+                                        {addr.landmark && <p className="text-[#999] text-[10px] uppercase tracking-widest mt-2 border-l border-[#E8E6E0] pl-3 py-1">Landmark: {addr.landmark}</p>}
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-4 pl-8 border-t border-gray-50 pt-3">
+                                    <div className="flex items-center gap-6 pl-8 border-t border-[#E8E6E0] pt-4 ml-0.5">
                                         <button
                                             onClick={() => handleEdit(addr)}
-                                            className="text-xs uppercase font-medium text-[#C9A14A] hover:text-[#B08D40] flex items-center gap-1"
+                                            className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999] hover:text-[#1C1C1C] transition-colors flex items-center gap-2"
                                         >
-                                            <Edit2 size={14} /> Edit
+                                            <Edit2 size={12} strokeWidth={1.5} /> Edit
                                         </button>
                                         <button
                                             onClick={() => handleDelete(addr.id)}
-                                            className="text-xs uppercase font-medium text-red-400 hover:text-red-500 flex items-center gap-1"
+                                            className="text-[9px] uppercase tracking-[0.2em] font-medium text-[#999] hover:text-red-500 transition-colors flex items-center gap-2"
                                         >
-                                            <Trash2 size={14} /> Delete
+                                            <Trash2 size={12} strokeWidth={1.5} /> Delete
                                         </button>
                                     </div>
                                 </div>
@@ -297,108 +297,107 @@ export default function SavedAddresses() {
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="bg-white w-full h-[90vh] sm:h-auto sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden flex flex-col"
+                            className="bg-white w-full h-[90vh] sm:h-auto sm:max-w-lg rounded-none shadow-2xl border border-[#1C1C1C]/10 overflow-hidden flex flex-col"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Modal Header */}
-                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                                <h2 className="font-serif text-xl text-[#1C1C1C]">
-                                    {editingAddress ? 'Edit Address' : 'Add New Address'}
+                            <div className="p-6 border-b border-[#E8E6E0] flex items-center justify-between bg-white sticky top-0 z-10">
+                                <h2 className="font-serif text-2xl font-light text-[#1C1C1C] tracking-wide">
+                                    {editingAddress ? 'Edit Address' : 'Add Address'}
                                 </h2>
-                                <button onClick={resetForm} className="p-2 hover:bg-gray-100 rounded-full">
-                                    <ArrowLeft size={20} className="sm:hidden" /> {/* Close/Back icon */}
-                                    <span className="hidden sm:block text-2xl leading-none">&times;</span>
+                                <button onClick={resetForm} className="p-2 text-[#999] hover:text-[#1C1C1C] transition-colors">
+                                    <span className="text-2xl leading-none font-light">&times;</span>
                                 </button>
                             </div>
 
                             {/* Form Content */}
-                            <div className="p-6 overflow-y-auto flex-1">
-                                <form id="address-form" onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                            <div className="p-8 overflow-y-auto flex-1">
+                                <form id="address-form" onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-8">
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Full Name</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Full Name</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={formData.full_name}
                                                 onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                                 placeholder="e.g. John Doe"
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Phone Number</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Phone Number</label>
                                             <input
                                                 required
                                                 type="tel"
                                                 maxLength={10}
                                                 value={formData.phone}
                                                 onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                                 placeholder="10-digit mobile number"
                                             />
                                         </div>
 
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Address Line 1</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Address Line 1</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={formData.address_line1}
                                                 onChange={e => setFormData({ ...formData, address_line1: e.target.value })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                                 placeholder="House No., Building, Street"
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Address Line 2 (Optional)</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Address Line 2 (Optional)</label>
                                             <input
                                                 type="text"
                                                 value={formData.address_line2}
                                                 onChange={e => setFormData({ ...formData, address_line2: e.target.value })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                                 placeholder="Area, Colony, Sector"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">City</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">City</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={formData.city}
                                                 onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">State</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">State</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={formData.state}
                                                 onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Pincode</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Pincode</label>
                                             <input
                                                 required
                                                 type="text"
                                                 maxLength={6}
                                                 value={formData.pincode}
                                                 onChange={e => setFormData({ ...formData, pincode: e.target.value.replace(/\D/g, '') })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Type</label>
+                                            <label className="block text-[9px] font-medium uppercase tracking-[0.2em] text-[#999] mb-1 pl-1">Type</label>
                                             <select
                                                 value={formData.address_type}
                                                 onChange={e => setFormData({ ...formData, address_type: e.target.value as any })}
-                                                className="w-full text-sm p-3 bg-[#F9F7F3] rounded-lg border-none focus:ring-1 focus:ring-[#C9A14A]"
+                                                className="w-full text-sm py-4 bg-transparent border-b border-[#E8E6E0] rounded-none focus:border-[#1C1C1C] outline-none transition-colors placeholder-[#CCC]"
                                             >
                                                 <option value="delivery">Delivery</option>
                                                 <option value="pickup">Pickup</option>
@@ -406,15 +405,18 @@ export default function SavedAddresses() {
                                             </select>
                                         </div>
 
-                                        <div className="col-span-2">
-                                            <label className="flex items-center gap-3 p-3 bg-[#F9F7F3] rounded-lg cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.is_default}
-                                                    onChange={e => setFormData({ ...formData, is_default: e.target.checked })}
-                                                    className="accent-[#C9A14A] w-5 h-5"
-                                                />
-                                                <span className="text-sm font-medium text-[#1C1C1C]">Use as default address</span>
+                                        <div className="col-span-2 mt-4">
+                                            <label className="flex items-center gap-4 py-4 px-2 hover:bg-[#F9F7F3] transition-colors rounded-none cursor-pointer border border-transparent">
+                                                <div className="relative flex items-center justify-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.is_default}
+                                                        onChange={e => setFormData({ ...formData, is_default: e.target.checked })}
+                                                        className="appearance-none w-5 h-5 border border-[#1C1C1C]/30 rounded-none checked:bg-[#1C1C1C] checked:border-[#1C1C1C] focus:outline-none transition-colors peer"
+                                                    />
+                                                    <Check size={14} strokeWidth={2.5} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                                                </div>
+                                                <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#1C1C1C]">Use as default address</span>
                                             </label>
                                         </div>
 
@@ -423,14 +425,14 @@ export default function SavedAddresses() {
                             </div>
 
                             {/* Footer CTA */}
-                            <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-10">
+                            <div className="p-6 border-t border-[#E8E6E0] bg-white sticky bottom-0 z-10">
                                 <button
                                     form="address-form"
                                     type="submit"
                                     disabled={submitting}
-                                    className="w-full bg-[#C9A14A] text-white py-3.5 rounded-lg flex items-center justify-center gap-2 font-medium tracking-wide shadow-lg disabled:opacity-70"
+                                    className="w-full bg-[#1C1C1C] text-white py-4 rounded-none text-[11px] tracking-[0.2em] uppercase font-medium shadow-none hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] hover:bg-black transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:hover:shadow-none"
                                 >
-                                    {submitting ? <Loader2 className="animate-spin" /> : <Check size={20} />}
+                                    {submitting ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} strokeWidth={1.5} />}
                                     {editingAddress ? 'Update Address' : 'Save Address'}
                                 </button>
                             </div>

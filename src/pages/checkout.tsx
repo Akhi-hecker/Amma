@@ -3,9 +3,9 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, writeBatch, setDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronDown, Check, ShieldCheck, CreditCard, Wallet, Building2 } from 'lucide-react';
+import { ChevronDown, Check, ShieldCheck, CreditCard, Wallet, Building2, Loader2 } from 'lucide-react';
 import CheckoutBreadcrumbs from '@/components/CheckoutBreadcrumbs';
 
 // --- Types (Mirrored from Shopping Bag) ---
@@ -179,15 +179,26 @@ export default function CheckoutPage() {
         localStorage.setItem('amma_saved_address', JSON.stringify(formData));
 
         try {
-            // 1. Create Order in 'orders' collection
-            const orderRef = await addDoc(collection(db, 'orders'), {
-                user_id: user.id,
-                items: bagItems, // Store snapshot of items
+            // 1. Create Order Data
+            const orderData = {
+                user_id: user.id, // Important for Admin linking
+                items: bagItems,
                 total_amount: total,
-                status: 'placed',
+                status: 'Order Confirmed',
                 shipping_address: formData,
                 payment_method: paymentMethod,
-                created_at: serverTimestamp()
+                created_at: new Date().toISOString()
+            };
+
+            // 2. Dual Write: Save to User Subcollection AND Global Collection
+            // A. User Subcollection (for My Orders)
+            const userOrderRef = await addDoc(collection(db, 'users', user.id, 'orders'), orderData);
+
+            // B. Global Collection (for Admin Dashboard)
+            // Use setDoc with the SAME ID as the user order to keep them linked
+            await setDoc(doc(db, 'orders', userOrderRef.id), {
+                ...orderData,
+                id: userOrderRef.id // Explicitly save ID if needed by admin table
             });
 
             // 2. Mark drafts as ordered (or delete them)
@@ -202,7 +213,8 @@ export default function CheckoutPage() {
             await batch.commit();
 
             // Navigate to Success
-            router.push(`/order-confirmation?orderId=${orderRef.id}`);
+            // Navigate to Success
+            router.push(`/order-confirmation?orderId=${userOrderRef.id}`);
 
         } catch (error) {
             console.error("Order placement failed", error);
@@ -240,22 +252,22 @@ export default function CheckoutPage() {
 
                 <div className="max-w-md mx-auto px-4 space-y-8">
 
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-10 pt-4">
                         <h1 className="font-serif text-3xl text-[#1C1C1C]">Checkout</h1>
+                        <div className="h-px w-16 bg-[#C9A14A] mx-auto mt-6" />
                     </div>
 
                     {/* --- Section 1: Delivery Details --- */}
                     <section>
-                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-6 flex items-center gap-2">
+                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-6 border-b border-[#E8E6E0] pb-2">
                             Delivery Details
                         </h2>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <Input
                                 label="Full Name"
                                 name="fullName"
                                 value={formData.fullName}
                                 onChange={handleInputChange}
-                                placeholder="e.g. Ananya Rao"
                             />
                             <Input
                                 label="Mobile Number"
@@ -264,7 +276,6 @@ export default function CheckoutPage() {
                                 inputMode="numeric"
                                 value={formData.mobile}
                                 onChange={handleInputChange}
-                                placeholder="10-digit number"
                             />
                             <Input
                                 label="Email (Optional)"
@@ -272,7 +283,6 @@ export default function CheckoutPage() {
                                 type="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                placeholder="Updates on order status"
                             />
 
                             <div className="pt-2"></div>
@@ -282,17 +292,15 @@ export default function CheckoutPage() {
                                 name="addressLine1"
                                 value={formData.addressLine1}
                                 onChange={handleInputChange}
-                                placeholder="Flat, House no., Building"
                             />
                             <Input
                                 label="Address Line 2 (Optional)"
                                 name="addressLine2"
                                 value={formData.addressLine2}
                                 onChange={handleInputChange}
-                                placeholder="Area, Colony, Street"
                             />
 
-                            <div className="flex gap-4">
+                            <div className="flex gap-6">
                                 <Input
                                     label="City"
                                     name="city"
@@ -320,17 +328,17 @@ export default function CheckoutPage() {
                     </section>
 
                     {/* --- Section 2: Order Summary (Collapsible) --- */}
-                    <section className="bg-white rounded-xl border border-[#E8E6E0] overflow-hidden shadow-sm">
+                    <section className="bg-white rounded-none border border-[#E8E6E0] overflow-hidden">
                         <button
                             onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                            className="w-full flex items-center justify-between p-5 bg-white active:bg-gray-50 transition-colors"
+                            className="w-full flex items-center justify-between p-5 bg-white active:bg-[#F9F7F3] transition-colors"
                         >
                             <div className="flex flex-col items-start text-left">
                                 <span className="font-serif text-lg text-[#1C1C1C]">Order Summary</span>
-                                <span className="text-xs text-[#777] mt-0.5">{bagItems.length} Items • ₹{total.toLocaleString()}</span>
+                                <span className="text-xs text-[#777] mt-0.5 tracking-wide">{bagItems.length} {bagItems.length === 1 ? 'Item' : 'Items'} • ₹{total.toLocaleString()}</span>
                             </div>
                             <div className={`transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : ''}`}>
-                                <ChevronDown size={20} className="text-[#999]" />
+                                <ChevronDown size={20} className="text-[#1C1C1C] stroke-[1.5]" />
                             </div>
                         </button>
 
@@ -345,21 +353,21 @@ export default function CheckoutPage() {
                                     <div className="px-5 pb-5 pt-0 border-t border-[#E8E6E0]">
                                         <div className="space-y-4 pt-4">
                                             {bagItems.map((item) => (
-                                                <div key={item.id} className="flex gap-3 py-2 border-b border-dashed border-[#E8E6E0] last:border-0">
-                                                    <div className="w-14 h-16 bg-gray-100 rounded-md flex-shrink-0 relative overflow-hidden">
-                                                        <div className={`absolute inset-0 ${item.designImage} opacity-30`} />
+                                                <div key={item.id} className="flex gap-4 py-3 border-b border-[#E8E6E0] last:border-0 relative">
+                                                    <div className="w-16 h-20 bg-[#F9F7F3] rounded-none flex-shrink-0 relative overflow-hidden">
+                                                        <div className={`absolute inset-0 ${item.designImage} opacity-40`} />
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
+                                                    <div className="flex-1 min-w-0 py-1">
                                                         <div className="flex justify-between items-start">
-                                                            <h4 className="font-serif text-sm text-[#1C1C1C] truncate pr-2">{item.designName}</h4>
-                                                            <span className="text-sm font-medium text-[#1C1C1C]">₹{(item.price * item.quantity).toLocaleString()}</span>
+                                                            <h4 className="font-serif text-base text-[#1C1C1C] truncate pr-4">{item.designName}</h4>
+                                                            <span className="text-sm text-[#1C1C1C]">₹{(item.price * item.quantity).toLocaleString()}</span>
                                                         </div>
-                                                        <p className="text-[11px] text-[#777] uppercase tracking-wide mt-0.5">{item.serviceType}</p>
-                                                        <p className="text-xs text-[#5A5751] mt-1">
+                                                        <p className="text-[10px] text-[#999] uppercase tracking-wider mt-1">{item.serviceType}</p>
+                                                        <p className="text-xs text-[#5A5751] mt-1.5">
                                                             {item.selections.fabric}, {item.selections.color}, {item.selections.length}m
                                                         </p>
                                                         {item.quantity > 1 && (
-                                                            <p className="text-xs text-[#999] mt-0.5">Qty: {item.quantity}</p>
+                                                            <p className="text-xs text-[#1C1C1C] font-medium mt-1">Qty: {item.quantity}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -373,11 +381,11 @@ export default function CheckoutPage() {
                                             </div>
                                             <div className="flex justify-between text-sm text-[#5A5751]">
                                                 <span>Delivery</span>
-                                                <span className="text-green-600 font-medium">Free</span>
+                                                <span className="text-[#1C1C1C] uppercase tracking-wider text-[10px] mt-0.5">Complimentary</span>
                                             </div>
-                                            <div className="flex justify-between text-base font-medium text-[#1C1C1C] pt-2">
-                                                <span>Total</span>
-                                                <span>₹{total.toLocaleString()}</span>
+                                            <div className="flex justify-between items-end pt-3 mt-3 border-t border-[#E8E6E0]">
+                                                <span className="font-serif text-lg text-[#1C1C1C]">Total</span>
+                                                <span className="font-serif text-xl text-[#1C1C1C]">₹{total.toLocaleString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -388,8 +396,8 @@ export default function CheckoutPage() {
 
                     {/* --- Section 3: Payment Method --- */}
                     <section>
-                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-4">
-                            Payment Method
+                        <h2 className="font-serif text-xl text-[#1C1C1C] mb-6 border-b border-[#E8E6E0] pb-2">
+                            Payment Details
                         </h2>
                         <div className="space-y-3">
                             {PAYMENT_METHODS.map((method) => {
@@ -399,29 +407,29 @@ export default function CheckoutPage() {
                                         key={method.id}
                                         onClick={() => setPaymentMethod(method.id)}
                                         className={`
-                                        relative rounded-xl p-4 border cursor-pointer transition-all duration-200
+                                        relative rounded-none p-4 border cursor-pointer transition-all duration-300
                                         ${isSelected
-                                                ? 'bg-white border-[#C9A14A] ring-1 ring-[#C9A14A] shadow-md shadow-[#C9A14A]/5'
-                                                : 'bg-white border-[#E8E6E0] hover:border-[#d4d1c9]'}
+                                                ? 'bg-white border-[#1C1C1C]'
+                                                : 'bg-white border-[#E8E6E0] hover:border-[#CCCCCC]'}
                                     `}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`
-                                            w-5 h-5 rounded-full border flex items-center justify-center transition-colors
-                                            ${isSelected ? 'border-[#C9A14A] bg-[#C9A14A]' : 'border-[#999] bg-transparent'}
+                                            w-4 h-4 rounded-none border flex items-center justify-center transition-colors shrink-0
+                                            ${isSelected ? 'border-[#1C1C1C] bg-[#1C1C1C]' : 'border-[#999] bg-transparent'}
                                         `}>
-                                                {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                                                {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                                             </div>
 
                                             <div className={`
-                                            w-10 h-10 rounded-full flex items-center justify-center
-                                            ${isSelected ? 'bg-[#C9A14A]/10 text-[#C9A14A]' : 'bg-gray-100 text-[#777]'}
+                                            w-10 h-10 rounded-none flex items-center justify-center shrink-0 border
+                                            ${isSelected ? 'bg-[#F9F7F3] text-[#1C1C1C] border-[#1C1C1C]/10' : 'bg-[#F9F7F3] text-[#999] border-transparent'}
                                         `}>
-                                                {method.icon}
+                                                {React.cloneElement(method.icon as any, { strokeWidth: 1.5, size: 18 })}
                                             </div>
 
                                             <div>
-                                                <p className={`font-medium text-sm ${isSelected ? 'text-[#1C1C1C]' : 'text-[#5A5751]'}`}>
+                                                <p className={`font-medium tracking-wide text-sm ${isSelected ? 'text-[#1C1C1C]' : 'text-[#5A5751]'}`}>
                                                     {method.title}
                                                 </p>
                                                 <p className="text-xs text-[#999] mt-0.5">
@@ -435,10 +443,10 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Trust Note */}
-                        <div className="flex items-center justify-center gap-2 mt-6 opacity-60">
-                            <ShieldCheck size={14} className="text-[#5A5751]" />
-                            <span className="text-[11px] text-[#5A5751] uppercase tracking-wide">
-                                Secure payments via trusted providers
+                        <div className="flex items-center justify-center gap-2 mt-8 py-4 border border-[#E8E6E0] bg-white">
+                            <ShieldCheck size={16} className="text-[#1C1C1C] stroke-[1.5]" />
+                            <span className="text-[10px] text-[#1C1C1C] uppercase tracking-widest font-medium">
+                                Secure Encrypted Payment
                             </span>
                         </div>
                     </section>
@@ -447,11 +455,11 @@ export default function CheckoutPage() {
             </main>
 
             {/* --- Sticky Place Order Bar --- */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E6E0] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-none z-50">
                 <div className="max-w-md mx-auto flex flex-col gap-3">
                     <div className="flex justify-between items-end mb-1">
-                        <span className="text-xs text-[#777] mb-1">Total Payable</span>
-                        <span className="font-serif text-2xl text-[#1C1C1C]">
+                        <span className="text-[10px] text-[#777] uppercase tracking-wider mb-1">Total Payable</span>
+                        <span className="font-serif text-2xl text-[#1C1C1C] leading-none">
                             ₹{total.toLocaleString()}
                         </span>
                     </div>
@@ -460,15 +468,15 @@ export default function CheckoutPage() {
                         disabled={!canPlaceOrder || isSubmitting}
                         onClick={handlePlaceOrder}
                         className={`
-                            w-full py-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200
+                            w-full py-4 rounded-none font-medium text-sm tracking-widest uppercase flex items-center justify-center gap-2 transition-all duration-300
                             ${(canPlaceOrder && !isSubmitting)
-                                ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 active:scale-[0.98]'
+                                ? 'bg-[#1C1C1C] text-white hover:bg-[#333] active:scale-[0.98]'
                                 : 'bg-[#E8E6E0] text-[#999] cursor-not-allowed'}
                         `}
                     >
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
-                                <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                <Loader2 size={18} className="animate-spin" />
                                 Processing...
                             </span>
                         ) : (
@@ -476,9 +484,13 @@ export default function CheckoutPage() {
                         )}
                     </button>
 
-                    {!canPlaceOrder && (
-                        <p className="text-[10px] text-center text-red-400 font-medium">
+                    {!canPlaceOrder ? (
+                        <p className="text-[10px] text-center text-[#999] uppercase tracking-wider mt-1">
                             Please complete delivery details
+                        </p>
+                    ) : (
+                        <p className="text-[10px] text-center text-[#999] uppercase tracking-wider mt-1">
+                            By placing order, you agree to our terms
                         </p>
                     )}
                 </div>
@@ -503,9 +515,9 @@ function Input({ label, containerClassName, className, ...props }: InputProps) {
             {/* Animated Label */}
             <label
                 className={`
-                    absolute left-4 px-1 transition-all duration-200 pointer-events-none z-10
+                    absolute left-0 transition-all duration-200 pointer-events-none z-10
                     ${(isFocused || hasValue)
-                        ? '-top-2 text-[10px] bg-white text-[#C9A14A] font-medium'
+                        ? 'top-0 text-[10px] text-[#999] font-medium uppercase tracking-wider'
                         : 'top-3.5 text-sm text-[#999]'}
                 `}
             >
@@ -523,8 +535,8 @@ function Input({ label, containerClassName, className, ...props }: InputProps) {
                     props.onBlur?.(e);
                 }}
                 className={`
-                    w-full bg-white border rounded-xl px-4 py-3.5 text-[#1C1C1C] outline-none transition-all
-                    ${(isFocused || hasValue) ? 'border-[#C9A14A] ring-1 ring-[#C9A14A]/10' : 'border-[#E8E6E0]'}
+                    w-full bg-transparent border-b rounded-none px-0 py-2 pt-6 pb-2 text-[#1C1C1C] outline-none transition-all
+                    ${(isFocused || hasValue) ? 'border-[#1C1C1C]' : 'border-[#E8E6E0] hover:border-[#CCCCCC]'}
                     placeholder:text-transparent
                     ${className}
                 `}
@@ -538,9 +550,9 @@ function Input({ label, containerClassName, className, ...props }: InputProps) {
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.5 }}
-                        className="absolute right-3 top-3.5 text-[#C9A14A]"
+                        className="absolute right-0 top-3.5 text-[#1C1C1C]"
                     >
-                        <Check size={18} strokeWidth={2.5} />
+                        <Check size={16} strokeWidth={1.5} />
                     </motion.div>
                 )}
             </AnimatePresence>

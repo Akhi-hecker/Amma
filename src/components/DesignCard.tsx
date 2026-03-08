@@ -48,9 +48,9 @@ export default function DesignCard({
             onClick={onCardClick}
         >
             <div className={`
-                relative bg-white rounded-xl overflow-hidden transition-all duration-500 h-full flex flex-col border border-[#1C1C1C]/10
+                relative bg-white rounded-none overflow-hidden transition-all duration-500 h-full flex flex-col border border-[#1C1C1C]/10
                 ${isPressed ? 'scale-[0.98]' : ''}
-                shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)]
+                shadow-none hover:shadow-none hover:border-[#1C1C1C]/40
             `}>
                 {/* Image Area - Aspect Ratio 4:5 for more portrait elegance */}
                 <div className={`w-full aspect-[4/5] relative overflow-hidden ${design.image}`}>
@@ -58,7 +58,7 @@ export default function DesignCard({
                     {/* Badge */}
                     {design.badge && (
                         <div className="absolute top-4 left-4 z-10">
-                            <span className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-sm text-[10px] tracking-[0.1em] font-bold uppercase text-[#1C1C1C] shadow-sm">
+                            <span className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-none text-[10px] tracking-[0.1em] font-bold uppercase text-[#1C1C1C] shadow-none border border-[#E8E6E0]">
                                 {design.badge}
                             </span>
                         </div>
@@ -67,7 +67,7 @@ export default function DesignCard({
                     {/* Like Button */}
                     <button
                         onClick={(e) => toggleWishlist(e, design.id)}
-                        className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-[#C9A14A] transition-all duration-300"
+                        className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-[#1C1C1C]/10 text-[#1C1C1C] hover:bg-white hover:text-[#C9A14A] transition-all duration-300"
                     >
                         <Heart
                             size={16}

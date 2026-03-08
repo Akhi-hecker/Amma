@@ -81,31 +81,19 @@ const Navbar = () => {
         <>
             <nav
                 className={cn(
-                    'fixed top-0 left-0 right-0 z-[70] transition-all duration-300',
-                    scrolled ? 'bg-white/10 backdrop-blur-lg shadow-sm border-b border-white/10 py-3' : 'bg-transparent py-5'
+                    'fixed top-0 left-0 right-0 z-[70] transition-all duration-500 ease-out',
+                    scrolled ? 'bg-white/5 backdrop-blur-xl shadow-card border-b border-white/5 py-4' : 'bg-transparent py-6'
                 )}
             >
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
 
-                    {/* Back Button (Mobile/Global) */}
-                    {!isHomePage && (
-                        <button
-                            onClick={() => router.back()}
-                            className={cn(
-                                "mr-2 md:hidden p-1 rounded-full transition-colors",
-                                scrolled ? "text-[#1C1C1C]" : "text-[#C9A14A]"
-                            )}
-                            aria-label="Go back"
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                    )}
+
 
                     {/* Logo */}
                     <Link href="/" className="relative z-50 group flex-1 md:flex-none">
                         <span className={cn(
-                            "font-serif text-2xl font-bold tracking-wide transition-colors duration-300",
-                            isOpen ? "text-primary" : "text-primary"
+                            "font-serif text-2xl font-medium tracking-[0.15em] transition-colors duration-500 uppercase",
+                            isOpen ? "text-primary" : (isHomePage && !scrolled) ? "text-white" : "text-text-main"
                         )}>
                             AMMA
                         </span>
@@ -118,8 +106,8 @@ const Navbar = () => {
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "text-sm font-bold text-[#C9A14A] transition-colors uppercase tracking-[0.1em]",
-                                    (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                                    "text-[12px] md:text-[13px] font-medium transition-all duration-300 uppercase tracking-[0.15em]",
+                                    (isHomePage && !scrolled) ? "text-white/70 hover:text-white" : "text-text-muted hover:text-primary"
                                 )}
                             >
                                 {link.label}
@@ -132,31 +120,31 @@ const Navbar = () => {
                         {/* Admin CMS Link - only for admin emails */}
                         {isAdmin && (
                             <Link href="/admin/cms" className={cn(
-                                "text-[#C9A14A] transition-colors hidden md:block",
-                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                                "transition-all duration-300 hidden md:block hover:-translate-y-0.5",
+                                (isHomePage && !scrolled) ? "text-white/80 hover:text-white" : "text-text-muted hover:text-primary"
                             )} title="CMS Admin">
                                 <Settings size={20} strokeWidth={1.5} />
                             </Link>
                         )}
                         <Link href="/saved-designs" className={cn(
-                            "text-[#C9A14A] transition-colors hidden md:block",
-                            (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                            "transition-all duration-300 hidden md:block hover:-translate-y-0.5",
+                            (isHomePage && !scrolled) ? "text-white/80 hover:text-white" : "text-text-muted hover:text-primary"
                         )} title="Saved Designs">
                             <Heart size={20} strokeWidth={1.5} />
                         </Link>
                         <Link
                             href={isAuthenticated ? "/profile" : "/login"}
                             className={cn(
-                                "text-[#C9A14A] transition-colors hidden md:block",
-                                (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                                "transition-all duration-300 hidden md:block hover:-translate-y-0.5",
+                                (isHomePage && !scrolled) ? "text-white/80 hover:text-white" : "text-text-muted hover:text-primary"
                             )}
                             title={isAuthenticated ? "My Account" : "Login"}
                         >
                             <User size={20} strokeWidth={1.5} />
                         </Link>
                         <Link href="/shopping-bag" className={cn(
-                            "text-[#C9A14A] transition-colors relative group",
-                            (isHomePage && !scrolled) ? "hover:text-white" : "hover:text-[#1C1C1C]"
+                            "transition-all duration-300 relative group hover:-translate-y-0.5",
+                            (isHomePage && !scrolled) ? "text-white/80 hover:text-white" : "text-text-muted hover:text-primary"
                         )}>
                             <ShoppingBag size={20} strokeWidth={1.5} />
                             <AnimatePresence>
@@ -165,7 +153,7 @@ const Navbar = () => {
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
                                         exit={{ scale: 0 }}
-                                        className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white text-[9px] text-primary font-bold shadow-sm"
+                                        className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-white font-medium shadow-sm"
                                     >
                                         {bagCount}
                                     </motion.span>
@@ -176,7 +164,10 @@ const Navbar = () => {
                         {/* Mobile Menu Toggle */}
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="md:hidden text-primary focus:outline-none p-1"
+                            className={cn(
+                                "md:hidden focus:outline-none p-1 transition-colors",
+                                isOpen ? "text-primary" : (isHomePage && !scrolled) ? "text-white" : "text-text-main"
+                            )}
                             aria-label="Toggle menu"
                         >
                             {isOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
@@ -192,8 +183,8 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: "-100%" }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: "-100%" }}
-                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                        className="fixed inset-0 z-[60] bg-background-light pt-24 px-6 md:hidden flex flex-col overflow-y-auto"
+                        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed inset-0 z-[60] bg-background-light pt-28 px-8 md:hidden flex flex-col overflow-y-auto"
                     >
                         <div className="flex flex-col space-y-6 mt-4">
                             {navLinks.map((link, idx) => (
@@ -206,7 +197,7 @@ const Navbar = () => {
                                     <Link
                                         href={link.href}
                                         onClick={() => setIsOpen(false)}
-                                        className="block text-3xl font-serif font-medium text-text-main hover:text-primary transition-colors"
+                                        className="block text-4xl font-serif font-light tracking-wide text-text-main hover:text-primary transition-colors py-2"
                                     >
                                         {link.label}
                                     </Link>

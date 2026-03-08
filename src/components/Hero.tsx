@@ -36,7 +36,7 @@ const Hero = () => {
                                 className="flex items-center justify-center md:justify-start gap-3 mb-6"
                             >
                                 <span className="h-[1px] w-12 bg-[#C9A14A]"></span>
-                                <span className="text-[#C9A14A] text-xs md:text-sm font-bold tracking-[0.2em] uppercase">
+                                <span className="text-[#C9A14A] text-[10px] md:text-xs font-semibold tracking-[0.3em] uppercase">
                                     Amma Embroidery
                                 </span>
                             </motion.div>
@@ -46,10 +46,10 @@ const Hero = () => {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2, duration: 0.8 }}
-                                className="text-white font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.1] mb-6 drop-shadow-xl"
+                                className="text-white font-serif text-6xl md:text-7xl lg:text-[7rem] leading-[1] mb-8 drop-shadow-xl tracking-wide"
                             >
                                 The Art of <br />
-                                <span className="italic text-[#C9A14A] font-light">Custom Design</span>
+                                <span className="italic text-[#C9A14A] font-light tracking-normal pr-4">Custom Design</span>
                             </motion.h1>
 
                             {/* Subheadline/Description */}
@@ -57,7 +57,7 @@ const Hero = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, duration: 0.8 }}
-                                className="text-gray-200 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-10 mx-auto md:mx-0"
+                                className="text-white/70 text-base md:text-lg font-light leading-relaxed max-w-lg mb-12 mx-auto md:mx-0"
                             >
                                 Select a unique design. Choose your perfect fabric. <br className="hidden md:block" />
                                 We craft your personalized masterpiece with precision.
@@ -80,9 +80,9 @@ const Hero = () => {
 
                                 <Link
                                     href="/about"
-                                    className="px-6 py-3 md:px-8 md:py-4 border border-white/30 text-white backdrop-blur-sm hover:bg-white/10 font-medium text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 w-auto md:min-w-[200px]"
+                                    className="px-6 py-3 md:px-8 md:py-4 border border-white/20 text-white/80 hover:text-white backdrop-blur-sm hover:bg-white/10 font-semibold text-xs tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-3 w-auto md:min-w-[200px]"
                                 >
-                                    <Play size={14} fill="currentColor" />
+                                    <Play size={12} fill="currentColor" />
                                     About AMMA
                                 </Link>
                             </motion.div>

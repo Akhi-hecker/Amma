@@ -63,15 +63,15 @@ export default function ServiceSelection() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="text-center mb-0"
+                        className="text-center mb-0 mt-4"
                     >
-                        <h1 className="font-serif text-3xl text-[#1C1C1C] mb-2">
+                        <h1 className="font-serif text-4xl font-light text-[#1C1C1C] mb-4 tracking-wide">
                             Choose Your Service
                         </h1>
-                        <p className="font-sans text-[#555555] text-lg mb-1">
+                        <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium leading-relaxed mb-1 max-w-sm mx-auto">
                             How should we handle your fabric?
                         </p>
-                        <p className="font-sans text-[#888888] text-sm">
+                        <p className="text-[#999] text-[9px] uppercase tracking-[0.1em] font-medium max-w-sm mx-auto">
                             No rush. You can change this later.
                         </p>
                     </motion.div>
@@ -88,23 +88,23 @@ export default function ServiceSelection() {
                     >
                         {/* Card 1: Embroidery Cloth Only */}
                         <motion.div variants={cardVariants}>
-                            <div className="bg-white rounded-xl shadow-card p-5 border border-transparent relative overflow-hidden md:hover:shadow-soft md:hover:-translate-y-1 transition-all duration-300">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h2 className="font-serif text-xl text-[#1C1C1C] tracking-wide pr-4">
+                            <div className="bg-white rounded-none p-8 border border-[#E8E6E0] relative overflow-hidden transition-all duration-300 group hover:border-[#C9A14A] shadow-none">
+                                <div className="flex justify-between items-start mb-6">
+                                    <h2 className="font-serif text-2xl font-light text-[#1C1C1C] tracking-wide pr-4">
                                         Embroidery Cloth Only
                                     </h2>
-                                    <div className="bg-[#F9F7F3] p-2.5 rounded-full text-[#C9A14A] flex-shrink-0">
-                                        <Scissors size={20} strokeWidth={1.5} />
+                                    <div className="text-[#1C1C1C]/40 flex-shrink-0 group-hover:text-[#C9A14A] transition-colors">
+                                        <Scissors size={24} strokeWidth={1.5} />
                                     </div>
                                 </div>
 
-                                <p className="font-sans text-[#777777] text-sm mb-5 leading-relaxed">
+                                <p className="text-[#777] text-xs font-light tracking-wide mb-8 leading-relaxed">
                                     We provide embroidered fabric. You stitch it yourself.
                                 </p>
 
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#F5F5F0] text-xs text-[#666666] font-medium gap-1.5">
-                                        <Check size={12} />
+                                <div className="flex flex-wrap gap-3 mb-10">
+                                    <div className="inline-flex items-center px-3 py-1.5 border border-[#E8E6E0] text-[9px] text-[#1C1C1C] uppercase tracking-[0.2em] font-medium gap-2">
+                                        <Check size={12} strokeWidth={1.5} />
                                         Fabric Included
                                     </div>
                                 </div>
@@ -115,7 +115,7 @@ export default function ServiceSelection() {
                                 >
                                     <motion.button
                                         whileTap={{ scale: 0.98 }}
-                                        className="w-full py-2.5 rounded-lg bg-[#C9A14A] text-white font-medium text-sm text-center shadow-sm hover:bg-[#B89240] hover:shadow-md transition-all duration-300"
+                                        className="w-full py-4 bg-[#1C1C1C] text-white font-medium text-[11px] tracking-[0.2em] uppercase rounded-none transition-all duration-300 hover:bg-[#C9A14A] hover:border-[#C9A14A] hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.3)] border border-[#1C1C1C]"
                                     >
                                         Select Cloth Only
                                     </motion.button>
@@ -125,33 +125,33 @@ export default function ServiceSelection() {
 
                         {/* Card 2: Full Product (Most Popular) */}
                         <motion.div variants={cardVariants}>
-                            <div className="bg-white rounded-xl shadow-card p-5 border border-transparent relative overflow-hidden ring-1 ring-[#C9A14A]/10 md:hover:shadow-soft md:hover:-translate-y-1 transition-all duration-300">
+                            <div className="bg-white rounded-none p-8 border border-[#C9A14A] relative overflow-hidden transition-all duration-300 group shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.2)]">
                                 {/* Most Popular Badge */}
-                                <div className="absolute top-0 left-0 bg-[#2A2A2A] text-white text-[10px] font-medium px-3 py-1 rounded-br-lg tracking-wide flex items-center gap-1">
+                                <div className="absolute top-0 right-0 bg-[#C9A14A] text-white text-[9px] font-medium px-4 py-2 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <Star size={10} fill="currentColor" strokeWidth={0} />
                                     MOST POPULAR
                                 </div>
 
-                                <div className="flex justify-between items-start mb-4 mt-3">
-                                    <h2 className="font-serif text-xl text-[#1C1C1C] tracking-wide pr-4">
+                                <div className="flex justify-between items-start mb-6 mt-4">
+                                    <h2 className="font-serif text-2xl font-light text-[#1C1C1C] tracking-wide pr-4">
                                         Embroidery & Stitching
                                     </h2>
-                                    <div className="bg-[#F9F7F3] p-2.5 rounded-full text-[#C9A14A] flex-shrink-0">
-                                        <Shirt size={20} strokeWidth={1.5} />
+                                    <div className="text-[#1C1C1C]/40 flex-shrink-0 group-hover:text-[#C9A14A] transition-colors">
+                                        <Shirt size={24} strokeWidth={1.5} />
                                     </div>
                                 </div>
 
-                                <p className="font-sans text-[#777777] text-sm mb-5 leading-relaxed">
+                                <p className="text-[#777] text-xs font-light tracking-wide mb-8 leading-relaxed">
                                     We deliver a fully stitched, ready-to-wear product.
                                 </p>
 
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#F5F5F0] text-xs text-[#666666] font-medium gap-1.5">
-                                        <Ruler size={12} />
+                                <div className="flex flex-wrap gap-3 mb-10">
+                                    <div className="inline-flex items-center px-3 py-1.5 border border-[#1C1C1C]/10 text-[9px] text-[#1C1C1C] uppercase tracking-[0.2em] font-medium gap-2 bg-[#F9F7F3]">
+                                        <Ruler size={12} strokeWidth={1.5} />
                                         Custom Size
                                     </div>
-                                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#F5F5F0] text-xs text-[#666666] font-medium gap-1.5">
-                                        <Sparkles size={12} />
+                                    <div className="inline-flex items-center px-3 py-1.5 border border-[#1C1C1C]/10 text-[9px] text-[#1C1C1C] uppercase tracking-[0.2em] font-medium gap-2 bg-[#F9F7F3]">
+                                        <Sparkles size={12} strokeWidth={1.5} />
                                         Premium Finish
                                     </div>
                                 </div>
@@ -162,7 +162,7 @@ export default function ServiceSelection() {
                                 >
                                     <motion.button
                                         whileTap={{ scale: 0.98 }}
-                                        className="w-full py-2.5 rounded-lg bg-[#C9A14A] text-white font-medium text-sm text-center shadow-sm hover:bg-[#B89240] hover:shadow-md transition-all duration-300"
+                                        className="w-full py-4 bg-[#C9A14A] text-white font-medium text-[11px] tracking-[0.2em] uppercase rounded-none transition-all duration-300 hover:bg-black hover:border-black hover:shadow-[0_10px_30px_-10px_rgba(201,161,74,0.3)] border border-[#C9A14A]"
                                     >
                                         Customize Product
                                     </motion.button>
@@ -172,23 +172,23 @@ export default function ServiceSelection() {
 
                         {/* Card 3: Send Your Fabric */}
                         <motion.div variants={cardVariants}>
-                            <div className="bg-white rounded-xl shadow-card p-5 border border-transparent relative overflow-hidden md:hover:shadow-soft md:hover:-translate-y-1 transition-all duration-300">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h2 className="font-serif text-xl text-[#1C1C1C] tracking-wide pr-4">
+                            <div className="bg-white rounded-none p-8 border border-[#E8E6E0] relative overflow-hidden transition-all duration-300 group hover:border-[#C9A14A] shadow-none">
+                                <div className="flex justify-between items-start mb-6">
+                                    <h2 className="font-serif text-2xl font-light text-[#1C1C1C] tracking-wide pr-4">
                                         Send Your Fabric
                                     </h2>
-                                    <div className="bg-[#F9F7F3] p-2.5 rounded-full text-[#C9A14A] flex-shrink-0">
-                                        <Truck size={20} strokeWidth={1.5} />
+                                    <div className="text-[#1C1C1C]/40 flex-shrink-0 group-hover:text-[#C9A14A] transition-colors">
+                                        <Truck size={24} strokeWidth={1.5} />
                                     </div>
                                 </div>
 
-                                <p className="font-sans text-[#777777] text-sm mb-5 leading-relaxed">
+                                <p className="text-[#777] text-xs font-light tracking-wide mb-8 leading-relaxed">
                                     We’ll arrange pickup and handle your fabric personally.
                                 </p>
 
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#F5F5F0] text-xs text-[#666666] font-medium gap-1.5">
-                                        <Truck size={12} />
+                                <div className="flex flex-wrap gap-3 mb-10">
+                                    <div className="inline-flex items-center px-3 py-1.5 border border-[#E8E6E0] text-[9px] text-[#1C1C1C] uppercase tracking-[0.2em] font-medium gap-2">
+                                        <Truck size={12} strokeWidth={1.5} />
                                         We Pickup
                                     </div>
                                 </div>
@@ -199,7 +199,7 @@ export default function ServiceSelection() {
                                 >
                                     <motion.button
                                         whileTap={{ scale: 0.98 }}
-                                        className="w-full py-2.5 rounded-lg border border-[#C9A14A] text-[#C9A14A] font-medium text-sm text-center transition-all duration-300 hover:bg-[#C9A14A]/5 hover:shadow-sm"
+                                        className="w-full py-4 bg-transparent border border-[#E8E6E0] text-[#1C1C1C] font-medium text-[11px] tracking-[0.2em] uppercase rounded-none transition-all duration-300 hover:border-[#C9A14A] hover:text-[#C9A14A] hover:bg-white"
                                     >
                                         Contact for Pickup
                                     </motion.button>

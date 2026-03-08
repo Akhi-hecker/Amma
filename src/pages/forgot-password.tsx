@@ -53,25 +53,25 @@ export default function ForgotPasswordPage() {
                     <title>Check Your Email | Amma Embroidery</title>
                 </Head>
 
-                <div className="w-16 h-16 bg-[#C9A14A]/10 rounded-full flex items-center justify-center text-[#C9A14A] mb-6">
-                    <Mail size={32} />
+                <div className="w-20 h-20 bg-transparent border border-[#E8E6E0] rounded-none flex items-center justify-center text-[#1C1C1C] opacity-40 mb-8 mx-auto">
+                    <Mail size={24} strokeWidth={1.5} />
                 </div>
 
-                <h2 className="text-2xl font-serif text-[#1C1C1C] mb-2 text-center">Check your email</h2>
-                <p className="text-[#5A5751] text-sm text-center max-w-xs mb-8">
-                    We've sent a password reset link to <span className="font-medium text-[#1C1C1C]">{email}</span>.
+                <h2 className="text-3xl font-serif font-light text-[#1C1C1C] mb-4 tracking-wide text-center">Check your email</h2>
+                <p className="text-[#999] text-[10px] uppercase tracking-[0.2em] font-medium leading-relaxed max-w-xs mx-auto text-center mb-10">
+                    We've sent a password reset link to <span className="font-bold text-[#1C1C1C]">{email}</span>.
                 </p>
 
                 <button
                     onClick={() => router.push('/login')}
-                    className="w-full max-w-xs py-4 rounded-xl bg-[#C9A14A] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#C9A14A]/20 transition-transform active:scale-95"
+                    className="w-full max-w-xs py-4 rounded-none bg-[#1C1C1C] text-white font-medium text-[11px] tracking-[0.2em] uppercase shadow-none hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)] hover:bg-black transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
                 >
                     Back to Login
                 </button>
 
                 <button
                     onClick={() => { setIsSuccess(false); setIsSubmitting(false); }}
-                    className="mt-6 text-xs text-[#999] hover:text-[#C9A14A] transition-colors"
+                    className="mt-8 text-[10px] uppercase tracking-[0.1em] text-[#999] hover:text-[#1C1C1C] transition-colors font-medium text-center block mx-auto"
                 >
                     Didn't receive it? Try again
                 </button>
@@ -87,27 +87,24 @@ export default function ForgotPasswordPage() {
             </Head>
 
             {/* --- Top Bar --- */}
-            <header className="w-full bg-[#F9F7F3] h-[72px] flex items-center px-4">
-                <button
-                    onClick={() => router.back()}
-                    className="p-2 -ml-2 text-[#1C1C1C] active:opacity-70"
-                >
-                    <ArrowLeft size={24} strokeWidth={1.5} />
-                </button>
-                <h1 className="flex-1 text-center text-xl font-serif text-[#1C1C1C] pr-10">
-                    Reset Password
-                </h1>
+            <header className="w-full bg-[#F9F7F3] h-[90px] flex items-center px-4 pt-6 sticky top-0 z-10">
+
+                <div className="flex-1 text-center">
+                    <h1 className="text-3xl font-serif font-light text-[#1C1C1C] tracking-wide relative top-1">
+                        Reset Password
+                    </h1>
+                </div>
             </header>
 
-            <main className="max-w-md mx-auto px-6 py-4">
-                <div className="mb-10 mt-4">
-                    <h2 className="text-2xl font-serif text-[#1C1C1C] mb-2">Forgot Password?</h2>
-                    <p className="text-[#5A5751] text-sm font-sans tracking-wide leading-relaxed">
+            <main className="max-w-md mx-auto px-6 py-8">
+                <div className="mb-12 mt-4 text-center">
+                    <h2 className="text-3xl font-serif font-light text-[#1C1C1C] mb-4 tracking-wide">Forgot Password?</h2>
+                    <p className="text-[#5A5751] text-[10px] uppercase tracking-[0.2em] font-medium leading-relaxed max-w-sm mx-auto">
                         Enter the email associated with your account and we'll send you a link to reset your password.
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
                     <Input
                         label="Email Address"
                         name="email"
@@ -118,30 +115,26 @@ export default function ForgotPasswordPage() {
                         required
                     />
 
-                    <div className="pt-2">
-                        <motion.button
-                            whileTap={{ scale: 0.98 }}
+                    <div className="pt-4">
+                        <button
                             disabled={!email || isSubmitting}
                             type="submit"
                             className={`
-                                w-full py-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all
+                                w-full py-4 rounded-none font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-all duration-300 border
                                 ${email && !isSubmitting
-                                    ? 'bg-[#1C1C1C] text-white shadow-lg shadow-[#1C1C1C]/20'
-                                    : 'bg-[#E8E6E0] text-[#999] cursor-not-allowed'}
+                                    ? 'bg-[#1C1C1C] border-[#1C1C1C] text-white hover:bg-black hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.3)]'
+                                    : 'bg-transparent border-[#E8E6E0] text-[#999] cursor-not-allowed'}
                             `}
                         >
                             {isSubmitting ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                <span className="flex items-center gap-3">
+                                    <div className="w-3.5 h-3.5 border border-white/30 border-t-white rounded-full animate-spin" />
                                     Sending Link...
                                 </span>
                             ) : (
-                                <span className="flex items-center gap-2">
-                                    Send Reset Link
-                                    <ChevronRight size={16} />
-                                </span>
+                                "Send Reset Link"
                             )}
-                        </motion.button>
+                        </button>
                     </div>
                 </form>
             </main>
@@ -162,10 +155,10 @@ function Input({ label, ...props }: InputProps) {
         <div className="relative">
             <label
                 className={`
-                    absolute left-4 px-1 transition-all duration-200 pointer-events-none z-10
+                    absolute left-0 px-0 transition-all duration-300 pointer-events-none z-10 bg-transparent font-medium tracking-[0.2em] uppercase
                     ${(isFocused || hasValue)
-                        ? '-top-2 text-[10px] bg-white text-[#C9A14A] font-medium'
-                        : 'top-3.5 text-sm text-[#999]'}
+                        ? '-top-6 text-[9px] text-[#1C1C1C]'
+                        : 'top-3.5 text-[10px] text-[#999]'}
                 `}
             >
                 {label}
@@ -182,25 +175,11 @@ function Input({ label, ...props }: InputProps) {
                     props.onBlur?.(e);
                 }}
                 className={`
-                    w-full bg-white border rounded-xl px-4 py-3.5 text-[#1C1C1C] outline-none transition-all
-                    ${(isFocused || hasValue) ? 'border-[#C9A14A] ring-1 ring-[#C9A14A]/10' : 'border-[#E8E6E0]'}
-                    placeholder:text-transparent
+                    w-full bg-transparent border-0 border-b-2 rounded-none px-0 py-3 text-[#1C1C1C] text-sm outline-none transition-all placeholder:text-transparent
+                    ${(isFocused || hasValue) ? 'border-[#1C1C1C]' : 'border-[#E8E6E0]'}
                 `}
                 placeholder={label}
             />
-
-            <AnimatePresence>
-                {hasValue && !isFocused && props.type !== 'password' && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        className="absolute right-3 top-3.5 text-[#C9A14A]"
-                    >
-                        <Check size={18} strokeWidth={2.5} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

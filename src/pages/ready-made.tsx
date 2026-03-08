@@ -39,7 +39,7 @@ export default function ReadyMadeComingSoon() {
                     className="max-w-xl mx-auto px-6 text-center relative z-10"
                 >
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#E8E6E0] shadow-sm mb-8">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none bg-[#F9F7F3] border border-[#E8E6E0] shadow-none mb-8">
                         <Star size={12} className="text-[#C9A14A] fill-[#C9A14A]" />
                         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#999]">Launching Soon</span>
                     </div>
@@ -56,19 +56,19 @@ export default function ReadyMadeComingSoon() {
 
                     {/* Email Form */}
                     <div className="max-w-sm mx-auto">
-                        <form onSubmit={handleSubscribe} className="relative group">
+                        <form onSubmit={handleSubscribe} className="relative group flex border-b border-[#E8E6E0] pb-2 focus-within:border-[#1C1C1C] transition-colors">
                             <input
                                 type="email"
                                 placeholder="Enter your email for early access"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full h-14 pl-6 pr-14 rounded-full bg-white border border-[#E8E6E0] focus:border-[#C9A14A] focus:ring-1 focus:ring-[#C9A14A] outline-none transition-all shadow-[0_5px_20px_rgba(0,0,0,0.03)] group-hover:shadow-lg placeholder:font-light placeholder:text-gray-400"
+                                className="w-full h-14 pl-2 pr-14 rounded-none bg-transparent border-none outline-none transition-all shadow-none placeholder:font-light placeholder:text-[#999] text-[#1C1C1C]"
                             />
                             <button
                                 type="submit"
                                 aria-label="Subscribe"
-                                className="absolute right-2 top-2 bottom-2 aspect-square rounded-full bg-[#1C1C1C] text-white flex items-center justify-center hover:bg-[#C9A14A] transition-colors shadow-md"
+                                className="absolute right-0 top-2 bottom-2 aspect-square rounded-none bg-[#1C1C1C] text-white flex items-center justify-center hover:bg-[#333] transition-colors shadow-none"
                             >
                                 <ArrowRight size={18} />
                             </button>

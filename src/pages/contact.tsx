@@ -61,11 +61,11 @@ export default function Contact() {
                             className="space-y-10"
                         >
                             {/* WhatsApp / Instant Action */}
-                            <div className="bg-[#1C1C1C] text-white p-8 rounded-2xl shadow-xl relative overflow-hidden group">
+                            <div className="bg-[#1C1C1C] text-white p-8 rounded-none shadow-none relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-700" />
 
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-sm">
+                                    <div className="w-12 h-12 bg-white/10 rounded-none flex items-center justify-center mb-6 backdrop-blur-sm border border-white/20">
                                         <MessageCircle size={24} className="text-[#C9A14A]" />
                                     </div>
                                     <h3 className="font-serif text-2xl mb-2">Instant Consultation</h3>
@@ -82,11 +82,11 @@ export default function Contact() {
                             {/* Contact Details */}
                             <div className="space-y-8 pl-2">
                                 <div className="flex items-start gap-5 group">
-                                    <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:border-[#C9A14A] transition-colors">
-                                        <Mail size={18} className="text-[#1C1C1C]" />
+                                    <div className="w-10 h-10 rounded-none bg-[#F9F7F3] border border-[#E8E6E0] flex items-center justify-center shadow-none group-hover:border-[#1C1C1C]/40 transition-colors">
+                                        <Mail size={18} className="text-[#1C1C1C] stroke-[1.5]" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-[#999] font-bold uppercase tracking-wider mb-1">General Inquiries</p>
+                                        <p className="text-[10px] text-[#999] font-bold uppercase tracking-[0.1em] mb-1">General Inquiries</p>
                                         <a href="mailto:concierge@amma.com" className="font-serif text-xl text-[#1C1C1C] hover:text-[#C9A14A] transition-colors">
                                             concierge@amma.com
                                         </a>
@@ -94,11 +94,11 @@ export default function Contact() {
                                 </div>
 
                                 <div className="flex items-start gap-5 group">
-                                    <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:border-[#C9A14A] transition-colors">
-                                        <MapPin size={18} className="text-[#1C1C1C]" />
+                                    <div className="w-10 h-10 rounded-none bg-[#F9F7F3] border border-[#E8E6E0] flex items-center justify-center shadow-none group-hover:border-[#1C1C1C]/40 transition-colors">
+                                        <MapPin size={18} className="text-[#1C1C1C] stroke-[1.5]" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-[#999] font-bold uppercase tracking-wider mb-1">The Atelier</p>
+                                        <p className="text-[10px] text-[#999] font-bold uppercase tracking-[0.1em] mb-1">The Atelier</p>
                                         <p className="font-serif text-xl text-[#1C1C1C] leading-snug">
                                             Road No. 12, Banjara Hills<br />
                                             Hyderabad, India
@@ -107,14 +107,14 @@ export default function Contact() {
                                 </div>
 
                                 <div className="flex items-start gap-5 group">
-                                    <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:border-[#C9A14A] transition-colors">
-                                        <Clock size={18} className="text-[#1C1C1C]" />
+                                    <div className="w-10 h-10 rounded-none bg-[#F9F7F3] border border-[#E8E6E0] flex items-center justify-center shadow-none group-hover:border-[#1C1C1C]/40 transition-colors">
+                                        <Clock size={18} className="text-[#1C1C1C] stroke-[1.5]" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-[#999] font-bold uppercase tracking-wider mb-1">Studios Hours</p>
+                                        <p className="text-[10px] text-[#999] font-bold uppercase tracking-[0.1em] mb-1">Studios Hours</p>
                                         <p className="font-serif text-xl text-[#1C1C1C] leading-snug">
                                             Mon - Sat: 10:00 AM - 7:00 PM<br />
-                                            <span className="text-base text-[#777] font-sans">By Appointment Only</span>
+                                            <span className="text-sm text-[#777] font-sans italic">By Appointment Only</span>
                                         </p>
                                     </div>
                                 </div>
@@ -127,7 +127,7 @@ export default function Contact() {
                             initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="bg-white p-8 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#E8E6E0] relative"
+                            className="bg-white p-8 md:p-10 rounded-none shadow-none border border-[#E8E6E0] relative"
                         >
                             <div className="absolute top-0 right-0 p-8 opacity-10">
                                 <Crown size={64} />
@@ -137,34 +137,34 @@ export default function Contact() {
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-[#999] uppercase tracking-wide ml-1">Your Name</label>
+                                    <label className="text-[10px] font-bold text-[#1C1C1C] uppercase tracking-[0.1em] ml-1">Your Name</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-[#F9F7F3] border-none rounded-xl py-4 px-5 text-[#1C1C1C] focus:ring-1 focus:ring-[#C9A14A] placeholder-gray-400 transition-all font-medium"
+                                        className="w-full bg-transparent border-b border-[#E8E6E0] py-3 px-0 text-[#1C1C1C] focus:border-[#1C1C1C] outline-none transition-all placeholder:text-[#999]"
                                         placeholder="Jane Doe"
                                         required
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-[#999] uppercase tracking-wide ml-1">Email or Phone</label>
+                                    <label className="text-[10px] font-bold text-[#1C1C1C] uppercase tracking-[0.1em] ml-1">Email or Phone</label>
                                     <input
                                         type="text"
-                                        className="w-full bg-[#F9F7F3] border-none rounded-xl py-4 px-5 text-[#1C1C1C] focus:ring-1 focus:ring-[#C9A14A] placeholder-gray-400 transition-all font-medium"
+                                        className="w-full bg-transparent border-b border-[#E8E6E0] py-3 px-0 text-[#1C1C1C] focus:border-[#1C1C1C] outline-none transition-all placeholder:text-[#999]"
                                         placeholder="jane@example.com"
                                         required
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-[#999] uppercase tracking-wide ml-1">Interest</label>
+                                    <label className="text-[10px] font-bold text-[#1C1C1C] uppercase tracking-[0.1em] ml-1 mb-2 block">Interest</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {['Bridal Couture', 'Custom Design', 'Bulk Order', 'Other'].map((type) => (
                                             <button
                                                 key={type}
                                                 type="button"
                                                 onClick={() => setFormState({ ...formState, type })}
-                                                className={`py-3 rounded-lg text-sm font-medium transition-all ${formState.type === type ? 'bg-[#1C1C1C] text-white' : 'bg-[#F9F7F3] text-[#555] hover:bg-gray-200'}`}
+                                                className={`py-3 rounded-none text-[10px] tracking-widest uppercase font-bold transition-all border ${formState.type === type ? 'bg-[#1C1C1C] text-white border-[#1C1C1C]' : 'bg-transparent text-[#555] border-[#E8E6E0] hover:border-[#1C1C1C]/40'}`}
                                             >
                                                 {type}
                                             </button>
@@ -173,17 +173,17 @@ export default function Contact() {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-[#999] uppercase tracking-wide ml-1">Your Vision</label>
+                                    <label className="text-[10px] font-bold text-[#1C1C1C] uppercase tracking-[0.1em] ml-1">Your Vision</label>
                                     <textarea
                                         rows={4}
-                                        className="w-full bg-[#F9F7F3] border-none rounded-xl py-4 px-5 text-[#1C1C1C] focus:ring-1 focus:ring-[#C9A14A] placeholder-gray-400 transition-all resize-none font-medium"
+                                        className="w-full bg-transparent border-b border-[#E8E6E0] py-4 px-0 text-[#1C1C1C] focus:border-[#1C1C1C] outline-none transition-all placeholder:text-[#999] resize-none"
                                         placeholder="Tell us about the fabric, occasion, or design ideas..."
                                     ></textarea>
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#C9A14A] text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#B89240] transition-colors shadow-lg shadow-[#C9A14A]/20 flex items-center justify-center gap-2"
+                                    className="w-full bg-[#1C1C1C] text-white py-4 mt-6 rounded-none font-bold uppercase tracking-widest text-[10px] hover:bg-[#333] transition-colors shadow-none flex items-center justify-center gap-2"
                                 >
                                     <span>Submit Request</span>
                                     <Send size={14} />

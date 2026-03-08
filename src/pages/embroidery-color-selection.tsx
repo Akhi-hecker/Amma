@@ -106,9 +106,9 @@ export default function EmbroideryColorSelection() {
                 </div>
 
                 {/* Summary Card */}
-                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden relative">
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                <div className="bg-white rounded-none p-4 shadow-none border border-[#E8E6E0] flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#F9F7F3] rounded-none border border-[#E8E6E0] flex-shrink-0 overflow-hidden relative">
+                        <div className="absolute inset-0 flex items-center justify-center text-[#1C1C1C]">
                             <Palette size={20} />
                         </div>
                     </div>
@@ -140,10 +140,10 @@ export default function EmbroideryColorSelection() {
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => setSelectedColor(color.id)}
                                 className={`
-                                    w-14 h-14 rounded-full relative focus:outline-none transition-all duration-300 group
+                                    w-14 h-14 rounded-none relative focus:outline-none transition-all duration-300 group border border-[#E8E6E0]
                                     ${isSelected
-                                        ? 'ring-2 ring-offset-4 ring-[#C9A14A] scale-105 shadow-md'
-                                        : 'hover:scale-105 shadow-sm'}
+                                        ? 'ring-2 ring-offset-4 ring-[#1C1C1C] scale-105 shadow-none'
+                                        : 'hover:scale-105 shadow-none'}
                                 `}
                                 style={{ backgroundColor: color.hex }}
                                 aria-label={color.name}
@@ -166,16 +166,16 @@ export default function EmbroideryColorSelection() {
             </div>
 
             {/* Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E8E6E0] shadow-none z-50">
                 <div className="max-w-md mx-auto">
                     <button
                         onClick={handleContinue}
                         disabled={!selectedColor}
                         className={`
-                            w-full py-4 rounded-xl font-medium text-base text-center transition-all duration-300
+                            w-full py-4 rounded-none font-bold text-[10px] tracking-widest uppercase text-center transition-all duration-300
                             ${selectedColor
-                                ? 'bg-[#C9A14A] text-white shadow-lg shadow-[#C9A14A]/30 hover:bg-[#B89240] active:scale-[0.99]'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                                ? 'bg-[#1C1C1C] text-white shadow-none hover:bg-[#333] active:scale-[0.99]'
+                                : 'bg-[#F0F0F0] text-[#999] cursor-not-allowed border border-[#E8E6E0]'}
                         `}
                     >
                         Continue
